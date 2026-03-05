@@ -22,7 +22,6 @@ public class EmailService {
         message.setTo(to);
         message.setSubject(subject);
         message.setText(content);
-
         mailSender.send(message);
     }
 }
