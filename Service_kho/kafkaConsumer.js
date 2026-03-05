@@ -1,7 +1,7 @@
 const { Kafka } = require('kafkajs');
 const Product = require('./Product'); // Đường dẫn tới file Model Product của bạn
 
-const kafka = new Kafka({ clientId: 'kho-service', brokers: ['localhost:9092'] });
+const kafka = new Kafka({ clientId: 'kho-service', brokers: ['kafka:9092'] });
 const consumer = kafka.consumer({ groupId: 'kho-db-updater' });
 
 const startConsumer = async () => {

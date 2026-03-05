@@ -2,13 +2,13 @@ require('dotenv').config(); // Phải có dòng này để đọc file .env
 const { Sequelize } = require('sequelize');
 
 const sequelize = new Sequelize(
-    process.env.DB_NAME, 
-    process.env.DB_USER, 
-    process.env.DB_PASSWORD, 
+    process.env.DB_NAME || 'kho_db', 
+    process.env.DB_USER || 'root', 
+    process.env.DB_PASSWORD || 'root', 
     {
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
-        dialect: process.env.DB_DIALECT,
+        host: process.env.DB_HOST || 'mysql_kho',
+        port: process.env.DB_PORT || 3308,
+        dialect: process.env.DB_DIALECT || 'mysql',
         logging: false, // Để console đỡ rối khi chạy lệnh SQL
     }
 );
