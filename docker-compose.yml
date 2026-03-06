@@ -2,6 +2,8 @@ services:
   # --- HẠ TẦNG (INFRASTRUCTURE) ---
   mysql_auth:
     image: mysql:8.0
+    volumes:
+      - ./data/mysql_auth:/var/lib/mysql # Mount dữ liệu DB Auth ra ngoài
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: auth_db
@@ -15,6 +17,8 @@ services:
   mysql_kho:
     image: mysql:8.0    
     command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./data/mysql_kho:/var/lib/mysql # Mount dữ liệu DB Kho ra ngoài
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: kho_db
@@ -27,6 +31,8 @@ services:
 
   redis_kho:
     image: redis:7.2
+    volumes:
+      - ./data/redis_kho:/data # Mount dữ liệu Redis ra ngoài
     ports: ["6379:6379"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -36,6 +42,9 @@ services:
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
+    volumes:
+      - ./data/zookeeper_data:/var/lib/zookeeper/data # Lưu trạng thái Zookeeper
+      - ./data/zookeeper_log:/var/lib/zookeeper/log # Lưu log Zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
 
@@ -43,10 +52,11 @@ services:
     image: confluentinc/cp-kafka:7.5.0
     depends_on:
       - zookeeper
+    volumes:
+      - ./data/kafka_data:/var/lib/kafka/data # Lưu trữ các Topic và Message Kafka
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      # Sửa lỗi "Node -1 disconnected" bằng cách map listener rõ ràng
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
@@ -83,6 +93,9 @@ services:
 
   kho-service:
     build: ./Service_kho
+    volumes:
+      - ./Service_kho:/app
+      - /app/node_modules
     ports:
       - "3002:3002"
     depends_on:
@@ -102,6 +115,9 @@ services:
 
   frontend:
     build: ./Frontend
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
     ports: ["3000:3000"]
     depends_on:
       - auth-service
