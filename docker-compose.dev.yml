@@ -1,6 +1,7 @@
 services:
   mysql_auth:
     image: mysql:8.0
+    container_name: mysql_auth
     volumes:
       - ./data/mysql_auth:/var/lib/mysql
     environment:
@@ -15,6 +16,7 @@ services:
 
   mysql_kho:
     image: mysql:8.0
+    container_name: mysql_kho
     command: --default-authentication-plugin=mysql_native_password
     volumes:
       - ./data/mysql_kho:/var/lib/mysql
@@ -30,6 +32,7 @@ services:
 
   redis_kho:
     image: redis:7.2
+    container_name: redis_kho
     volumes:
       - ./data/redis_kho:/data
     ports: ["6379:6379"]
@@ -41,21 +44,34 @@ services:
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    restart: always
     volumes:
       - ./data/zookeeper_data:/var/lib/zookeeper/data
       - ./data/zookeeper_log:/var/lib/zookeeper/log
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+    healthcheck:
+      test: ["CMD", "bash", "-lc", "echo ruok | nc -w 2 localhost 2181 | grep imok"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    restart: always
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
+    stop_grace_period: 30s
     volumes:
       - ./data/kafka_data:/var/lib/kafka/data
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ZOOKEEPER_SESSION_TIMEOUT_MS: 6000
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 6000
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
@@ -68,6 +84,7 @@ services:
 
   auth-service:
     image: project_1-auth-service:dev
+    container_name: auth-service
     build:
       context: ./Auth_Service
       dockerfile: Dockerfile.dev
@@ -91,6 +108,7 @@ services:
 
   notification-service:
     image: project_1-notification-service:dev
+    container_name: notification-service
     build:
       context: ./Notification_Service
       dockerfile: Dockerfile.dev
@@ -107,6 +125,7 @@ services:
 
   service_kho-springboot:
     image: project_1-service-kho-springboot:dev
+    container_name: service_kho
     build:
       context: ./service_kho-springboot
       dockerfile: Dockerfile.dev
@@ -132,7 +151,10 @@ services:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   frontend:
-    build: ./Frontend
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile.dev
+    container_name: frontend
     volumes:
       - ./Frontend:/app
       - /app/node_modules

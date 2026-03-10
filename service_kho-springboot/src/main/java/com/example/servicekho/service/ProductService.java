@@ -9,6 +9,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +54,7 @@ public class ProductService {
         product.setName(request.getName());
         product.setStock(request.getStock() == null ? 0 : request.getStock());
         product.setPrice(request.getPrice() == null ? 0D : request.getPrice());
+        product.setCreatedAt(LocalDateTime.now());
         return productRepository.save(product);
     }
 

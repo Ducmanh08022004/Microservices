@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 function AddProduct() {
     const [formData, setFormData] = useState({
-        productId: '',
+        product_id: '',
         name: '',
         stock: 0,
         price: 0
@@ -19,7 +19,7 @@ function AddProduct() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             alert("Thêm sản phẩm thành công!");
-            navigate('/dashboard'); // Quay lại trang chính
+            navigate('/dashboard'); 
         } catch (error) {
             alert("Lỗi khi thêm: " + (error.response?.data?.error || error.message));
         }
@@ -32,22 +32,26 @@ function AddProduct() {
                 <div style={{ marginBottom: '10px' }}>
                     <label>Mã Sản Phẩm:</label><br/>
                     <input type="text" required style={{ width: '100%' }}
+                        value={formData.product_id}
                         onChange={(e) => setFormData({...formData, product_id: e.target.value})} />
                 </div>
                 <div style={{ marginBottom: '10px' }}>
                     <label>Tên Sản Phẩm:</label><br/>
                     <input type="text" required style={{ width: '100%' }}
+                        value={formData.name}
                         onChange={(e) => setFormData({...formData, name: e.target.value})} />
                 </div>
                 <div style={{ marginBottom: '10px' }}>
                     <label>Số lượng:</label><br/>
                     <input type="number" required style={{ width: '100%' }}
-                        onChange={(e) => setFormData({...formData, stock: e.target.value})} />
+                        value={formData.stock}
+                        onChange={(e) => setFormData({...formData, stock: Number(e.target.value)})} />
                 </div>
                 <div style={{ marginBottom: '10px' }}>
                     <label>Giá:</label><br/>
                     <input type="number" required style={{ width: '100%' }}
-                        onChange={(e) => setFormData({...formData, price: e.target.value})} />
+                        value={formData.price}
+                        onChange={(e) => setFormData({...formData, price: Number(e.target.value)})} />
                 </div>
                 <button type="submit" style={{ padding: '10px 20px', backgroundColor: 'blue', color: 'white', border: 'none', cursor: 'pointer' }}>
                     Lưu sản phẩm

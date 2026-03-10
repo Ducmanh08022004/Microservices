@@ -134,7 +134,9 @@ services:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   frontend:
-    build: ./Frontend
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile.dev
     volumes:
       - ./Frontend:/app
       - /app/node_modules

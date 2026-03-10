@@ -111,8 +111,10 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
   frontend:
-    build: ./Frontend
-    ports: ["3000:3000"]
+    build:
+      context: ./Frontend
+      dockerfile: dockerfile
+    ports: ["3000:80"]
     depends_on:
       - auth-service
       - service_kho-springboot
