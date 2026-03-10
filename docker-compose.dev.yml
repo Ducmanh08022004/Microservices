@@ -1,9 +1,8 @@
 services:
-  # --- HẠ TẦNG  ---
   mysql_auth:
     image: mysql:8.0
     volumes:
-      - ./data/mysql_auth:/var/lib/mysql # Mount dữ liệu DB Auth ra ngoài
+      - ./data/mysql_auth:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: auth_db
@@ -15,10 +14,10 @@ services:
       retries: 5
 
   mysql_kho:
-    image: mysql:8.0    
+    image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password
     volumes:
-      - ./data/mysql_kho:/var/lib/mysql # Mount dữ liệu DB Kho ra ngoài
+      - ./data/mysql_kho:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: kho_db
@@ -32,7 +31,7 @@ services:
   redis_kho:
     image: redis:7.2
     volumes:
-      - ./data/redis_kho:/data # Mount dữ liệu Redis ra ngoài
+      - ./data/redis_kho:/data
     ports: ["6379:6379"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -43,8 +42,8 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     volumes:
-      - ./data/zookeeper_data:/var/lib/zookeeper/data # Lưu trạng thái Zookeeper
-      - ./data/zookeeper_log:/var/lib/zookeeper/log # Lưu log Zookeeper
+      - ./data/zookeeper_data:/var/lib/zookeeper/data
+      - ./data/zookeeper_log:/var/lib/zookeeper/log
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
 
@@ -53,7 +52,7 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./data/kafka_data:/var/lib/kafka/data # Lưu trữ các Topic và Message Kafka
+      - ./data/kafka_data:/var/lib/kafka/data
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -67,7 +66,6 @@ services:
       timeout: 10s
       retries: 5
 
-  # --- DỊCH VỤ ---
   auth-service:
     image: project_1-auth-service:dev
     build:

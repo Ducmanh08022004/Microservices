@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 function AddProduct() {
     const [formData, setFormData] = useState({
-        product_id: '',
+        productId: '',
         name: '',
         stock: 0,
         price: 0

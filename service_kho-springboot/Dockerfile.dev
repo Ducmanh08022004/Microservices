@@ -1,0 +1,11 @@
+FROM maven:3.9.9-eclipse-temurin-17
+
+WORKDIR /app
+
+# Prime dependency cache to speed up first startup in dev mode.
+COPY pom.xml ./
+RUN mvn -B -q -DskipTests dependency:go-offline
+
+EXPOSE 8080
+
+CMD ["mvn", "-Dspring-boot.run.fork=false", "spring-boot:run"]

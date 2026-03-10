@@ -19,7 +19,7 @@ function Product_Detail() {
         .then(res => setProduct(res.data))
         .catch(err => {
             console.log(err);
-            setError("Không thể tải dữ liệu. Bạn đã viết API GET /api/products/:id bên Node.js chưa?");
+            setError("Không thể tải dữ liệu. Hãy kiểm tra API GET /api/products/:id của service_kho-springboot.");
         });
     }, [id]);
 
@@ -41,7 +41,8 @@ function Product_Detail() {
                 alert("Rất tiếc, số lượng trong kho không đủ!");
             }
         } catch (error) {
-            alert("Lỗi gọi API kiểm tra kho. Có thể bạn chưa tạo API check-stock bên Node.js!");
+            const backendError = error?.response?.data?.error;
+            alert(backendError || "Lỗi gọi API kiểm tra kho. Hãy kiểm tra service_kho-springboot.");
         }
     };
 

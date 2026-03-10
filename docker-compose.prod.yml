@@ -1,9 +1,8 @@
 services:
-  # --- HẠ TẦNG  ---
   mysql_auth:
     image: mysql:8.0
     volumes:
-      - ./data/mysql_auth:/var/lib/mysql # Mount dữ liệu DB Auth ra ngoài
+      - ./data/mysql_auth:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: auth_db
@@ -15,10 +14,10 @@ services:
       retries: 5
 
   mysql_kho:
-    image: mysql:8.0    
+    image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password
     volumes:
-      - ./data/mysql_kho:/var/lib/mysql # Mount dữ liệu DB Kho ra ngoài
+      - ./data/mysql_kho:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: kho_db
@@ -32,7 +31,7 @@ services:
   redis_kho:
     image: redis:7.2
     volumes:
-      - ./data/redis_kho:/data # Mount dữ liệu Redis ra ngoài
+      - ./data/redis_kho:/data
     ports: ["6379:6379"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -43,8 +42,8 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     volumes:
-      - ./data/zookeeper_data:/var/lib/zookeeper/data # Lưu trạng thái Zookeeper
-      - ./data/zookeeper_log:/var/lib/zookeeper/log # Lưu log Zookeeper
+      - ./data/zookeeper_data:/var/lib/zookeeper/data
+      - ./data/zookeeper_log:/var/lib/zookeeper/log
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
 
@@ -53,7 +52,7 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./data/kafka_data:/var/lib/kafka/data # Lưu trữ các Topic và Message Kafka
+      - ./data/kafka_data:/var/lib/kafka/data
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -67,18 +66,11 @@ services:
       timeout: 10s
       retries: 5
 
-  # --- DỊCH VỤ ---
   auth-service:
-    image: project_1-auth-service:dev
-    build:
-      context: ./Auth_Service
-      dockerfile: Dockerfile.dev
-    command: mvn -Dspring-boot.run.fork=false spring-boot:run
+    image: project_1-auth-service:prod
+    build: ./Auth_Service
     ports:
       - "8080:8080"
-    volumes:
-      - ./Auth_Service:/app
-      - maven_repo:/root/.m2
     depends_on:
       mysql_auth:
         condition: service_healthy
@@ -89,35 +81,21 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   notification-service:
-    image: project_1-notification-service:dev
-    build:
-      context: ./Notification_Service
-      dockerfile: Dockerfile.dev
-    command: mvn -Dspring-boot.run.fork=false spring-boot:run
-    volumes:
-      - ./Notification_Service:/app
-      - maven_repo:/root/.m2
+    image: project_1-notification-service:prod
+    build: ./Notification_Service
     depends_on:
       kafka:
         condition: service_healthy
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   service_kho-springboot:
-    image: project_1-service-kho-springboot:dev
-    build:
-      context: ./service_kho-springboot
-      dockerfile: Dockerfile.dev
-    command: mvn -Dspring-boot.run.fork=false spring-boot:run
+    image: project_1-service-kho-springboot:prod
+    build: ./service_kho-springboot
     ports:
       - "3002:8080"
-    volumes:
-      - ./service_kho-springboot:/app
-      - maven_repo:/root/.m2
     depends_on:
       mysql_kho:
         condition: service_healthy
@@ -131,20 +109,10 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       REDIS_HOST: redis_kho
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   frontend:
     build: ./Frontend
-    volumes:
-      - ./Frontend:/app
-      - /app/node_modules
-    environment:
-      CHOKIDAR_USEPOLLING: "true"
-      WATCHPACK_POLLING: "true"
     ports: ["3000:3000"]
     depends_on:
       - auth-service
       - service_kho-springboot
-
-volumes:
-  maven_repo:
