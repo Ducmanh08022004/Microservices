@@ -15,4 +15,6 @@ public class EmailEvent {
     private String subject;
     @JsonProperty("content")
     private String content;
+    @JsonProperty("orderId")
+    private String orderId;
 }

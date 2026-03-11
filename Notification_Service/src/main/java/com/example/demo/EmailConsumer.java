@@ -18,9 +18,9 @@ public class EmailConsumer {
         try {
             emailService.sendEmail(event.getTo(), event.getSubject(), event.getContent());
             ack.acknowledge();
-            log.info("Email sent successfully to: {}", event.getTo());
+            log.info("Email sent successfully to: {}, orderId: {}", event.getTo(), event.getOrderId());
         } catch (Exception e) {
-            log.error("Failed to send email to {}: {}", event.getTo(), e.getMessage());
+            log.error("Failed to send email to {}, orderId: {}: {}", event.getTo(), event.getOrderId(), e.getMessage());
         }
     }
 }
