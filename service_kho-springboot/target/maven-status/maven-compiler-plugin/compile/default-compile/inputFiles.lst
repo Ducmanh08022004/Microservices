@@ -1,13 +1,17 @@
-/app/src/main/java/com/example/servicekho/ServiceKhoApplication.java
-/app/src/main/java/com/example/servicekho/controller/ProductController.java
-/app/src/main/java/com/example/servicekho/dto/AuthUser.java
-/app/src/main/java/com/example/servicekho/dto/CheckStockRequest.java
-/app/src/main/java/com/example/servicekho/dto/CheckStockResponse.java
-/app/src/main/java/com/example/servicekho/dto/CreateProductRequest.java
-/app/src/main/java/com/example/servicekho/dto/ProductInfoCache.java
-/app/src/main/java/com/example/servicekho/dto/UpdateStockRequest.java
-/app/src/main/java/com/example/servicekho/model/Product.java
-/app/src/main/java/com/example/servicekho/repository/ProductRepository.java
-/app/src/main/java/com/example/servicekho/service/JwtAuthService.java
-/app/src/main/java/com/example/servicekho/service/OrderKafkaConsumer.java
-/app/src/main/java/com/example/servicekho/service/ProductService.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\controller\ProductController.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\dto\AuthUser.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\dto\CheckStockRequest.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\dto\CheckStockResponse.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\dto\CreateProductRequest.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\dto\EmailEventPayload.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\dto\OrderEventPayload.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\dto\ProductInfoCache.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\dto\UpdateStockRequest.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\model\Product.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\repository\ProductRepository.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\service\EventIdempotencyService.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\service\JwtAuthService.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\service\OrderKafkaConsumer.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\service\ProductService.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\service\StockReservationService.java
+C:\Users\Truong Duc Manh\Documents\Manh\Project_1\service_kho-springboot\src\main\java\com\example\servicekho\ServiceKhoApplication.java
