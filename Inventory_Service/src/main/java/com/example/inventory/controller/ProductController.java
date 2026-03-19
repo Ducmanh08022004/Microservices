@@ -5,12 +5,12 @@ import com.example.inventory.model.Product;
 import com.example.inventory.service.JwtAuthService;
 import com.example.inventory.service.ProductCatalogService;
 import com.example.inventory.service.StockCheckService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -36,17 +36,21 @@ public class ProductController {
     }
 
     /**
-     * Lấy danh sách toàn bộ sản phẩm.
+     * Lấy danh sách sản phẩm theo trang cho giao diện dashboard.
      *
      * Input:
-     * - Không có tham số đầu vào từ request.
+     * - page: số trang bắt đầu từ 0.
+     * - size: số lượng sản phẩm mỗi trang.
      *
      * Output:
-     * - Danh sách Product.
+     * - Page<Product> gồm content và metadata phân trang.
      */
-    @GetMapping("/api/products")
-    public List<Product> getAllProducts() {
-        return productCatalogService.getAllProducts();
+    @GetMapping("/api/products/paged")
+    public Page<Product> getProductsPaged(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "24") int size
+    ) {
+        return productCatalogService.getProductsPage(page, size);
     }
 
     /**

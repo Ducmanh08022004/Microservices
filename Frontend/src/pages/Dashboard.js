@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Dùng để chuyển trang
 import { jwtDecode } from 'jwt-decode'; // Thư viện giải mã token
@@ -6,6 +6,13 @@ import { jwtDecode } from 'jwt-decode'; // Thư viện giải mã token
 function Dashboard() {
     const [products, setProducts] = useState([]);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [page, setPage] = useState(0);
+    const [size] = useState(24);
+    const [hasMore, setHasMore] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const observerTargetRef = useRef(null);
+    const requestInFlightRef = useRef(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -23,13 +30,71 @@ function Dashboard() {
             }
         }
 
-        // Gọi API lấy sản phẩm (Giữ nguyên logic của bạn)
-        axios.get('http://localhost:3002/api/products', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-        .then(res => setProducts(res.data))
-        .catch(err => console.log("Lỗi lấy dữ liệu hoặc chưa đăng nhập"));
+        // Reset danh sách khi vào trang lần đầu.
+        setProducts([]);
+        setPage(0);
+        setHasMore(true);
     }, []);
+
+    useEffect(() => {
+        if (!hasMore && page > 0) {
+            return;
+        }
+
+        const token = localStorage.getItem('accessToken');
+
+        setLoading(true);
+        setError('');
+        requestInFlightRef.current = true;
+
+        axios.get('http://localhost:3002/api/products/paged', {
+            headers: { 'Authorization': `Bearer ${token}` },
+            params: { page, size }
+        })
+        .then(res => {
+            const newItems = res.data.content || [];
+            const totalPages = res.data.totalPages || 0;
+
+            setProducts(prev => (page === 0 ? newItems : [...prev, ...newItems]));
+            setHasMore(page + 1 < totalPages);
+        })
+        .catch(() => {
+            setError('Không thể tải danh sách sản phẩm. Vui lòng thử lại.');
+            setHasMore(false);
+        })
+        .finally(() => {
+            requestInFlightRef.current = false;
+            setLoading(false);
+        });
+    }, [page, size]);
+
+    useEffect(() => {
+        const target = observerTargetRef.current;
+        if (!target) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const firstEntry = entries[0];
+                if (!firstEntry.isIntersecting) {
+                    return;
+                }
+                if (!hasMore || loading || requestInFlightRef.current) {
+                    return;
+                }
+                setPage(prev => prev + 1);
+            },
+            {
+                root: null,
+                rootMargin: '200px',
+                threshold: 0
+            }
+        );
+
+        observer.observe(target);
+        return () => observer.disconnect();
+    }, [hasMore, loading]);
 
     return (
         <div style={{ padding: '20px', position: 'relative' }}>
@@ -90,6 +155,17 @@ function Dashboard() {
                     </div>
                 ))}
             </div>
+
+            {loading && <p style={{ marginTop: '20px' }}>Đang tải thêm sản phẩm...</p>}
+            {error && <p style={{ marginTop: '20px', color: '#d9534f' }}>{error}</p>}
+
+            {!hasMore && products.length > 0 && (
+                <p style={{ marginTop: '24px', textAlign: 'center', color: '#666' }}>
+                    Đã tải hết sản phẩm.
+                </p>
+            )}
+
+            <div ref={observerTargetRef} style={{ height: '1px' }} />
         </div>
     );
 }

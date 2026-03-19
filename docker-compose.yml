@@ -94,7 +94,7 @@ services:
 
   # --- DỊCH VỤ ---
   auth-service:
-    image: project_1-auth-service:dev
+    image: microservices/auth-service:dev
     container_name: auth_service
     build:
       context: ./Auth_Service
@@ -114,7 +114,7 @@ services:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   notification-service:
-    image: project_1-notification-service:dev
+    image: microservices/notification-service:dev
     container_name: notification_service
     build:
       context: ./Notification_Service
@@ -127,7 +127,7 @@ services:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   inventory-service:
-    image: project_1-inventory-service:dev
+    image: microservices/inventory-service:dev
     container_name: inventory_service
     build:
       context: ./Inventory_Service
@@ -150,7 +150,7 @@ services:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   order-service:
-    image: project_1-order-service:dev
+    image: microservices/order-service:dev
     container_name: order_service
     build:
       context: ./Order_Service
@@ -173,6 +173,7 @@ services:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   frontend:
+    image: microservices/frontend:dev
     build:
       context: ./Frontend
       dockerfile: Dockerfile.dev

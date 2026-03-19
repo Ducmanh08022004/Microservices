@@ -3,11 +3,14 @@ package com.example.inventory.service;
 import com.example.inventory.dto.CreateProductRequest;
 import com.example.inventory.model.Product;
 import com.example.inventory.repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,13 +33,20 @@ public class ProductCatalogService {
     }
 
     /**
-     * Lấy toàn bộ sản phẩm từ DB.
+     * Lấy sản phẩm theo trang để tối ưu hiệu năng khi danh sách lớn.
+     *
+     * Input:
+     * - page: số trang bắt đầu từ 0.
+     * - size: số lượng phần tử mỗi trang.
      *
      * Output:
-     * - Danh sách Product.
+     * - Page<Product> bao gồm danh sách theo trang và metadata phân trang.
      */
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public Page<Product> getProductsPage(int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "id"));
+        return productRepository.findAll(pageable);
     }
 
     /**
