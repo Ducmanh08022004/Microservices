@@ -1,0 +1,8 @@
+USE auth_db;
+
+CREATE TABLE IF NOT EXISTS user (
+    username VARCHAR(255) PRIMARY KEY,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(50),
+    email VARCHAR(255) NOT NULL UNIQUE
+);

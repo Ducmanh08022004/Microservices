@@ -1,0 +1,10 @@
+Inventory_Service/.env
+Frontend/node_modules/
+backup.ps1
+backup_20260306_095555.zip
+data
+
+# Temporary inventory build artifacts
+_tmp_inventory_app.jar
+_tmp_inventory_app.zip
+_tmp_inventory_jar/
