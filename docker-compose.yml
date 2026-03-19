@@ -111,7 +111,6 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   notification-service:
     image: microservices/notification-service:dev
@@ -124,7 +123,6 @@ services:
         condition: service_healthy
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   inventory-service:
     image: microservices/inventory-service:dev
@@ -147,7 +145,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       REDIS_HOST: redis_kho
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   order-service:
     image: microservices/order-service:dev
@@ -170,7 +167,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       INVENTORY_BASE_URL: http://inventory-service:8080
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   frontend:
     image: microservices/frontend:dev

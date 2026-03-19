@@ -5,16 +5,15 @@ WORKDIR /build
 
 # Copy pom
 COPY pom.xml .
-RUN mvn -q -B dependency:go-offline
 
 # Copy source
 COPY src ./src
 
 # Build jar
-RUN mvn clean package -DskipTests
+RUN mvn -B clean package -DskipTests -Dmaven.wagon.http.retryHandler.count=5
 
 # Runtime stage
-FROM eclipse-temurin:21-jre-alpine
+FROM gcr.io/distroless/java21-debian12:nonroot
 
 WORKDIR /app
 
@@ -23,4 +22,4 @@ COPY --from=builder /build/target/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java","-jar","/app/app.jar"]
