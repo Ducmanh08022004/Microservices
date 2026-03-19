@@ -8,9 +8,11 @@ CREATE TABLE IF NOT EXISTS products (
     price DOUBLE,
     createdAt DATETIME,
     updatedAt DATETIME,
+
+    -- UNIQUE
     UNIQUE KEY idx_product_id (product_id)
 );
 
-
+-- INDEX QUAN TRỌNG (phục vụ reserve + update stock)
 CREATE INDEX idx_product_stock
 ON products(product_id, stock);
