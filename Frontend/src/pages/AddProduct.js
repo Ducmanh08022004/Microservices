@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_GATEWAY } from '../config';
 
 function AddProduct() {
     const [formData, setFormData] = useState({
@@ -15,7 +16,7 @@ function AddProduct() {
         e.preventDefault();
         const token = localStorage.getItem('accessToken');
         try {
-            await axios.post('http://localhost:3002/admin/products', formData, {
+            await axios.post(`${API_GATEWAY}/admin/products`, formData, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             alert("Thêm sản phẩm thành công!");

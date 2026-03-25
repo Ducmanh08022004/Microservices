@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { API_GATEWAY } from '../config';
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -11,7 +12,7 @@ function Login() {
         setLoading(true);
         try {
             // Gọi sang Service Java (Auth) - Cổng 8080
-            const response = await axios.post('http://localhost:8080/auth/login', { username, password });
+            const response = await axios.post(`${API_GATEWAY}/auth/login`, { username, password });
             const token = response.data;
             
             // Cất "chiếc vé" vào localStorage

@@ -168,6 +168,24 @@ services:
       INVENTORY_BASE_URL: http://inventory-service:8080
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
+  api-gateway:
+    image: microservices/api-gateway:dev
+    container_name: api_gateway
+    build:
+      context: ./Gateway_Service
+      dockerfile: Dockerfile
+    ports:
+      - "3001:8085"
+    depends_on:
+      auth-service:
+        condition: service_started
+      inventory-service:
+        condition: service_started
+      order-service:
+        condition: service_started
+    environment:
+      JWT_SECRET: project_microservices_myscret_token_token_1234567789
+
   frontend:
     image: microservices/frontend:dev
     build:
@@ -180,11 +198,10 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: "true"
+      REACT_APP_API_GATEWAY_URL: http://localhost:3001
     ports: ["3000:3000"]
     depends_on:
-      - auth-service
-      - inventory-service
-      - order-service
+      - api-gateway
 
 volumes:
   maven_repo:

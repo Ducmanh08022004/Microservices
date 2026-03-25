@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_GATEWAY } from '../config';
 
 function Product_Detail() {
     const { id } = useParams();
@@ -13,7 +14,7 @@ function Product_Detail() {
         const token = localStorage.getItem('accessToken');
         
         // Gọi API lấy chi tiết 1 sản phẩm
-        axios.get(`http://localhost:3002/api/products/${id}`, {
+        axios.get(`${API_GATEWAY}/api/products/${id}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => setProduct(res.data))
@@ -27,7 +28,7 @@ function Product_Detail() {
         const token = localStorage.getItem('accessToken');
         try {
             // Gọi API tạo đơn hàng tại Order_Service (service này sẽ điều phối kiểm tra kho)
-            const orderRes = await axios.post(`http://localhost:3003/api/orders`, {
+            const orderRes = await axios.post(`${API_GATEWAY}/api/orders`, {
                 product_id: id,
                 quantity: Number(quantity)
             }, { 

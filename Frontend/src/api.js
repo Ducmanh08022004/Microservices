@@ -1,9 +1,9 @@
 import axios from 'axios';
+import { API_GATEWAY } from './config';
 
-const API_AUTH = "http://localhost:8080/auth"; // Cổng của Java Spring Boot
+const API_AUTH = `${API_GATEWAY}/auth`;
 
 export const login = async (username, password) => {
-    // Gọi API login mà bạn vừa gửi code Java lúc nãy
     const response = await axios.post(`${API_AUTH}/login`, { username, password });
-    return response.data; // Trả về chuỗi Token
+    return response.data; 
 };

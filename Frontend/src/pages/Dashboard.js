@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Dùng để chuyển trang
 import { jwtDecode } from 'jwt-decode'; // Thư viện giải mã token
+import { API_GATEWAY } from '../config';
 
 function Dashboard() {
     const [products, setProducts] = useState([]);
@@ -47,7 +48,7 @@ function Dashboard() {
         setError('');
         requestInFlightRef.current = true;
 
-        axios.get('http://localhost:3002/api/products/paged', {
+        axios.get(`${API_GATEWAY}/api/products/paged`, {
             headers: { 'Authorization': `Bearer ${token}` },
             params: { page, size }
         })

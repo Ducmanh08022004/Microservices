@@ -3,7 +3,6 @@ package com.example.order.controller;
 import com.example.order.dto.AuthUser;
 import com.example.order.dto.CreateOrderRequest;
 import com.example.order.dto.OrderResponse;
-import com.example.order.service.JwtAuthService;
 import com.example.order.service.OrderApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,23 +14,21 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = "*")
 public class OrderController {
 
     private final OrderApplicationService orderApplicationService;
-    private final JwtAuthService jwtAuthService;
 
-    public OrderController(OrderApplicationService orderApplicationService, JwtAuthService jwtAuthService) {
+    public OrderController(OrderApplicationService orderApplicationService) {
         this.orderApplicationService = orderApplicationService;
-        this.jwtAuthService = jwtAuthService;
     }
 
     @PostMapping
     public ResponseEntity<?> createOrder(
             @RequestBody CreateOrderRequest request,
-            @RequestHeader(value = "Authorization", required = false) String authorization
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestHeader(value = "X-User-Email", required = false) String xUserEmail
     ) {
-        Optional<AuthUser> authUser = jwtAuthService.parseBearerToken(authorization);
+        Optional<AuthUser> authUser = resolveAuthUserFromGatewayHeaders(xUserId, xUserEmail);
         if (authUser.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Bạn chưa đăng nhập!"));
         }
@@ -55,5 +52,19 @@ public class OrderController {
         return order.<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("error", "Không tìm thấy đơn hàng")));
+    }
+
+    private Optional<AuthUser> resolveAuthUserFromGatewayHeaders(String xUserId, String xUserEmail) {
+        if (xUserId == null || xUserId.isBlank()) {
+            return Optional.empty();
+        }
+
+        try {
+            Long userId = Long.valueOf(xUserId);
+            String email = xUserEmail == null ? "" : xUserEmail;
+            return Optional.of(new AuthUser(userId, email));
+        } catch (NumberFormatException ex) {
+            return Optional.empty();
+        }
     }
 }

@@ -2,7 +2,6 @@ package com.example.inventory.controller;
 
 import com.example.inventory.dto.*;
 import com.example.inventory.model.Product;
-import com.example.inventory.service.JwtAuthService;
 import com.example.inventory.service.ProductCatalogService;
 import com.example.inventory.service.StockCheckService;
 import org.springframework.data.domain.Page;
@@ -15,7 +14,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "*")
 /**
  * Controller cung cấp API cho nghiệp vụ sản phẩm và kiểm tra tồn kho.
  */
@@ -23,16 +21,13 @@ public class ProductController {
 
     private final ProductCatalogService productCatalogService;
     private final StockCheckService stockCheckService;
-    private final JwtAuthService jwtAuthService;
 
     public ProductController(
             ProductCatalogService productCatalogService,
-            StockCheckService stockCheckService,
-            JwtAuthService jwtAuthService
+            StockCheckService stockCheckService
     ) {
         this.productCatalogService = productCatalogService;
         this.stockCheckService = stockCheckService;
-        this.jwtAuthService = jwtAuthService;
     }
 
     /**
@@ -76,19 +71,23 @@ public class ProductController {
      *
      * Input:
      * - request: thông tin tạo sản phẩm.
-     * - authorization: Bearer token trong header Authorization.
+     * - xUserId: header X-User-Id do API Gateway đính kèm sau khi xác thực JWT.
      *
      * Output:
      * - 201 + dữ liệu sản phẩm mới tạo.
-     * - 401 nếu token không hợp lệ hoặc thiếu.
+     * - 401 nếu thiếu thông tin người dùng từ Gateway.
      */
     @PostMapping("/admin/products")
     public ResponseEntity<?> createProduct(
             @RequestBody CreateProductRequest request,
-            @RequestHeader(value = "Authorization", required = false) String authorization
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole
     ) {
-        if (jwtAuthService.parseBearerToken(authorization).isEmpty()) {
+        if (xUserId == null || xUserId.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Bạn chưa đăng nhập!"));
+        }
+        if (xUserRole == null || !xUserRole.equalsIgnoreCase("ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Bạn không có quyền admin!"));
         }
 
         Product created = productCatalogService.createProduct(request);
@@ -112,8 +111,16 @@ public class ProductController {
     @PutMapping("/admin/products/{product_id}")
     public ResponseEntity<?> updateStock(
             @PathVariable("product_id") String productId,
-            @RequestBody UpdateStockRequest request
+            @RequestBody UpdateStockRequest request,
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole
     ) {
+        if (xUserId == null || xUserId.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Bạn chưa đăng nhập!"));
+        }
+        if (xUserRole == null || !xUserRole.equalsIgnoreCase("ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Bạn không có quyền admin!"));
+        }
         Optional<Product> updated = productCatalogService.updateStock(productId, request.getStock());
         if (updated.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Không thấy sản phẩm"));
