@@ -54,6 +54,23 @@ public class OrderController {
                         .body(Map.of("error", "Không tìm thấy đơn hàng")));
     }
 
+    @GetMapping
+    public ResponseEntity<?> listMyOrders(
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId
+    ) {
+        if (xUserId == null || xUserId.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Bạn chưa đăng nhập!"));
+        }
+
+        try {
+            Long userId = Long.valueOf(xUserId);
+            java.util.List<OrderResponse> list = orderApplicationService.getOrdersByUserId(userId);
+            return ResponseEntity.ok(list);
+        } catch (NumberFormatException ex) {
+            return ResponseEntity.badRequest().body(Map.of("error", "X-User-Id không hợp lệ"));
+        }
+    }
+
     private Optional<AuthUser> resolveAuthUserFromGatewayHeaders(String xUserId, String xUserEmail) {
         if (xUserId == null || xUserId.isBlank()) {
             return Optional.empty();

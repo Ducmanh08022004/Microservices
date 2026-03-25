@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
+import Register from './Register';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showRegister, setShowRegister] = useState(false);
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -18,13 +22,22 @@ function Login() {
             // Cất "chiếc vé" vào localStorage
             localStorage.setItem('accessToken', token);
             alert("Đăng nhập thành công!");
-            window.location.href = "/dashboard"; 
+            navigate('/dashboard');
         } catch (err) {
             alert("Sai tài khoản hoặc mật khẩu!");
         } finally {
             setLoading(false);
         }
     };
+
+    if (showRegister) {
+        return (
+            <div>
+                <button onClick={() => setShowRegister(false)} style={{ margin: 10 }}>Quay lại Đăng nhập</button>
+                <Register />
+            </div>
+        );
+    }
 
     return (
         <div className="login-wrap">
@@ -52,6 +65,9 @@ function Login() {
                         {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                     </button>
                 </form>
+                <div style={{ marginTop: 12 }}>
+                    <button onClick={() => setShowRegister(true)} style={{ background: 'transparent', border: 'none', color: '#0a58ca', cursor: 'pointer' }}>Chưa có tài khoản? Đăng ký</button>
+                </div>
             </div>
         </div>
     );

@@ -65,6 +65,12 @@ public class OrderApplicationService {
         return orderRepository.findByOrderId(orderId).map(this::toOrderResponse);
     }
 
+    public java.util.List<OrderResponse> getOrdersByUserId(Long userId) {
+        return orderRepository.findAllByUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(this::toOrderResponse)
+                .toList();
+    }
+
     private void validateRequest(CreateOrderRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Request không hợp lệ");
