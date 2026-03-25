@@ -1,8 +1,0 @@
-FROM node:18-alpine
-
-WORKDIR /app
-
-EXPOSE 3000
-
-# Keep dev image minimal; dependencies are installed at runtime in mounted workspace.
-CMD ["sh", "-c", "npm install --no-audit --no-fund ; npm start"]
