@@ -26,40 +26,44 @@ function AddProduct() {
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
-            <h2>Thêm Sản Phẩm Mới</h2>
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Mã Sản Phẩm:</label><br/>
-                    <input type="text" required style={{ width: '100%' }}
-                        value={formData.product_id}
-                        onChange={(e) => setFormData({...formData, product_id: e.target.value})} />
-                </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Tên Sản Phẩm:</label><br/>
-                    <input type="text" required style={{ width: '100%' }}
-                        value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})} />
-                </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Số lượng:</label><br/>
-                    <input type="number" required style={{ width: '100%' }}
-                        value={formData.stock}
-                        onChange={(e) => setFormData({...formData, stock: Number(e.target.value)})} />
-                </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Giá:</label><br/>
-                    <input type="number" required style={{ width: '100%' }}
-                        value={formData.price}
-                        onChange={(e) => setFormData({...formData, price: Number(e.target.value)})} />
-                </div>
-                <button type="submit" style={{ padding: '10px 20px', backgroundColor: 'blue', color: 'white', border: 'none', cursor: 'pointer' }}>
-                    Lưu sản phẩm
-                </button>
-                <button type="button" onClick={() => navigate('/dashboard')} style={{ marginLeft: '10px' }}>
-                    Hủy
-                </button>
-            </form>
+        <div className="page-shell">
+            <div className="card form-wrap">
+                <h2 className="form-title">Thêm Sản Phẩm Mới</h2>
+                <form className="form-grid" onSubmit={handleSubmit}>
+                    <div className="form-field">
+                        <label>Mã Sản Phẩm:</label>
+                        <input className="input" type="text" required
+                            value={formData.product_id}
+                            onChange={(e) => setFormData({...formData, product_id: e.target.value})} />
+                    </div>
+                    <div className="form-field">
+                        <label>Tên Sản Phẩm:</label>
+                        <input className="input" type="text" required
+                            value={formData.name}
+                            onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                    </div>
+                    <div className="form-field">
+                        <label>Số lượng:</label>
+                        <input className="input" type="number" required
+                            value={formData.stock}
+                            onChange={(e) => setFormData({...formData, stock: Number(e.target.value)})} />
+                    </div>
+                    <div className="form-field">
+                        <label>Giá:</label>
+                        <input className="input" type="number" required
+                            value={formData.price}
+                            onChange={(e) => setFormData({...formData, price: Number(e.target.value)})} />
+                    </div>
+                    <div className="form-actions">
+                        <button className="btn btn-primary" type="submit">
+                            Lưu sản phẩm
+                        </button>
+                        <button className="btn btn-ghost" type="button" onClick={() => navigate('/dashboard')}>
+                            Hủy
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }

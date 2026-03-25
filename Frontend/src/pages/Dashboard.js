@@ -97,75 +97,52 @@ function Dashboard() {
     }, [hasMore, loading]);
 
     return (
-        <div style={{ padding: '20px', position: 'relative' }}>
-            <h1>Quản Lý Kho (Service Node.js)</h1>
-
-            {/* Nút thêm sản phẩm chỉ hiện nếu là ADMIN */}
-            {isAdmin && (
-                <button 
-                    onClick={() => navigate('/admin/add-product')}
-                    style={{
-                        position: 'absolute',
-                        top: '20px',
-                        right: '20px',
-                        padding: '10px 20px',
-                        backgroundColor: '#28a745',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    + Thêm sản phẩm mới
-                </button>
-            )}
-
-            {/* GIAO DIỆN DẠNG THẺ (GRID) */}
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
-                gap: '20px', 
-                marginTop: '30px' 
-            }}>
-                {products.map(p => (
-                    <div 
-                        key={p.product_id} 
-                        onClick={() => navigate(`/product/${p.product_id}`)}
-                        style={{
-                            border: '1px solid #ddd',
-                            borderRadius: '8px',
-                            padding: '15px',
-                            cursor: 'pointer',
-                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                            backgroundColor: '#fff',
-                            transition: 'transform 0.2s'
-                        }}
-                        // Hiệu ứng hover nhẹ
-                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                    >
-                        <h3 style={{ marginTop: 0 }}>{p.name}</h3>
-                        <p style={{ color: '#555', marginBottom: '5px' }}>Mã SP: <b>{p.product_id}</b></p>
-                        <p style={{ color: '#d9534f', fontWeight: 'bold', fontSize: '18px', marginBottom: '5px' }}>
-                            Giá: {p.price} VNĐ
-                        </p>
-                        <p style={{ color: '#0275d8', marginBottom: 0 }}>
-                            Còn lại: {p.stock}
-                        </p>
+        <div className="page-shell">
+            <div className="dashboard-wrap">
+                <div className="dashboard-head">
+                    <div>
+                        <h1 className="dashboard-title">Quản Lý Kho</h1>
+                        <p className="dashboard-subtitle">Service Node.js | Danh sách sản phẩm theo trang</p>
                     </div>
-                ))}
+
+                    {/* Nút thêm sản phẩm chỉ hiện nếu là ADMIN */}
+                    {isAdmin && (
+                        <button
+                            className="btn btn-accent"
+                            onClick={() => navigate('/admin/add-product')}
+                        >
+                            + Thêm sản phẩm mới
+                        </button>
+                    )}
+                </div>
+
+                {/* GIAO DIỆN DẠNG THẺ (GRID) */}
+                <div className="product-grid">
+                    {products.map(p => (
+                        <div
+                            key={p.product_id}
+                            className="product-card"
+                            onClick={() => navigate(`/product/${p.product_id}`)}
+                        >
+                            <h3 className="product-name">{p.name}</h3>
+                            <p className="product-id">Mã SP: <b>{p.product_id}</b></p>
+                            <p className="product-price">Giá: {p.price} VNĐ</p>
+                            <p className="product-stock">Còn lại: {p.stock}</p>
+                        </div>
+                    ))}
+                </div>
+
+                {loading && <p className="status-text">Đang tải thêm sản phẩm...</p>}
+                {error && <p className="status-text status-error">{error}</p>}
+
+                {!hasMore && products.length > 0 && (
+                    <p className="status-text status-muted">
+                        Đã tải hết sản phẩm.
+                    </p>
+                )}
+
+                <div ref={observerTargetRef} style={{ height: '1px' }} />
             </div>
-
-            {loading && <p style={{ marginTop: '20px' }}>Đang tải thêm sản phẩm...</p>}
-            {error && <p style={{ marginTop: '20px', color: '#d9534f' }}>{error}</p>}
-
-            {!hasMore && products.length > 0 && (
-                <p style={{ marginTop: '24px', textAlign: 'center', color: '#666' }}>
-                    Đã tải hết sản phẩm.
-                </p>
-            )}
-
-            <div ref={observerTargetRef} style={{ height: '1px' }} />
         </div>
     );
 }
