@@ -1,3 +1,5 @@
+USE payment_db;
+
 CREATE TABLE IF NOT EXISTS payments (
     id          BIGINT AUTO_INCREMENT PRIMARY KEY,
     payment_id  VARCHAR(255) NOT NULL UNIQUE,

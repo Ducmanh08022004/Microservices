@@ -28,7 +28,7 @@ public class ImageUploadController {
     @PostMapping("/upload")
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
-            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+            Map<String, Object> uploadResult = (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
                     "folder", "products" // Lưu vào folder products trên Cloudinary
             ));
             

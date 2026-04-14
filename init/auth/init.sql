@@ -2,12 +2,18 @@ USE auth_db;
 
 CREATE TABLE IF NOT EXISTS user (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255),
-    password VARCHAR(255),
-    role VARCHAR(50),
-    email VARCHAR(255),
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    is_enabled TINYINT(1) DEFAULT 1,
 
     -- INDEX
     UNIQUE KEY idx_username (username),
     UNIQUE KEY idx_email (email)
 );
+
+-- Thêm user Admin mặc định nếu chưa có (mật khẩu là 'admin' đã được mã hóa BCrypt hoặc dùng plain if not using security, but project uses BCrypt)
+-- Lưu ý: Mật khẩu '$2a$10$8.UnVuG9HHgffUDAlk8q6uy5akLPNndzqBzv6v8.6bUe6n9jW5S.' là 'admin123'
+INSERT IGNORE INTO user (username, password, role, email, is_enabled) 
+VALUES ('admin', '$2a$10$8.UnVuG9HHgffUDAlk8q6uy5akLPNndzqBzv6v8.6bUe6n9jW5S.', 'ADMIN', 'admin@example.com', 1);

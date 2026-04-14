@@ -49,7 +49,7 @@ public class CreateProductRequest {
     private String imageUrl;
 
     private String description;
-    private String category;
+    private Long categoryId;
     private String brand;
     private String sku;
 
@@ -78,12 +78,12 @@ public class CreateProductRequest {
         this.description = description;
     }
 
-    public String getCategory() {
-        return category;
+    public Long getCategoryId() {
+        return categoryId;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
     public String getBrand() {

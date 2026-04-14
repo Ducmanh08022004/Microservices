@@ -2,6 +2,7 @@ package com.example.inventory.service;
 
 import com.example.inventory.dto.CreateProductRequest;
 import com.example.inventory.model.Product;
+import com.example.inventory.repository.CategoryRepository;
 import com.example.inventory.repository.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,13 +23,16 @@ public class ProductCatalogService {
     private static final Duration CACHE_TTL = Duration.ofHours(1);
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
     private final StockReservationService stockReservationService;
 
     public ProductCatalogService(
             ProductRepository productRepository,
+            CategoryRepository categoryRepository,
             StockReservationService stockReservationService
     ) {
         this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
         this.stockReservationService = stockReservationService;
     }
 
@@ -81,7 +85,9 @@ public class ProductCatalogService {
         
         // Cập nhật các trường mới
         product.setDescription(request.getDescription());
-        product.setCategory(request.getCategory());
+        if (request.getCategoryId() != null) {
+            categoryRepository.findById(request.getCategoryId()).ifPresent(product::setCategory);
+        }
         product.setBrand(request.getBrand());
         product.setSku(request.getSku());
         product.setDiscountPrice(request.getDiscountPrice());
@@ -115,5 +121,35 @@ public class ProductCatalogService {
 
         stockReservationService.setStock(productId, stock, CACHE_TTL);
         return Optional.of(updated);
+    }
+
+    public Optional<Product> updateProduct(String productId, com.example.inventory.dto.UpdateProductRequest request) {
+        Optional<Product> optionalProduct = productRepository.findByProductId(productId);
+        if (optionalProduct.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Product product = optionalProduct.get();
+        if (request.getName() != null) product.setName(request.getName());
+        if (request.getStock() != null) {
+            product.setStock(request.getStock());
+            stockReservationService.setStock(productId, request.getStock(), CACHE_TTL);
+        }
+        if (request.getPrice() != null) product.setPrice(request.getPrice());
+        if (request.getImageUrl() != null) product.setImageUrl(request.getImageUrl());
+        if (request.getDescription() != null) product.setDescription(request.getDescription());
+        if (request.getCategoryId() != null) {
+            categoryRepository.findById(request.getCategoryId()).ifPresent(product::setCategory);
+        }
+        if (request.getBrand() != null) product.setBrand(request.getBrand());
+        if (request.getSku() != null) product.setSku(request.getSku());
+        if (request.getDiscountPrice() != null) product.setDiscountPrice(request.getDiscountPrice());
+        if (request.getStatus() != null) product.setStatus(request.getStatus());
+
+        return Optional.of(productRepository.save(product));
+    }
+
+    public void deleteProduct(String productId) {
+        productRepository.findByProductId(productId).ifPresent(productRepository::delete);
     }
 }

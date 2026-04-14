@@ -6,6 +6,7 @@ import com.example.order.dto.OrderResponse;
 import com.example.order.service.OrderApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -69,6 +70,46 @@ public class OrderController {
         } catch (NumberFormatException ex) {
             return ResponseEntity.badRequest().body(Map.of("error", "X-User-Id không hợp lệ"));
         }
+    }
+
+    @GetMapping("/admin")
+    public ResponseEntity<?> listAllOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole
+    ) {
+        if (!"ADMIN".equalsIgnoreCase(xUserRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Bạn không có quyền admin!"));
+        }
+        return ResponseEntity.ok(orderApplicationService.getAllOrders(PageRequest.of(page, size)));
+    }
+
+    @PutMapping("/admin/{orderId}/status")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable String orderId,
+            @RequestBody Map<String, String> body,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole
+    ) {
+        if (!"ADMIN".equalsIgnoreCase(xUserRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Bạn không có quyền admin!"));
+        }
+        String status = body.get("status");
+        if (status == null || status.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Status không hợp lệ"));
+        }
+        Optional<OrderResponse> updated = orderApplicationService.updateOrderStatus(orderId, status);
+        return updated.<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Không thấy đơn hàng")));
+    }
+
+    @GetMapping("/admin/stats")
+    public ResponseEntity<?> getStats(
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole
+    ) {
+        if (!"ADMIN".equalsIgnoreCase(xUserRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Bạn không có quyền admin!"));
+        }
+        return ResponseEntity.ok(orderApplicationService.getAdminStats());
     }
 
     private Optional<AuthUser> resolveAuthUserFromGatewayHeaders(String xUserId, String xUserEmail) {

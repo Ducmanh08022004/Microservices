@@ -132,6 +132,32 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/admin/products/full/{product_id}")
+    public ResponseEntity<?> updateProductFull(
+            @PathVariable("product_id") String productId,
+            @RequestBody UpdateProductRequest request,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole
+    ) {
+        if (xUserRole == null || !xUserRole.equalsIgnoreCase("ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Bạn không có quyền admin!"));
+        }
+        Optional<Product> updated = productCatalogService.updateProduct(productId, request);
+        return updated.<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Không thấy sản phẩm")));
+    }
+
+    @DeleteMapping("/admin/products/{product_id}")
+    public ResponseEntity<?> deleteProduct(
+            @PathVariable("product_id") String productId,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole
+    ) {
+        if (xUserRole == null || !xUserRole.equalsIgnoreCase("ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Bạn không có quyền admin!"));
+        }
+        productCatalogService.deleteProduct(productId);
+        return ResponseEntity.ok(Map.of("message", "Xóa thành công"));
+    }
+
     /**
      * Kiểm tra và giữ chỗ tồn kho cho yêu cầu đặt hàng.
      *

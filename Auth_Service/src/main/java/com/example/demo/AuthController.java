@@ -6,10 +6,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -65,6 +68,52 @@ public class AuthController {
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role("USER")
+                .isEnabled(true)
                 .build());
+    }
+
+    @GetMapping("/admin/users")
+    public Page<User> listUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+        return userRepository.findAll(PageRequest.of(page, size));
+    }
+
+    @PutMapping("/admin/users/{id}/toggle-status")
+    public ResponseEntity<?> toggleStatus(@PathVariable Integer id) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setIsEnabled(!user.getIsEnabled());
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "Status updated", "isEnabled", user.getIsEnabled()));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/admin/stats")
+    public ResponseEntity<?> getStats(
+            @RequestHeader(value = "X-User-Role", required = false) String role
+    ) {
+        if (!"ADMIN".equalsIgnoreCase(role)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
+        return ResponseEntity.ok(Map.of("total_users", userRepository.count()));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(Authentication auth, @RequestBody Map<String, String> updates) {
+        String username = auth.getName();
+        return userRepository.findByUsername(username).map(user -> {
+            if (updates.containsKey("email")) {
+                user.setEmail(updates.get("email"));
+            }
+            if (updates.containsKey("password") && !updates.get("password").isBlank()) {
+                user.setPassword(passwordEncoder.encode(updates.get("password")));
+            }
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "Cập nhật thành công!"));
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

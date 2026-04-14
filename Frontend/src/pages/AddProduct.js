@@ -9,7 +9,12 @@ function AddProduct() {
         name: '',
         stock: 0,
         price: 0,
-        image_url: ''
+        image_url: '',
+        description: '',
+        category: '',
+        brand: '',
+        sku: '',
+        discount_price: null
     });
     const [uploadingImage, setUploadingImage] = useState(false);
     const navigate = useNavigate();
@@ -83,7 +88,7 @@ function AddProduct() {
                     </div>
 
                     <div className="form-field">
-                        <label>Mã Sản Phẩm:</label>
+                        <label>Mã Sản Phẩm (ID):</label>
                         <input className="input" type="text" required
                             value={formData.product_id}
                             onChange={(e) => setFormData({...formData, product_id: e.target.value})} />
@@ -95,16 +100,49 @@ function AddProduct() {
                             onChange={(e) => setFormData({...formData, name: e.target.value})} />
                     </div>
                     <div className="form-field">
-                        <label>Số lượng:</label>
+                        <label>Mã SKU:</label>
+                        <input className="input" type="text"
+                            placeholder="e.g. LAP-DELL-5530"
+                            value={formData.sku}
+                            onChange={(e) => setFormData({...formData, sku: e.target.value})} />
+                    </div>
+                    <div className="form-field">
+                        <label>Thương hiệu:</label>
+                        <input className="input" type="text"
+                            value={formData.brand}
+                            onChange={(e) => setFormData({...formData, brand: e.target.value})} />
+                    </div>
+                    <div className="form-field">
+                        <label>Danh mục:</label>
+                        <input className="input" type="text"
+                            value={formData.category}
+                            onChange={(e) => setFormData({...formData, category: e.target.value})} />
+                    </div>
+                    <div className="form-field" style={{ gridColumn: '1 / -1' }}>
+                        <label>Mô tả sản phẩm:</label>
+                        <textarea className="input" rows="4"
+                            style={{ resize: 'vertical' }}
+                            value={formData.description}
+                            onChange={(e) => setFormData({...formData, description: e.target.value})} />
+                    </div>
+                    <div className="form-field">
+                        <label>Số lượng kho:</label>
                         <input className="input" type="number" required
                             value={formData.stock}
                             onChange={(e) => setFormData({...formData, stock: Number(e.target.value)})} />
                     </div>
                     <div className="form-field">
-                        <label>Giá:</label>
+                        <label>Giá niêm yết (VNĐ):</label>
                         <input className="input" type="number" required
                             value={formData.price}
                             onChange={(e) => setFormData({...formData, price: Number(e.target.value)})} />
+                    </div>
+                    <div className="form-field">
+                        <label>Giá khuyến mãi (VNĐ):</label>
+                        <input className="input" type="number"
+                            value={formData.discount_price}
+                            placeholder="Để trống nếu không giảm giá"
+                            onChange={(e) => setFormData({...formData, discount_price: e.target.value ? Number(e.target.value) : null})} />
                     </div>
                     <div className="form-actions" style={{ gridColumn: '1 / -1' }}>
                         <button className="btn btn-primary" type="submit" disabled={uploadingImage}>

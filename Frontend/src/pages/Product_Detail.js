@@ -67,11 +67,45 @@ function Product_Detail() {
                         <span style={{ fontSize: 40, opacity: 0.5 }}>🛍️</span>
                     </div>
                 )}
+                <div className="product-meta" style={{ marginBottom: 12 }}>
+                    {product.brand && <span className="badge badge-brand">{product.brand}</span>}
+                    {product.category && <span className="badge badge-category">{product.category}</span>}
+                </div>
+                
                 <h2>{product.name}</h2>
+                
+                <div className="product-rating">
+                    <span>★</span> {product.rating || 0}
+                    <span className="review-count">({product.num_reviews || 0} đánh giá)</span>
+                </div>
+
                 <hr className="detail-divider" />
-                <p><strong>Mã sản phẩm:</strong> {product.product_id}</p>
-                <p className="detail-price">Giá: {product.price} VNĐ</p>
-                <p><strong>Số lượng hiện có trong kho:</strong> {product.stock}</p>
+                
+                <div className="detail-price">
+                    {product.discount_price ? (
+                        <>
+                            <span>{product.discount_price.toLocaleString()} VNĐ</span>
+                            <span className="price-original">{product.price.toLocaleString()} VNĐ</span>
+                        </>
+                    ) : (
+                        <span>{product.price.toLocaleString()} VNĐ</span>
+                    )}
+                </div>
+
+                <div className="product-description">
+                    {product.description || "Chưa có mô tả cho sản phẩm này."}
+                </div>
+
+                <div style={{ marginTop: 24, fontSize: '0.95rem' }}>
+                    <p><strong>Mã SKU:</strong> <span className="sku-text">{product.sku || 'N/A'}</span></p>
+                    <p><strong>Mã hệ thống:</strong> {product.product_id}</p>
+                    <p>
+                        <strong>Trạng thái:</strong> 
+                        <span style={{ marginLeft: 8, color: product.stock > 0 ? '#166534' : '#b91c1c', fontWeight: 600 }}>
+                            {product.stock > 0 ? "Còn hàng" : "Hết hàng"} ({product.stock})
+                        </span>
+                    </p>
+                </div>
             </div>
 
             {/* CỘT PHẢI: Khung nhập số lượng & Nút mua */}

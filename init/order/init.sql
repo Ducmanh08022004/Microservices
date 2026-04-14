@@ -12,17 +12,9 @@ CREATE TABLE IF NOT EXISTS orders (
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
 
-    -- UNIQUE
     UNIQUE KEY idx_order_id (order_id)
 );
 
--- INDEX cơ bản
 CREATE INDEX idx_status ON orders(status);
-
--- Query: lịch sử đơn hàng
-CREATE INDEX idx_user_created
-ON orders(user_id, created_at DESC);
-
--- Query nâng cao (lọc + sort)
-CREATE INDEX idx_user_status_created
-ON orders(user_id, status, created_at);
+CREATE INDEX idx_user_created ON orders(user_id, created_at DESC);
+CREATE INDEX idx_user_status_created ON orders(user_id, status, created_at);

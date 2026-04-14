@@ -31,4 +31,8 @@ public class User {
 
     @Column(name = "email")
     private String email;
+
+    @Column(name = "is_enabled", nullable = false, columnDefinition = "boolean default true")
+    @Builder.Default
+    private Boolean isEnabled = true;
 }

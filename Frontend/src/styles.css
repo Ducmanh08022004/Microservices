@@ -294,9 +294,70 @@ h4 {
 }
 
 .detail-price {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  color: #b45309;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.price-original {
+  font-size: 1.1rem;
+  text-decoration: line-through;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-right: 8px;
+}
+
+.badge-brand {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge-category {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.product-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 10px 0;
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.review-count {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.9rem;
+  margin-left: 4px;
+}
+
+.product-description {
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-top: 16px;
+  font-size: 1.05rem;
+}
+
+.sku-text {
+  font-family: monospace;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9rem;
 }
 
 .loading-text {

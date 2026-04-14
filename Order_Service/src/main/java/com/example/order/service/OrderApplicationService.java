@@ -7,8 +7,13 @@ import com.example.order.dto.InventoryProductResponse;
 import com.example.order.dto.OrderResponse;
 import com.example.order.model.OrderEntity;
 import com.example.order.repository.OrderRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -69,6 +74,33 @@ public class OrderApplicationService {
         return orderRepository.findAllByUserIdOrderByCreatedAtDesc(userId).stream()
                 .map(this::toOrderResponse)
                 .toList();
+    }
+
+    public Page<OrderResponse> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable)
+                .map(this::toOrderResponse);
+    }
+
+    public Optional<OrderResponse> updateOrderStatus(String orderId, String status) {
+        return orderRepository.findByOrderId(orderId).map(order -> {
+            order.setStatus(status);
+            return toOrderResponse(orderRepository.save(order));
+        });
+    }
+
+    public Map<String, Object> getAdminStats() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("total_revenue", coalesce(orderRepository.getTotalRevenue()));
+        stats.put("daily_revenue", coalesce(orderRepository.getRevenueSince(LocalDateTime.now().minusDays(1))));
+        stats.put("weekly_revenue", coalesce(orderRepository.getRevenueSince(LocalDateTime.now().minusWeeks(1))));
+        stats.put("monthly_revenue", coalesce(orderRepository.getRevenueSince(LocalDateTime.now().minusMonths(1))));
+        stats.put("status_distribution", orderRepository.getOrderStatusStats());
+        stats.put("top_products", orderRepository.getTopSellingProducts());
+        return stats;
+    }
+
+    private Double coalesce(Double val) {
+        return val != null ? val : 0.0;
     }
 
     private void validateRequest(CreateOrderRequest request) {

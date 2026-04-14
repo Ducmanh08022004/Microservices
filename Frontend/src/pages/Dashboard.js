@@ -133,10 +133,35 @@ function Dashboard() {
                                 </div>
                             )}
                             <div style={{ padding: '16px' }}>
-                                <h3 className="product-name" style={{ margin: '0 0 8px' }}>{p.name}</h3>
-                                <p className="product-id" style={{ margin: '0 0 4px', fontSize: 13, color: 'var(--text-muted)' }}>Mã SP: {p.product_id}</p>
-                                <p className="product-price" style={{ margin: '0 0 4px', fontWeight: 'bold', color: 'var(--color-primary)' }}>{p.price?.toLocaleString()} VNĐ</p>
-                                <p className="product-stock" style={{ margin: 0, fontSize: 13 }}>Còn lại: {p.stock}</p>
+                                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', fontWeight: 600 }}>
+                                    {p.brand || 'No Brand'} • {p.category || 'General'}
+                                </div>
+                                <h3 className="product-name" style={{ margin: '0 0 8px', fontSize: '1.05rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</h3>
+                                
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 8, fontSize: 13, color: '#fbbf24' }}>
+                                    <span>★</span> {p.rating || 0}
+                                </div>
+
+                                <div style={{ marginBottom: 8 }}>
+                                    {p.discount_price ? (
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <span style={{ fontWeight: 'bold', color: 'var(--accent)', fontSize: '1.1rem' }}>{p.discount_price.toLocaleString()} VNĐ</span>
+                                            <span style={{ textDecoration: 'line-through', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{p.price.toLocaleString()} VNĐ</span>
+                                        </div>
+                                    ) : (
+                                        <span style={{ fontWeight: 'bold', color: 'var(--brand)', fontSize: '1.1rem' }}>{p.price?.toLocaleString()} VNĐ</span>
+                                    )}
+                                </div>
+                                
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
+                                    <span style={{ color: 'var(--text-muted)' }}>Mã: {p.product_id}</span>
+                                    <span style={{ 
+                                        color: p.stock > 0 ? 'var(--ok)' : 'var(--danger)',
+                                        fontWeight: 600
+                                    }}>
+                                        Kho: {p.stock}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     ))}

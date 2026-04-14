@@ -9,9 +9,12 @@ import MyOrders from './pages/MyOrders';
 import PaymentPage from './pages/PaymentPage';
 import Navbar from './components/Navbar';
 
+import AdminPanel from './pages/AdminPanel';
+import Profile from './pages/Profile';
+
 function AppRoutes() {
   const location = useLocation();
-  const hideNavbar = location.pathname === '/login' || location.pathname === '/';
+  const hideNavbar = location.pathname === '/login' || location.pathname === '/' || location.pathname === '/register';
   return (
     <>
       {!hideNavbar && <Navbar />}
@@ -20,10 +23,12 @@ function AppRoutes() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/" element={<Login />} />
+        <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/add-product" element={<AddProduct />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/payment/:orderId" element={<PaymentPage />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </>
   );
