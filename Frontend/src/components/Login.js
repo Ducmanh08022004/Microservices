@@ -20,7 +20,7 @@ function Login() {
             localStorage.setItem('accessToken', token);
             navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.status === 403 ? "Tài khoản của bạn đã bị khóa!" : "Sai tài khoản hoặc mật khẩu!");
+            setError(err.response?.data?.error || "Sai tài khoản hoặc mật khẩu!");
         } finally {
             setLoading(false);
         }

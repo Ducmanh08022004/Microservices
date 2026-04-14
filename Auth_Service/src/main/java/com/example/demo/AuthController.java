@@ -37,18 +37,25 @@ public class AuthController {
      * - Chuỗi JWT token nếu xác thực thành công.
      */
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
-
-        User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
-
-        return jwtService.generateToken(user);
+            User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
+            String token = jwtService.generateToken(user);
+            return ResponseEntity.ok(token);
+        } catch (org.springframework.security.authentication.DisabledException e) {
+            return ResponseEntity.status(403).body(Map.of("error", "Tài khoản của bạn đã bị khóa!"));
+        } catch (org.springframework.security.authentication.BadCredentialsException e) {
+            return ResponseEntity.status(401).body(Map.of("error", "Sai tài khoản hoặc mật khẩu!"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Lỗi server: " + e.getMessage()));
+        }
     }
 
     /**

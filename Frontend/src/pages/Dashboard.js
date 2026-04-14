@@ -134,7 +134,7 @@ function Dashboard() {
                             )}
                             <div style={{ padding: '16px' }}>
                                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', fontWeight: 600 }}>
-                                    {p.brand || 'No Brand'} • {p.category || 'General'}
+                                {p.brand || 'No Brand'} • {p.category?.name || 'General'}
                                 </div>
                                 <h3 className="product-name" style={{ margin: '0 0 8px', fontSize: '1.05rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</h3>
                                 

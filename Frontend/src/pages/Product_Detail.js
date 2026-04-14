@@ -69,7 +69,7 @@ function Product_Detail() {
                 )}
                 <div className="product-meta" style={{ marginBottom: 12 }}>
                     {product.brand && <span className="badge badge-brand">{product.brand}</span>}
-                    {product.category && <span className="badge badge-category">{product.category}</span>}
+                    {product.category?.name && <span className="badge badge-category">{product.category.name}</span>}
                 </div>
                 
                 <h2>{product.name}</h2>

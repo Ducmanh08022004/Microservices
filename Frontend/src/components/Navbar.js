@@ -31,8 +31,7 @@ function Navbar() {
           {role === 'ADMIN' && (
             <Link to="/admin" style={{ color: '#fff', textDecoration: 'none', background: 'var(--accent)', padding: '4px 12px', borderRadius: 4 }}>Quản trị (Admin)</Link>
           )}
-            <Link to="/my-orders" style={{ color: '#fff', textDecoration: 'none' }}>Đơn hàng của tôi</Link>
-          )}
+          <Link to="/my-orders" style={{ color: '#fff', textDecoration: 'none' }}>Đơn hàng của tôi</Link>
           <Link to="/profile" style={{ color: '#fff', textDecoration: 'none', marginLeft: role === 'ADMIN' ? 0 : 'auto' }}>Tài khoản</Link>
           <button onClick={handleLogout} style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '6px 16px', borderRadius: 4, cursor: 'pointer', marginLeft: role === 'ADMIN' ? 'auto' : 0 }}>Đăng xuất</button>
         </>
