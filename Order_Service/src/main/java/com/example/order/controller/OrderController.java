@@ -76,12 +76,13 @@ public class OrderController {
     public ResponseEntity<?> listAllOrders(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String order_id,
             @RequestHeader(value = "X-User-Role", required = false) String xUserRole
     ) {
         if (!"ADMIN".equalsIgnoreCase(xUserRole)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Bạn không có quyền admin!"));
         }
-        return ResponseEntity.ok(orderApplicationService.getAllOrders(PageRequest.of(page, size)));
+        return ResponseEntity.ok(orderApplicationService.getAllOrders(PageRequest.of(page, size), order_id));
     }
 
     @PutMapping("/admin/{orderId}/status")

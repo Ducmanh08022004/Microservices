@@ -17,6 +17,9 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     Optional<OrderEntity> findByOrderId(String orderId);
     Page<OrderEntity> findAll(Pageable pageable);
 
+    @Query("SELECT o FROM OrderEntity o WHERE :orderId IS NULL OR o.orderId LIKE %:orderId%")
+    Page<OrderEntity> searchOrders(@Param("orderId") String orderId, Pageable pageable);
+
     @Query(value = "SELECT SUM(total_price) FROM orders WHERE (status = 'PAID' OR status = 'DELIVERED')", nativeQuery = true)
     Double getTotalRevenue();
 

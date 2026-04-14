@@ -107,14 +107,6 @@ function Dashboard() {
                     </div>
 
                     {/* Nút thêm sản phẩm chỉ hiện nếu là ADMIN */}
-                    {isAdmin && (
-                        <button
-                            className="btn btn-accent"
-                            onClick={() => navigate('/admin/add-product')}
-                        >
-                            + Thêm sản phẩm mới
-                        </button>
-                    )}
                 </div>
 
                 {/* GIAO DIỆN DẠNG THẺ (GRID) */}

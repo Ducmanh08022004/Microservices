@@ -7,11 +7,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Repository truy cập dữ liệu bảng products.
  */
 public interface ProductRepository extends JpaRepository<Product, Long> {
+
+    @Query("SELECT p FROM Product p WHERE p.productId LIKE %:search% OR p.name LIKE %:search%")
+    Page<Product> searchProducts(@Param("search") String search, Pageable pageable);
 
     /**
      * Tìm sản phẩm theo productId nghiệp vụ.

@@ -43,9 +43,10 @@ public class ProductController {
     @GetMapping("/api/products/paged")
     public Page<Product> getProductsPaged(
             @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "24") int size
+            @RequestParam(name = "size", defaultValue = "24") int size,
+            @RequestParam(name = "search", required = false) String search
     ) {
-        return productCatalogService.getProductsPage(page, size);
+        return productCatalogService.getProductsPage(page, size, search);
     }
 
     /**

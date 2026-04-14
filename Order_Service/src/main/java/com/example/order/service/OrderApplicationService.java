@@ -76,7 +76,11 @@ public class OrderApplicationService {
                 .toList();
     }
 
-    public Page<OrderResponse> getAllOrders(Pageable pageable) {
+    public Page<OrderResponse> getAllOrders(Pageable pageable, String orderId) {
+        if (orderId != null && !orderId.isBlank()) {
+            return orderRepository.searchOrders(orderId, pageable)
+                    .map(this::toOrderResponse);
+        }
         return orderRepository.findAll(pageable)
                 .map(this::toOrderResponse);
     }

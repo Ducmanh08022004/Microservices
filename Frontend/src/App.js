@@ -11,6 +11,7 @@ import Navbar from './components/Navbar';
 
 import AdminPanel from './pages/AdminPanel';
 import Profile from './pages/Profile';
+import CategoryEdit from './pages/CategoryEdit';
 
 function AppRoutes() {
   const location = useLocation();
@@ -25,6 +26,8 @@ function AppRoutes() {
         <Route path="/" element={<Login />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/add-product" element={<AddProduct />} />
+        <Route path="/admin/product/edit/:id" element={<AddProduct />} />
+        <Route path="/admin/categories/edit/:id" element={<CategoryEdit />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/payment/:orderId" element={<PaymentPage />} />

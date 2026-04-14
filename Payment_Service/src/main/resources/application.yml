@@ -30,4 +30,12 @@ server:
 logging:
   level:
     org.springframework: INFO
-    com.example.payment: DEBUG
+
+app:
+  momo:
+    partner-code: MOMO
+    access-key: F8B63756417C223f
+    secret-key: K951B6PE9877666F
+    endpoint: https://test-payment.momo.vn/v2/gateway/api/create
+    redirect-url: "http://localhost:3000/my-orders"
+    ipn-url: "http://host.docker.internal:8082/api/payments/momo-ipn"

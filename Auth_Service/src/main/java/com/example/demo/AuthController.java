@@ -83,7 +83,14 @@ public class AuthController {
     public Page<User> listUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestHeader(value = "X-User-Role", required = false) String role) {
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false, name = "isEnabled") Boolean isEnabled,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole) {
+        
+        if (query != null || role != null || isEnabled != null) {
+            return userRepository.searchUsers(query, role, isEnabled, PageRequest.of(page, size));
+        }
         return userRepository.findAll(PageRequest.of(page, size));
     }
 

@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
 
 function AddProduct() {
+    const { id } = useParams();
+    const isEdit = Boolean(id);
+    
     const [formData, setFormData] = useState({
         product_id: '',
         name: '',
@@ -17,7 +20,37 @@ function AddProduct() {
         discount_price: null
     });
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [loadingData, setLoadingData] = useState(isEdit);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (isEdit) {
+            const token = localStorage.getItem('accessToken');
+            axios.get(`${API_GATEWAY}/api/products/${id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => {
+                const p = res.data;
+                setFormData({
+                    product_id: p.product_id || p.productId,
+                    name: p.name,
+                    stock: p.stock,
+                    price: p.price,
+                    image_url: p.image_url || p.imageUrl,
+                    description: p.description,
+                    category: p.category?.name || p.category || '',
+                    brand: p.brand,
+                    sku: p.sku,
+                    discount_price: p.discount_price || p.discountPrice
+                });
+                setLoadingData(false);
+            })
+            .catch(err => {
+                alert("Không thể tải sản phẩm: " + err.message);
+                navigate('/admin');
+            });
+        }
+    }, [id, isEdit, navigate]);
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -47,20 +80,29 @@ function AddProduct() {
         e.preventDefault();
         const token = localStorage.getItem('accessToken');
         try {
-            await axios.post(`${API_GATEWAY}/admin/products`, formData, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            alert("Thêm sản phẩm thành công!");
-            navigate('/dashboard'); 
+            if (isEdit) {
+                await axios.put(`${API_GATEWAY}/admin/products/full/${id}`, formData, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                alert("Cập nhật sản phẩm thành công!");
+            } else {
+                await axios.post(`${API_GATEWAY}/admin/products`, formData, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                alert("Thêm sản phẩm thành công!");
+            }
+            navigate('/admin'); 
         } catch (error) {
-            alert("Lỗi khi thêm: " + (error.response?.data?.error || error.message));
+            alert("Lỗi: " + (error.response?.data?.error || error.message));
         }
     };
+
+    if (loadingData) return <div className="page-shell"><p>Đang tải dữ liệu sản phẩm...</p></div>;
 
     return (
         <div className="page-shell">
             <div className="card form-wrap">
-                <h2 className="form-title">Thêm Sản Phẩm Mới</h2>
+                <h2 className="form-title">{isEdit ? 'Chỉnh Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới'}</h2>
                 <form className="form-grid" onSubmit={handleSubmit}>
                     
                     {/* Upload ảnh */}
@@ -89,7 +131,7 @@ function AddProduct() {
 
                     <div className="form-field">
                         <label>Mã Sản Phẩm (ID):</label>
-                        <input className="input" type="text" required
+                        <input className="input" type="text" required disabled={isEdit}
                             value={formData.product_id}
                             onChange={(e) => setFormData({...formData, product_id: e.target.value})} />
                     </div>
@@ -113,7 +155,7 @@ function AddProduct() {
                             onChange={(e) => setFormData({...formData, brand: e.target.value})} />
                     </div>
                     <div className="form-field">
-                        <label>Danh mục:</label>
+                        <label>Danh mục (Tên):</label>
                         <input className="input" type="text"
                             value={formData.category}
                             onChange={(e) => setFormData({...formData, category: e.target.value})} />
@@ -146,9 +188,9 @@ function AddProduct() {
                     </div>
                     <div className="form-actions" style={{ gridColumn: '1 / -1' }}>
                         <button className="btn btn-primary" type="submit" disabled={uploadingImage}>
-                            Lưu sản phẩm
+                            {isEdit ? 'Lưu Thay Đổi' : 'Tạo Sản Phẩm'}
                         </button>
-                        <button className="btn btn-ghost" type="button" onClick={() => navigate('/dashboard')}>
+                        <button className="btn btn-ghost" type="button" onClick={() => navigate('/admin')}>
                             Hủy
                         </button>
                     </div>

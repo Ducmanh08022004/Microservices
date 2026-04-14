@@ -34,6 +34,31 @@ public class CategoryController {
         return ResponseEntity.ok(categoryRepository.save(category));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCategoryById(@PathVariable Long id) {
+        return categoryRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateCategory(
+            @PathVariable Long id,
+            @RequestBody Category categoryDetails,
+            @RequestHeader(value = "X-User-Role", required = false) String role
+    ) {
+        if (!"ADMIN".equalsIgnoreCase(role)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
+        return categoryRepository.findById(id)
+                .map(category -> {
+                    category.setName(categoryDetails.getName());
+                    category.setDescription(categoryDetails.getDescription());
+                    return ResponseEntity.ok(categoryRepository.save(category));
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/admin/{id}")
     public ResponseEntity<?> deleteCategory(
             @PathVariable Long id,

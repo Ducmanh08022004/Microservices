@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
+import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = () => {
     const [activeTab, setActiveTab] = useState('products');
@@ -15,8 +16,21 @@ const AdminPanel = () => {
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [pageSize] = useState(10);
-
+    
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [userFilters, setUserFilters] = useState({ role: '', status: '' });
+    
+    const navigate = useNavigate();
     const token = localStorage.getItem('accessToken');
+
+    // Debounce search term
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
 
     useEffect(() => {
         setPage(0);
@@ -24,27 +38,51 @@ const AdminPanel = () => {
         if (activeTab === 'reports') {
             fetchStats();
         }
-    }, [activeTab]);
+    }, [activeTab, debouncedSearch, userFilters]);
 
     const fetchData = async (targetPage) => {
         setLoading(true);
         setError(null);
         try {
             let url = '';
-            if (activeTab === 'products') url = `${API_GATEWAY}/api/products/paged?page=${targetPage}&size=${pageSize}`;
-            else if (activeTab === 'categories') url = `${API_GATEWAY}/api/categories`;
-            else if (activeTab === 'orders' || activeTab === 'reports') url = `${API_GATEWAY}/api/orders/admin?page=${targetPage}&size=${pageSize}`;
-            else if (activeTab === 'users') url = `${API_GATEWAY}/auth/admin/users?page=${targetPage}&size=${pageSize}`;
+            let params = { page: targetPage, size: pageSize };
 
-            const res = await axios.get(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (activeTab === 'products') {
+                url = `${API_GATEWAY}/api/products/paged`;
+                if (debouncedSearch) params.search = debouncedSearch;
+            } 
+            else if (activeTab === 'categories') {
+                url = `${API_GATEWAY}/api/categories`;
+                // Backend categories might take some pagination or we filter on frontend
+            } 
+            else if (activeTab === 'orders' || activeTab === 'reports') {
+                url = `${API_GATEWAY}/api/orders/admin`;
+                if (debouncedSearch) params.order_id = debouncedSearch;
+            } 
+            else if (activeTab === 'users') {
+                url = `${API_GATEWAY}/auth/admin/users`;
+                if (debouncedSearch) params.query = debouncedSearch;
+                if (userFilters.role) params.role = userFilters.role;
+                if (userFilters.status !== '') params.isEnabled = userFilters.status === 'active';
+            }
+
+            const res = await axios.get(url, { 
+                headers: { 'Authorization': `Bearer ${token}` },
+                params: params 
+            });
 
             if (res.data?.content) {
                 setData(res.data.content);
-                setTotalPages(res.data.totalPages);
-                setPage(res.data.number);
+                setTotalPages(res.data.totalPages || 1);
+                setPage(res.data.number || 0);
             } else {
-                setData(Array.isArray(res.data) ? res.data : []);
-                setTotalPages(0);
+                let items = Array.isArray(res.data) ? res.data : [];
+                // Frontend filtering for simple lists if needed
+                if (activeTab === 'categories' && debouncedSearch) {
+                    items = items.filter(c => c.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
+                }
+                setData(items);
+                setTotalPages(1);
             }
         } catch (err) {
             setError("Lỗi khi tải dữ liệu.");
@@ -72,23 +110,40 @@ const AdminPanel = () => {
     };
 
     const handlePageChange = (newPage) => {
-        if (newPage >= 0 && newPage < totalPages) fetchData(newPage);
+        if (newPage >= 0 && newPage < totalPages) {
+            fetchData(newPage);
+        }
     };
 
     const handleDeleteProduct = async (id) => {
         if (window.confirm("Xóa SP này?")) {
-            await axios.delete(`${API_GATEWAY}/api/products/admin/products/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            await axios.delete(`${API_GATEWAY}/admin/products/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
             fetchData(page);
+        }
+    };
+
+    const handleToggleUserStatus = async (id) => {
+        try {
+            await axios.put(`${API_GATEWAY}/auth/admin/users/${id}/toggle-status`, {}, { headers: { 'Authorization': `Bearer ${token}` } });
+            fetchData(page);
+        } catch (err) {
+            alert("Lỗi khi thay đổi trạng thái user.");
         }
     };
 
     const renderPagination = () => {
         if (totalPages <= 1) return null;
         return (
-            <div className="pagination" style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'center' }}>
-                <button className="btn btn-ghost" disabled={page === 0} onClick={() => handlePageChange(page - 1)}>Trước</button>
-                <span>Trang {page + 1} / {totalPages}</span>
-                <button className="btn btn-ghost" disabled={page === totalPages - 1} onClick={() => handlePageChange(page + 1)}>Sau</button>
+            <div className="pagination" style={{ marginTop: 20, display: 'flex', gap: 15, justifyContent: 'center', alignItems: 'center' }}>
+                <button className="btn btn-ghost" disabled={page === 0} onClick={() => handlePageChange(page - 1)}>
+                    &larr; Trước
+                </button>
+                <div style={{ fontSize: 14, fontWeight: 500 }}>
+                    Trang <span style={{ color: 'var(--brand)' }}>{page + 1}</span> / {totalPages}
+                </div>
+                <button className="btn btn-ghost" disabled={page + 1 >= totalPages} onClick={() => handlePageChange(page + 1)}>
+                    Sau &rarr;
+                </button>
             </div>
         );
     };
@@ -98,19 +153,59 @@ const AdminPanel = () => {
             <div className="dashboard-wrap">
                 <div className="dashboard-head">
                     <h1 className="dashboard-title">Hệ thống Quản trị</h1>
+                    {activeTab === 'products' && (
+                        <button className="btn btn-primary" onClick={() => navigate('/admin/add-product')}>+ Thêm sản phẩm</button>
+                    )}
                 </div>
 
                 <div className="tabs" style={{ display: 'flex', gap: 10, marginBottom: 20, overflowX: 'auto' }}>
-                    {['products', 'categories', 'orders', 'users', 'reports'].map(t => (
-                        <button key={t} className={`btn ${activeTab === t ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setActiveTab(t)} style={{ textTransform: 'capitalize' }}>
-                            {t === 'products' ? 'Sản phẩm' : t === 'categories' ? 'Danh mục' : t === 'orders' ? 'Đơn hàng' : t === 'users' ? 'Người dùng' : 'Báo cáo'}
+                    {[
+                        { id: 'products', name: 'Sản phẩm' },
+                        { id: 'categories', name: 'Danh mục' },
+                        { id: 'orders', name: 'Đơn hàng' },
+                        { id: 'users', name: 'Người dùng' },
+                        { id: 'reports', name: 'Báo cáo' }
+                    ].map(t => (
+                        <button key={t.id} className={`btn ${activeTab === t.id ? 'btn-primary' : 'btn-ghost'}`} onClick={() => { setActiveTab(t.id); setSearchTerm(''); }}>
+                            {t.name}
                         </button>
                     ))}
                 </div>
 
+                {/* Search and Filters Area */}
+                {activeTab !== 'reports' && (
+                    <div className="card" style={{ padding: '15px 20px', marginBottom: 20, display: 'flex', gap: 15, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1, minWidth: 250, position: 'relative' }}>
+                            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
+                            <input 
+                                className="input" 
+                                style={{ paddingLeft: 40 }} 
+                                placeholder={`Tìm kiếm theo ${activeTab === 'products' ? 'ID hoặc Tên' : activeTab === 'orders' ? 'Mã đơn hàng' : activeTab === 'users' ? 'Username hoặc Email' : 'Tên danh mục'}...`}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        
+                        {activeTab === 'users' && (
+                            <>
+                                <select className="input" style={{ width: 140 }} value={userFilters.role} onChange={e => setUserFilters({...userFilters, role: e.target.value})}>
+                                    <option value="">Tất cả Role</option>
+                                    <option value="USER">USER</option>
+                                    <option value="ADMIN">ADMIN</option>
+                                </select>
+                                <select className="input" style={{ width: 140 }} value={userFilters.status} onChange={e => setUserFilters({...userFilters, status: e.target.value})}>
+                                    <option value="">Tất cả Trạng thái</option>
+                                    <option value="active">Hoạt động</option>
+                                    <option value="locked">Đã khóa</option>
+                                </select>
+                            </>
+                        )}
+                    </div>
+                )}
+
                 <div className="card" style={{ padding: 25, minHeight: 500 }}>
-                    {loading && <p>Đang tải dữ liệu...</p>}
-                    {activeTab === 'reports' ? (
+                    {loading && <div style={{ textAlign: 'center', padding: '50px 0' }}><p>Đang tải dữ liệu...</p></div>}
+                    {!loading && activeTab === 'reports' ? (
                         <div className="reports-area">
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 15, marginBottom: 25 }}>
                                 <div className="card" style={{ padding: 20, background: '#f0f9ff', borderLeft: '4px solid #0ea5e9' }}>
@@ -165,39 +260,67 @@ const AdminPanel = () => {
                         </div>
                     ) : (
                         <div className="table-area">
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead style={{ background: '#f8f9fa' }}>
-                                    <tr style={{ textAlign: 'left' }}>
-                                        {activeTab === 'products' && <><th>ID</th><th>Tên</th><th>Giá</th><th>Kho</th><th>Hành động</th></>}
-                                        {activeTab === 'orders' && <><th>Mã Đơn</th><th>Tổng tiền</th><th>Trạng thái</th></>}
-                                        {activeTab === 'users' && <><th>Username</th><th>Email</th><th>Role</th><th>Status</th></>}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {data.map((item, idx) => (
-                                        <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
-                                            {activeTab === 'products' && <>
-                                                <td style={{ padding: 12 }}>{item.product_id}</td>
-                                                <td>{item.name}</td>
-                                                <td>{item.price?.toLocaleString()} đ</td>
-                                                <td>{item.stock}</td>
-                                                <td><button className="btn btn-ghost" onClick={() => handleDeleteProduct(item.product_id)}>Xóa</button></td>
-                                            </>}
-                                            {activeTab === 'orders' && <>
-                                                <td style={{ padding: 12 }}>{item.order_id?.substring(0,8)}...</td>
-                                                <td>{item.total_price?.toLocaleString()} đ</td>
-                                                <td><span className="badge">{item.status}</span></td>
-                                            </>}
-                                            {activeTab === 'users' && <>
-                                                <td style={{ padding: 12 }}>{item.username}</td>
-                                                <td>{item.email}</td>
-                                                <td>{item.role}</td>
-                                                <td>{item.isEnabled ? 'Active' : 'Locked'}</td>
-                                            </>}
+                            {!loading && data.length === 0 && <p style={{ textAlign: 'center', opacity: 0.5, padding: '40px 0' }}>Không tìm thấy kết quả nào phù hợp.</p>}
+                            
+                            {data.length > 0 && (
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead style={{ background: '#f8f9fa' }}>
+                                        <tr style={{ textAlign: 'left' }}>
+                                            {activeTab === 'products' && <><th>ID</th><th>Tên</th><th>Giá</th><th>Kho</th><th>Hành động</th></>}
+                                            {activeTab === 'categories' && <><th>ID</th><th>Tên danh mục</th><th>Mô tả</th><th>Hành động</th></>}
+                                            {activeTab === 'orders' && <><th>Mã Đơn</th><th>Tổng tiền</th><th>Trạng thái</th><th>Hành động</th></>}
+                                            {activeTab === 'users' && <><th>Username</th><th>Email</th><th>Role</th><th>Trạng thái</th><th>Hành động</th></>}
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {data.map((item, idx) => (
+                                            <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                                                {activeTab === 'products' && <>
+                                                    <td style={{ padding: '15px 12px', fontSize: 13, color: 'var(--text-muted)' }}>{item.product_id}</td>
+                                                    <td><strong>{item.name}</strong></td>
+                                                    <td>{item.price?.toLocaleString()} đ</td>
+                                                    <td>{item.stock}</td>
+                                                    <td>
+                                                        <div style={{ display: 'flex', gap: 10 }}>
+                                                            <button className="btn btn-ghost" style={{ color: 'var(--brand)' }} onClick={() => navigate(`/admin/product/edit/${item.product_id}`)}>Sửa</button>
+                                                            <button className="btn btn-ghost" style={{ color: 'var(--danger)' }} onClick={() => handleDeleteProduct(item.product_id)}>Xóa</button>
+                                                        </div>
+                                                    </td>
+                                                </>}
+                                                {activeTab === 'categories' && <>
+                                                    <td style={{ padding: 12 }}>{item.id}</td>
+                                                    <td><strong>{item.name}</strong></td>
+                                                    <td>{item.description}</td>
+                                                    <td>
+                                                        <button className="btn btn-ghost" style={{ color: 'var(--brand)' }} onClick={() => navigate(`/admin/categories/edit/${item.id}`)}>Sửa</button>
+                                                    </td>
+                                                </>}
+                                                {activeTab === 'orders' && <>
+                                                    <td style={{ padding: 12 }}>{item.order_id?.substring(0,8)}...</td>
+                                                    <td>{item.total_price?.toLocaleString()} đ</td>
+                                                    <td><span className="badge">{item.status}</span></td>
+                                                    <td><button className="btn btn-ghost" onClick={() => navigate(`/payment/${item.order_id}`)}>Chi tiết</button></td>
+                                                </>}
+                                                {activeTab === 'users' && <>
+                                                    <td style={{ padding: 12 }}>{item.username}</td>
+                                                    <td>{item.email}</td>
+                                                    <td><span className="badge" style={{ background: item.role === 'ADMIN' ? 'var(--accent)' : 'rgba(255,255,255,0.05)' }}>{item.role}</span></td>
+                                                    <td>
+                                                        <span style={{ color: item.isEnabled ? 'var(--ok)' : 'var(--danger)', fontWeight: 600 }}>
+                                                            {item.isEnabled ? 'Hoạt động' : 'Đã khóa'}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <button className="btn btn-ghost" onClick={() => handleToggleUserStatus(item.id)}>
+                                                            {item.isEnabled ? 'Khóa' : 'Mở khóa'}
+                                                        </button>
+                                                    </td>
+                                                </>}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
                             {renderPagination()}
                         </div>
                     )}

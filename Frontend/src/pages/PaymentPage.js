@@ -111,6 +111,25 @@ function PaymentPage() {
         }
     };
 
+    const handlePayWithMomo = async () => {
+        setActionLoading(true);
+        try {
+            const res = await axios.get(`${API_GATEWAY}/api/payments/${orderId}/momo`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.data.payUrl) {
+                window.location.href = res.data.payUrl;
+            } else {
+                setError('Không lấy được link thanh toán Momo.');
+            }
+        } catch (err) {
+            const msg = err?.response?.data?.error || 'Lỗi khởi tạo thanh toán Momo.';
+            setError(msg);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const statusConfig = payment ? (PAYMENT_STATUS_CONFIG[payment.status] || {
         label: payment.status,
         color: '#64748b',
@@ -212,6 +231,27 @@ function PaymentPage() {
                                 </div>
 
                                 <button
+                                    className="btn"
+                                    style={{ 
+                                        width: '100%', 
+                                        marginBottom: 10, 
+                                        background: '#a50064', 
+                                        color: '#fff', 
+                                        borderColor: '#a50064',
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 10
+                                    }}
+                                    onClick={handlePayWithMomo}
+                                    disabled={actionLoading}
+                                >
+                                    <img src="https://developers.momo.vn/v3/vi/assets/images/logo-custom-5949d0ca9ec83b5443bb609b52a9ba5f.png" alt="Momo" style={{ height: 20 }} />
+                                    {actionLoading ? 'Đang khởi tạo...' : 'Thanh toán qua ví MoMo (Sandbox)'}
+                                </button>
+
+                                <button
                                     id="btn-confirm-payment"
                                     className="btn btn-primary"
                                     style={{ width: '100%', marginBottom: 10, background: '#10b981', borderColor: '#10b981' }}
@@ -272,8 +312,20 @@ function PaymentPage() {
 
                 {/* Nút quay lại */}
                 <div style={{ textAlign: 'center' }}>
-                    <button className="btn btn-ghost" onClick={() => navigate('/dashboard')}>
-                        ← Quay lại trang chủ
+                    <button className="btn btn-ghost" onClick={() => {
+                        const token = localStorage.getItem('accessToken');
+                        if (token) {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            if (payload.role === 'ADMIN') {
+                                navigate('/admin');
+                            } else {
+                                navigate('/my-orders');
+                            }
+                        } else {
+                            navigate('/dashboard');
+                        }
+                    }}>
+                        ← Quay lại danh sách đơn hàng
                     </button>
                 </div>
             </div>
