@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS products (
     name VARCHAR(255),
     stock INT,
     price DOUBLE,
+    image_url VARCHAR(500),
     createdAt DATETIME,
     updatedAt DATETIME,
 

@@ -77,6 +77,18 @@ public class ProductCatalogService {
         product.setName(request.getName());
         product.setStock(request.getStock() == null ? 0 : request.getStock());
         product.setPrice(request.getPrice() == null ? 0D : request.getPrice());
+        product.setImageUrl(request.getImageUrl());
+        
+        // Cập nhật các trường mới
+        product.setDescription(request.getDescription());
+        product.setCategory(request.getCategory());
+        product.setBrand(request.getBrand());
+        product.setSku(request.getSku());
+        product.setDiscountPrice(request.getDiscountPrice());
+        product.setStatus(request.getStatus() != null ? request.getStatus() : "IN_STOCK");
+        product.setRating(request.getRating() != null ? request.getRating() : 0.0);
+        product.setNumReviews(request.getNumReviews() != null ? request.getNumReviews() : 0);
+
         product.setCreatedAt(LocalDateTime.now());
         return productRepository.save(product);
     }

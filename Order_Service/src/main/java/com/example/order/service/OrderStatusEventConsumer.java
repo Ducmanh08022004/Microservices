@@ -13,7 +13,9 @@ import java.util.Optional;
 
 @Service
 /**
- * Consumer nhận trạng thái xử lý từ Inventory để cập nhật order_db.
+ * Consumer nhận các sự kiện cập nhật trạng thái đơn hàng từ:
+ * 1. topic order-status — Inventory_Service gửi sau khi trừ kho (CONFIRMED/FAILED_UPDATE)
+ * 2. topic payment-result — Payment_Service gửi sau khi xử lý thanh toán (PAID/PAYMENT_FAILED)
  */
 public class OrderStatusEventConsumer {
 
@@ -22,17 +24,29 @@ public class OrderStatusEventConsumer {
     private static final String ORDER_STATUS_TOPIC = "order-status";
     private static final String ORDER_STATUS_GROUP = "order-status-updater";
 
+    private static final String PAYMENT_RESULT_TOPIC = "payment-result";
+    private static final String PAYMENT_RESULT_GROUP = "order-payment-result-consumer";
+
+    private static final String STATUS_PAID = "PAID";
+    private static final String STATUS_PAYMENT_FAILED = "PAYMENT_FAILED";
+
     private final ObjectMapper objectMapper;
     private final OrderRepository orderRepository;
+    private final OrderEventPublisher orderEventPublisher;
 
-    public OrderStatusEventConsumer(ObjectMapper objectMapper, OrderRepository orderRepository) {
+    public OrderStatusEventConsumer(
+            ObjectMapper objectMapper,
+            OrderRepository orderRepository,
+            OrderEventPublisher orderEventPublisher
+    ) {
         this.objectMapper = objectMapper;
         this.orderRepository = orderRepository;
+        this.orderEventPublisher = orderEventPublisher;
     }
 
     /**
-     * Input: message JSON của OrderStatusEventPayload từ topic order-status.
-     * Output: cập nhật trường status của đơn hàng tương ứng trong DB.
+     * Nhận kết quả từ Inventory_Service sau khi trừ kho.
+     * Cập nhật status đơn hàng thành CONFIRMED hoặc FAILED_UPDATE.
      */
     @KafkaListener(topics = ORDER_STATUS_TOPIC, groupId = ORDER_STATUS_GROUP)
     public void consumeOrderStatusEvent(String message) {
@@ -58,7 +72,44 @@ public class OrderStatusEventConsumer {
                 log.info("Đã cập nhật orderId={} sang status={}", event.getOrderId(), event.getStatus());
             }
         } catch (Exception ex) {
-            log.error("Lỗi cập nhật status đơn hàng: {}", ex.getMessage(), ex);
+            log.error("Lỗi cập nhật status đơn hàng từ order-status: {}", ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Nhận kết quả thanh toán từ Payment_Service.
+     * - Nếu PAID: cập nhật đơn thành PAID rồi publish sang order-paid để Inventory trừ kho.
+     * - Nếu PAYMENT_FAILED: cập nhật đơn thành PAYMENT_FAILED.
+     */
+    @KafkaListener(topics = PAYMENT_RESULT_TOPIC, groupId = PAYMENT_RESULT_GROUP)
+    public void consumePaymentResultEvent(String message) {
+        try {
+            OrderStatusEventPayload event = objectMapper.readValue(message, OrderStatusEventPayload.class);
+            if (event == null || event.getOrderId() == null || event.getOrderId().isBlank()) {
+                return;
+            }
+
+            Optional<OrderEntity> orderOptional = orderRepository.findByOrderId(event.getOrderId());
+            if (orderOptional.isEmpty()) {
+                log.warn("Không tìm thấy orderId={} trong payment-result event", event.getOrderId());
+                return;
+            }
+
+            OrderEntity order = orderOptional.get();
+            order.setStatus(event.getStatus());
+            orderRepository.save(order);
+            log.info("Đã cập nhật orderId={} sang status={} từ payment-result", event.getOrderId(), event.getStatus());
+
+            // Nếu thanh toán thành công → publish order-paid để Inventory trừ kho
+            if (STATUS_PAID.equals(event.getStatus())) {
+                orderEventPublisher.publishOrderPaid(order);
+                log.info("Đã publish order-paid cho orderId={}", order.getOrderId());
+            } else if (STATUS_PAYMENT_FAILED.equals(event.getStatus())) {
+                log.info("Thanh toán thất bại cho orderId={}, không trừ kho", order.getOrderId());
+            }
+
+        } catch (Exception ex) {
+            log.error("Lỗi xử lý payment-result event: {}", ex.getMessage(), ex);
         }
     }
 }

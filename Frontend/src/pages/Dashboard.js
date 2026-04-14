@@ -125,10 +125,19 @@ function Dashboard() {
                             className="product-card"
                             onClick={() => navigate(`/product/${p.product_id}`)}
                         >
-                            <h3 className="product-name">{p.name}</h3>
-                            <p className="product-id">Mã SP: <b>{p.product_id}</b></p>
-                            <p className="product-price">Giá: {p.price} VNĐ</p>
-                            <p className="product-stock">Còn lại: {p.stock}</p>
+                            {p.image_url ? (
+                                <img src={p.image_url} alt={p.name} style={{ width: '100%', height: 180, objectFit: 'cover', borderTopLeftRadius: 12, borderTopRightRadius: 12 }} />
+                            ) : (
+                                <div style={{ width: '100%', height: 180, background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01))', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTopLeftRadius: 12, borderTopRightRadius: 12 }}>
+                                    <span style={{ fontSize: 40, opacity: 0.5 }}>🛍️</span>
+                                </div>
+                            )}
+                            <div style={{ padding: '16px' }}>
+                                <h3 className="product-name" style={{ margin: '0 0 8px' }}>{p.name}</h3>
+                                <p className="product-id" style={{ margin: '0 0 4px', fontSize: 13, color: 'var(--text-muted)' }}>Mã SP: {p.product_id}</p>
+                                <p className="product-price" style={{ margin: '0 0 4px', fontWeight: 'bold', color: 'var(--color-primary)' }}>{p.price?.toLocaleString()} VNĐ</p>
+                                <p className="product-stock" style={{ margin: 0, fontSize: 13 }}>Còn lại: {p.stock}</p>
+                            </div>
                         </div>
                     ))}
                 </div>

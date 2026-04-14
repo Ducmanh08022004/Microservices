@@ -44,4 +44,93 @@ public class CreateProductRequest {
     public void setPrice(Double price) {
         this.price = price;
     }
+
+    @JsonProperty("image_url")
+    private String imageUrl;
+
+    private String description;
+    private String category;
+    private String brand;
+    private String sku;
+
+    @JsonProperty("discount_price")
+    private Double discountPrice;
+
+    private String status;
+    private Double rating;
+
+    @JsonProperty("num_reviews")
+    private Integer numReviews;
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
+
+    public String getSku() {
+        return sku;
+    }
+
+    public void setSku(String sku) {
+        this.sku = sku;
+    }
+
+    public Double getDiscountPrice() {
+        return discountPrice;
+    }
+
+    public void setDiscountPrice(Double discountPrice) {
+        this.discountPrice = discountPrice;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Double getRating() {
+        return rating;
+    }
+
+    public void setRating(Double rating) {
+        this.rating = rating;
+    }
+
+    public Integer getNumReviews() {
+        return numReviews;
+    }
+
+    public void setNumReviews(Integer numReviews) {
+        this.numReviews = numReviews;
+    }
 }

@@ -8,9 +8,35 @@ function AddProduct() {
         product_id: '',
         name: '',
         stock: 0,
-        price: 0
+        price: 0,
+        image_url: ''
     });
+    const [uploadingImage, setUploadingImage] = useState(false);
     const navigate = useNavigate();
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploadingImage(true);
+        const token = localStorage.getItem('accessToken');
+        const imgData = new FormData();
+        imgData.append('file', file);
+
+        try {
+            const res = await axios.post(`${API_GATEWAY}/admin/products/images/upload`, imgData, {
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            setFormData({ ...formData, image_url: res.data.url });
+        } catch (error) {
+            alert("Lỗi upload ảnh: " + (error.response?.data?.error || error.message));
+        } finally {
+            setUploadingImage(false);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,6 +57,31 @@ function AddProduct() {
             <div className="card form-wrap">
                 <h2 className="form-title">Thêm Sản Phẩm Mới</h2>
                 <form className="form-grid" onSubmit={handleSubmit}>
+                    
+                    {/* Upload ảnh */}
+                    <div className="form-field" style={{ gridColumn: '1 / -1' }}>
+                        <label>Ảnh sản phẩm:</label>
+                        <div style={{
+                            display: 'flex', gap: 20, alignItems: 'center', marginTop: 8,
+                            padding: 20, border: '2px dashed rgba(255,255,255,0.1)', borderRadius: 12
+                        }}>
+                            {formData.image_url ? (
+                                <img src={formData.image_url} alt="Preview" style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 8 }} />
+                            ) : (
+                                <div style={{ width: 100, height: 100, background: 'rgba(0,0,0,0.2)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    📷
+                                </div>
+                            )}
+                            <div>
+                                <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} id="img-upload" style={{ display: 'none' }} />
+                                <label htmlFor="img-upload" className="btn btn-ghost" style={{ cursor: 'pointer', display: 'inline-block' }}>
+                                    {uploadingImage ? '⏳ Đang tải lên...' : 'Chọn ảnh mới'}
+                                </label>
+                                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>Hỗ trợ JPG, PNG. Tối đa 5MB.</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="form-field">
                         <label>Mã Sản Phẩm:</label>
                         <input className="input" type="text" required
@@ -55,8 +106,8 @@ function AddProduct() {
                             value={formData.price}
                             onChange={(e) => setFormData({...formData, price: Number(e.target.value)})} />
                     </div>
-                    <div className="form-actions">
-                        <button className="btn btn-primary" type="submit">
+                    <div className="form-actions" style={{ gridColumn: '1 / -1' }}>
+                        <button className="btn btn-primary" type="submit" disabled={uploadingImage}>
                             Lưu sản phẩm
                         </button>
                         <button className="btn btn-ghost" type="button" onClick={() => navigate('/dashboard')}>

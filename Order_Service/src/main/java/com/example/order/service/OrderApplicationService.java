@@ -15,7 +15,7 @@ import java.util.UUID;
 @Service
 public class OrderApplicationService {
 
-    private static final String ORDER_STATUS_PENDING_UPDATE = "PENDING_UPDATE";
+    private static final String ORDER_STATUS_PENDING_PAYMENT = "PENDING_PAYMENT";
 
     private final OrderRepository orderRepository;
     private final InventoryClient inventoryClient;
@@ -53,7 +53,7 @@ public class OrderApplicationService {
         order.setProductName(product.getName());
         order.setQuantity(request.getQuantity());
         order.setTotalPrice(product.getPrice() * request.getQuantity());
-        order.setStatus(ORDER_STATUS_PENDING_UPDATE);
+        order.setStatus(ORDER_STATUS_PENDING_PAYMENT);
 
         OrderEntity saved = orderRepository.save(order);
         orderEventPublisher.publishOrderCreated(saved, authUser);

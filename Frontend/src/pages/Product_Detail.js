@@ -27,7 +27,7 @@ function Product_Detail() {
     const handleCheckAndBuy = async () => {
         const token = localStorage.getItem('accessToken');
         try {
-            // Gọi API tạo đơn hàng tại Order_Service (service này sẽ điều phối kiểm tra kho)
+            // Gọi API tạo đơn hàng tại Order_Service
             const orderRes = await axios.post(`${API_GATEWAY}/api/orders`, {
                 product_id: id,
                 quantity: Number(quantity)
@@ -36,9 +36,12 @@ function Product_Detail() {
             });
 
             const orderId = orderRes?.data?.data?.order_id;
-            alert(orderId
-                ? `Tạo đơn thành công. Mã đơn: ${orderId}`
-                : "Tạo đơn thành công.");
+            if (orderId) {
+                // Redirect sang trang thanh toán
+                navigate(`/payment/${orderId}`);
+            } else {
+                alert("Tạo đơn thành công nhưng không nhận được mã đơn.");
+            }
         } catch (error) {
             const backendError = error?.response?.data?.error;
             alert(backendError || "Lỗi tạo đơn. Hãy kiểm tra Order_Service.");
@@ -55,6 +58,15 @@ function Product_Detail() {
             
             {/* CỘT TRÁI: Thông tin sản phẩm */}
             <div className="card detail-main">
+                {product.image_url ? (
+                    <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                        <img src={product.image_url} alt={product.name} style={{ maxWidth: '100%', maxHeight: 400, borderRadius: 12, objectFit: 'contain' }} />
+                    </div>
+                ) : (
+                    <div style={{ width: '100%', height: 300, background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01))', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, marginBottom: 20 }}>
+                        <span style={{ fontSize: 40, opacity: 0.5 }}>🛍️</span>
+                    </div>
+                )}
                 <h2>{product.name}</h2>
                 <hr className="detail-divider" />
                 <p><strong>Mã sản phẩm:</strong> {product.product_id}</p>
@@ -83,7 +95,7 @@ function Product_Detail() {
                     className="btn btn-primary"
                     onClick={handleCheckAndBuy}
                 >
-                    Kiểm tra kho & Mua hàng
+                    Mua hàng
                 </button>
 
                 <button 

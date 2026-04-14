@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import AddProduct from './pages/AddProduct';
 import ProductDetail from './pages/Product_Detail';
 import MyOrders from './pages/MyOrders';
+import PaymentPage from './pages/PaymentPage';
 import Navbar from './components/Navbar';
 
 function AppRoutes() {
@@ -22,6 +23,7 @@ function AppRoutes() {
         <Route path="/admin/add-product" element={<AddProduct />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/my-orders" element={<MyOrders />} />
+        <Route path="/payment/:orderId" element={<PaymentPage />} />
       </Routes>
     </>
   );

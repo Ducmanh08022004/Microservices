@@ -12,7 +12,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderEventPublisher {
 
-    private static final String ORDER_TOPIC = "order";
+    // Topic gửi đơn mới sang Payment_Service
+    private static final String ORDER_CREATED_TOPIC = "order-created";
+    // Topic gửi đơn đã thanh toán sang Inventory_Service để trừ kho
+    private static final String ORDER_PAID_TOPIC = "order-paid";
     private static final String EMAIL_TOPIC = "send-email-topic-v2";
 
     private final KafkaTemplate<String, String> kafkaTemplate;
@@ -23,26 +26,45 @@ public class OrderEventPublisher {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Publish đơn hàng mới lên topic order-created (gửi sang Payment_Service).
+     * Đồng thời gửi email xác nhận đơn hàng đến người dùng.
+     */
     public void publishOrderCreated(OrderEntity order, AuthUser authUser) {
-        OrderEventPayload orderPayload = new OrderEventPayload();
-        orderPayload.setOrderId(order.getOrderId());
-        orderPayload.setUserId(order.getUserId());
-        orderPayload.setProductId(order.getProductId());
-        orderPayload.setName(order.getProductName());
-        orderPayload.setQuantity(order.getQuantity());
-        orderPayload.setTotalPrice(order.getTotalPrice());
-        orderPayload.setStatus(order.getStatus());
-
-        kafkaTemplate.send(ORDER_TOPIC, order.getProductId(), toJson(orderPayload));
+        OrderEventPayload orderPayload = buildOrderPayload(order);
+        kafkaTemplate.send(ORDER_CREATED_TOPIC, order.getProductId(), toJson(orderPayload));
 
         if (authUser.getEmail() != null && !authUser.getEmail().isBlank()) {
             EmailEventPayload emailPayload = new EmailEventPayload();
             emailPayload.setTo(authUser.getEmail());
-            emailPayload.setSubject("gmail xac nhan don");
-            emailPayload.setContent("Ten san pham: " + order.getProductName() + ", Tong tien: " + order.getTotalPrice());
+            emailPayload.setSubject("Xác nhận đơn hàng - Chờ thanh toán");
+            emailPayload.setContent("Đơn hàng " + order.getOrderId()
+                    + " đã được tạo. Sản phẩm: " + order.getProductName()
+                    + ". Tổng tiền: " + order.getTotalPrice()
+                    + " VNĐ. Vui lòng hoàn tất thanh toán.");
             emailPayload.setOrderId(order.getOrderId());
             kafkaTemplate.send(EMAIL_TOPIC, authUser.getEmail(), toJson(emailPayload));
         }
+    }
+
+    /**
+     * Publish đơn hàng đã thanh toán lên topic order-paid (gửi sang Inventory_Service để trừ kho).
+     */
+    public void publishOrderPaid(OrderEntity order) {
+        OrderEventPayload orderPayload = buildOrderPayload(order);
+        kafkaTemplate.send(ORDER_PAID_TOPIC, order.getProductId(), toJson(orderPayload));
+    }
+
+    private OrderEventPayload buildOrderPayload(OrderEntity order) {
+        OrderEventPayload payload = new OrderEventPayload();
+        payload.setOrderId(order.getOrderId());
+        payload.setUserId(order.getUserId());
+        payload.setProductId(order.getProductId());
+        payload.setName(order.getProductName());
+        payload.setQuantity(order.getQuantity());
+        payload.setTotalPrice(order.getTotalPrice());
+        payload.setStatus(order.getStatus());
+        return payload;
     }
 
     private String toJson(Object payload) {
