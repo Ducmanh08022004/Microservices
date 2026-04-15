@@ -14,48 +14,9 @@ import java.util.Optional;
 public class PaymentController {
 
     private final PaymentApplicationService paymentApplicationService;
-    private final com.example.payment.service.MomoService momoService;
 
-    public PaymentController(PaymentApplicationService paymentApplicationService, 
-                             com.example.payment.service.MomoService momoService) {
+    public PaymentController(PaymentApplicationService paymentApplicationService) {
         this.paymentApplicationService = paymentApplicationService;
-        this.momoService = momoService;
-    }
-
-    /**
-     * Tạo link thanh toán Momo cho đơn hàng.
-     * GET /api/payments/{orderId}/momo
-     */
-    @GetMapping("/{orderId}/momo")
-    public ResponseEntity<?> createMomoPayment(@PathVariable String orderId) {
-        Optional<PaymentResponse> payment = paymentApplicationService.getPaymentByOrderId(orderId);
-        if (payment.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Không tìm thấy thông tin đơn hàng"));
-        }
-        
-        String payUrl = momoService.createPaymentUrl(orderId, payment.get().getAmount().longValue());
-        if (payUrl != null) {
-            return ResponseEntity.ok(Map.of("payUrl", payUrl));
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Không thể tạo link thanh toán Momo"));
-    }
-
-    /**
-     * Nhận thông báo IPN từ Momo.
-     * POST /api/payments/momo-ipn
-     */
-    @PostMapping("/momo-ipn")
-    public ResponseEntity<?> momoIPN(@RequestBody Map<String, Object> body) {
-        // Momo gửi result trong body: orderId, resultCode, ...
-        String orderId = (String) body.get("orderId");
-        Integer resultCode = (Integer) body.get("resultCode");
-        
-        if (orderId != null && resultCode != null) {
-            paymentApplicationService.processMomoIPN(orderId, resultCode);
-        }
-        
-        // Luôn trả về 204 cho Momo để báo đã nhận
-        return ResponseEntity.noContent().build();
     }
 
     /**

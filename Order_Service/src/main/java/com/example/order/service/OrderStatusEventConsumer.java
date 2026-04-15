@@ -28,6 +28,7 @@ public class OrderStatusEventConsumer {
     private static final String PAYMENT_RESULT_GROUP = "order-payment-result-consumer";
 
     private static final String STATUS_PAID = "PAID";
+    private static final String STATUS_CONFIRMED = "CONFIRMED";
     private static final String STATUS_PAYMENT_FAILED = "PAYMENT_FAILED";
 
     private final ObjectMapper objectMapper;
@@ -66,6 +67,11 @@ public class OrderStatusEventConsumer {
             }
 
             OrderEntity order = orderOptional.get();
+            if (STATUS_CONFIRMED.equals(event.getStatus()) && STATUS_PAID.equals(order.getStatus())) {
+                log.info("Bỏ qua status CONFIRMED từ inventory vì orderId={} đã ở trạng thái PAID", event.getOrderId());
+                return;
+            }
+
             if (!event.getStatus().equals(order.getStatus())) {
                 order.setStatus(event.getStatus());
                 orderRepository.save(order);

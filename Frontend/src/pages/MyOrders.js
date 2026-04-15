@@ -4,13 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
 
 const STATUS_CONFIG = {
-    PENDING_PAYMENT: { label: 'Chờ thanh toán', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: '⏳' },
     PROCESSING:      { label: 'Đang xử lý',     color: '#6366f1', bg: 'rgba(99,102,241,0.15)',  icon: '🔄' },
+    PENDING_PAYMENT: { label: 'Đang xử lý',     color: '#6366f1', bg: 'rgba(99,102,241,0.15)',  icon: '🔄' },
     PAID:            { label: 'Đã thanh toán',   color: '#3b82f6', bg: 'rgba(59,130,246,0.15)',  icon: '💳' },
     CONFIRMED:       { label: 'Đã xác nhận',     color: '#10b981', bg: 'rgba(16,185,129,0.15)',  icon: '✅' },
     PAYMENT_FAILED:  { label: 'TT thất bại',     color: '#ef4444', bg: 'rgba(239,68,68,0.15)',   icon: '❌' },
     FAILED_UPDATE:   { label: 'Lỗi cập nhật',   color: '#ef4444', bg: 'rgba(239,68,68,0.15)',   icon: '⚠️' },
 };
+
+const PAYMENT_ACTIONABLE_STATUSES = new Set(['PROCESSING', 'PENDING_PAYMENT']);
 
 function StatusBadge({ status }) {
     const cfg = STATUS_CONFIG[status] || { label: status || '—', color: '#64748b', bg: 'rgba(100,116,139,0.15)', icon: '❓' };
@@ -90,8 +92,8 @@ function MyOrders() {
                                 className="card"
                                 style={{ padding: '18px 20px', cursor: 'pointer', transition: 'all 0.2s' }}
                                 onClick={() => {
-                                    // Nếu đang chờ thanh toán → redirect sang PaymentPage
-                                    if (order.status === 'PENDING_PAYMENT') {
+                                    // Nếu đang xử lý thanh toán → redirect sang PaymentPage
+                                    if (PAYMENT_ACTIONABLE_STATUSES.has(order.status)) {
                                         navigate(`/payment/${order.order_id}`);
                                     }
                                 }}
@@ -118,7 +120,7 @@ function MyOrders() {
                                             {order.total_price?.toLocaleString('vi-VN')} VNĐ
                                         </p>
                                         <StatusBadge status={order.status} />
-                                        {order.status === 'PENDING_PAYMENT' && (
+                                        {PAYMENT_ACTIONABLE_STATUSES.has(order.status) && (
                                             <p style={{ margin: '6px 0 0', fontSize: 11, color: '#f59e0b' }}>
                                                 Nhấn để thanh toán →
                                             </p>

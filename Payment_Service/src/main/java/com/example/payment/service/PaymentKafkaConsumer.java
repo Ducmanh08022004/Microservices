@@ -14,7 +14,7 @@ import java.util.UUID;
 @Service
 /**
  * Consumer lắng nghe topic order-created.
- * Khi nhận được đơn hàng PENDING_PAYMENT, tạo bản ghi payment và bắt đầu xử lý.
+ * Khi nhận được đơn hàng PROCESSING, tạo bản ghi payment và bắt đầu xử lý.
  * Đây là Mock mode: tự động publish payment-result=PAID để giả lập thanh toán thành công.
  */
 public class PaymentKafkaConsumer {
@@ -23,20 +23,16 @@ public class PaymentKafkaConsumer {
 
     private static final String ORDER_CREATED_TOPIC = "order-created";
     private static final String PAYMENT_GROUP = "payment-processor";
-    private static final String STATUS_PENDING_PAYMENT = "PENDING_PAYMENT";
     private static final String STATUS_PROCESSING = "PROCESSING";
 
     private final PaymentRepository paymentRepository;
-    private final PaymentEventPublisher paymentEventPublisher;
     private final ObjectMapper objectMapper;
 
     public PaymentKafkaConsumer(
             PaymentRepository paymentRepository,
-            PaymentEventPublisher paymentEventPublisher,
             ObjectMapper objectMapper
     ) {
         this.paymentRepository = paymentRepository;
-        this.paymentEventPublisher = paymentEventPublisher;
         this.objectMapper = objectMapper;
     }
 
@@ -54,8 +50,8 @@ public class PaymentKafkaConsumer {
                 log.warn("Nhận được event order-created không hợp lệ, bỏ qua.");
                 return;
             }
-            if (!STATUS_PENDING_PAYMENT.equals(event.getStatus())) {
-                log.debug("Event orderId={} không ở trạng thái PENDING_PAYMENT, bỏ qua.", event.getOrderId());
+            if (!STATUS_PROCESSING.equals(event.getStatus())) {
+                log.debug("Event orderId={} không ở trạng thái PROCESSING, bỏ qua.", event.getOrderId());
                 return;
             }
 

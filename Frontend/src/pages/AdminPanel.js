@@ -53,7 +53,7 @@ const AdminPanel = () => {
             } 
             else if (activeTab === 'categories') {
                 url = `${API_GATEWAY}/api/categories`;
-                // Backend categories might take some pagination or we filter on frontend
+                if (debouncedSearch) params.search = debouncedSearch; // Note: You might need to add search support to CategoryController too later
             } 
             else if (activeTab === 'orders' || activeTab === 'reports') {
                 url = `${API_GATEWAY}/api/orders/admin`;
@@ -71,18 +71,16 @@ const AdminPanel = () => {
                 params: params 
             });
 
-            if (res.data?.content) {
+            // Standardize handling of Page object vs Simple List
+            if (res.data && res.data.content) {
                 setData(res.data.content);
-                setTotalPages(res.data.totalPages || 1);
-                setPage(res.data.number || 0);
+                setTotalPages(res.data.totalPages);
+                setPage(res.data.number);
             } else {
-                let items = Array.isArray(res.data) ? res.data : [];
-                // Frontend filtering for simple lists if needed
-                if (activeTab === 'categories' && debouncedSearch) {
-                    items = items.filter(c => c.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
-                }
+                const items = Array.isArray(res.data) ? res.data : [];
                 setData(items);
                 setTotalPages(1);
+                setPage(0);
             }
         } catch (err) {
             setError("Lỗi khi tải dữ liệu.");
@@ -133,16 +131,61 @@ const AdminPanel = () => {
 
     const renderPagination = () => {
         if (totalPages <= 1) return null;
+        
+        // Premium Pagination UI
         return (
-            <div className="pagination" style={{ marginTop: 20, display: 'flex', gap: 15, justifyContent: 'center', alignItems: 'center' }}>
-                <button className="btn btn-ghost" disabled={page === 0} onClick={() => handlePageChange(page - 1)}>
+            <div className="pagination-premium" style={{ 
+                marginTop: 30, 
+                display: 'flex', 
+                gap: 8, 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                padding: '10px 0'
+            }}>
+                <button 
+                    className="btn btn-ghost" 
+                    disabled={page === 0} 
+                    onClick={() => handlePageChange(0)}
+                    style={{ padding: '8px 12px' }}
+                >
+                    &laquo; Đầu
+                </button>
+                <button 
+                    className="btn btn-ghost" 
+                    disabled={page === 0} 
+                    onClick={() => handlePageChange(page - 1)}
+                    style={{ padding: '8px 15px' }}
+                >
                     &larr; Trước
                 </button>
-                <div style={{ fontSize: 14, fontWeight: 500 }}>
-                    Trang <span style={{ color: 'var(--brand)' }}>{page + 1}</span> / {totalPages}
+
+                <div className="page-indicator" style={{ 
+                    padding: '8px 20px', 
+                    background: 'rgba(15, 118, 110, 0.05)', 
+                    borderRadius: 12,
+                    border: '1px solid rgba(15, 118, 110, 0.1)',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: 'var(--brand)'
+                }}>
+                    Trang {page + 1} / {totalPages}
                 </div>
-                <button className="btn btn-ghost" disabled={page + 1 >= totalPages} onClick={() => handlePageChange(page + 1)}>
+
+                <button 
+                    className="btn btn-ghost" 
+                    disabled={page + 1 >= totalPages} 
+                    onClick={() => handlePageChange(page + 1)}
+                    style={{ padding: '8px 15px' }}
+                >
                     Sau &rarr;
+                </button>
+                <button 
+                    className="btn btn-ghost" 
+                    disabled={page + 1 >= totalPages} 
+                    onClick={() => handlePageChange(totalPages - 1)}
+                    style={{ padding: '8px 12px' }}
+                >
+                    Cuối &raquo;
                 </button>
             </div>
         );

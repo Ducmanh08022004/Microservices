@@ -85,15 +85,6 @@ public class PaymentApplicationService {
         return toResponse(payment);
     }
 
-    public void processMomoIPN(String orderId, int resultCode) {
-        log.info("Processing Momo IPN for orderId={}, resultCode={}", orderId, resultCode);
-        if (resultCode == 0) {
-            confirmPayment(orderId);
-        } else {
-            cancelPayment(orderId);
-        }
-    }
-
     private PaymentResponse toResponse(PaymentEntity p) {
         PaymentResponse r = new PaymentResponse();
         r.setPaymentId(p.getPaymentId());

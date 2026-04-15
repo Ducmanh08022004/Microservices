@@ -19,8 +19,11 @@ public class CategoryController {
     }
 
     @GetMapping
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+    public org.springframework.data.domain.Page<Category> getAllCategories(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return categoryRepository.findAll(org.springframework.data.domain.PageRequest.of(page, size));
     }
 
     @PostMapping("/admin")

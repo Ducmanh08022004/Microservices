@@ -26,7 +26,6 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
             "/auth/login",
             "/auth/register",
             "/auth/health",
-            "/api/payments/momo-ipn",
             "/actuator"
     );
 

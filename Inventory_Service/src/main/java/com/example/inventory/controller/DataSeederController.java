@@ -42,7 +42,8 @@ public class DataSeederController {
             // Chỉ up lên nếu ảnh chưa phải là của cloudinary
             if (currentUrl != null && !currentUrl.contains("cloudinary.com") && currentUrl.startsWith("http")) {
                 try {
-                    Map uploadResult = cloudinary.uploader().upload(currentUrl, com.cloudinary.utils.ObjectUtils.asMap(
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> uploadResult = (Map<String, Object>) cloudinary.uploader().upload(currentUrl, com.cloudinary.utils.ObjectUtils.asMap(
                         "folder", "products"
                     ));
                     String newUrl = (String) uploadResult.get("secure_url");

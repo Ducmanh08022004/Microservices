@@ -2,7 +2,7 @@ package com.example.payment.dto;
 
 /**
  * Payload nhận từ Kafka topic order-created.
- * Được gửi bởi Order_Service khi đơn hàng ở trạng thái PENDING_PAYMENT.
+ * Được gửi bởi Order_Service khi đơn hàng ở trạng thái PROCESSING.
  */
 public class OrderCreatedEventPayload {
     private String orderId;
