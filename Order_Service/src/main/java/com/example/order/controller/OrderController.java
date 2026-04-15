@@ -7,6 +7,7 @@ import com.example.order.service.OrderApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -82,7 +83,10 @@ public class OrderController {
         if (!"ADMIN".equalsIgnoreCase(xUserRole)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Bạn không có quyền admin!"));
         }
-        return ResponseEntity.ok(orderApplicationService.getAllOrders(PageRequest.of(page, size), order_id));
+        return ResponseEntity.ok(orderApplicationService.getAllOrders(
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")),
+                order_id
+        ));
     }
 
     @PutMapping("/admin/{orderId}/status")

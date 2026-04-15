@@ -9,21 +9,18 @@ const PAYMENT_STATUS_CONFIG = {
         label: 'Đang chờ thanh toán',
         color: '#f59e0b',
         bg: 'rgba(245, 158, 11, 0.12)',
-        icon: '⏳',
         showActions: true,
     },
     PAID: {
         label: 'Thanh toán thành công!',
         color: '#10b981',
         bg: 'rgba(16, 185, 129, 0.12)',
-        icon: '✅',
         showActions: false,
     },
     PAYMENT_FAILED: {
         label: 'Thanh toán thất bại',
         color: '#ef4444',
         bg: 'rgba(239, 68, 68, 0.12)',
-        icon: '❌',
         showActions: false,
     },
 };
@@ -115,7 +112,6 @@ function PaymentPage() {
         label: payment.status,
         color: '#64748b',
         bg: 'rgba(100, 116, 139, 0.12)',
-        icon: '❓',
         showActions: false,
     }) : null;
 
@@ -133,7 +129,7 @@ function PaymentPage() {
 
                 {loading && (
                     <div className="card" style={{ textAlign: 'center', padding: '40px 24px' }}>
-                        <div style={{ fontSize: 36, marginBottom: 12 }}>⏳</div>
+                        <div style={{ fontSize: 36, marginBottom: 12 }}></div>
                         <p style={{ color: 'var(--text-muted)' }}>Đang tải thông tin thanh toán...</p>
                     </div>
                 )}
@@ -187,7 +183,7 @@ function PaymentPage() {
                         {statusConfig.showActions && (
                             <div className="card" style={{ marginBottom: 20 }}>
                                 <h3 style={{ marginTop: 0, marginBottom: 8, fontSize: 16, fontWeight: 600 }}>
-                                    🏦 Xác Nhận Thanh Toán
+                                 Xác Nhận Thanh Toán
                                 </h3>
                                 <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>
                                     Nhấn nút bên dưới để xác nhận thanh toán (môi trường Demo).
@@ -218,7 +214,7 @@ function PaymentPage() {
                                     onClick={handleConfirm}
                                     disabled={actionLoading}
                                 >
-                                    {actionLoading ? 'Đang xử lý...' : '✅ Xác Nhận Đã Thanh Toán'}
+                                    {actionLoading ? 'Đang xử lý...' : 'Xác Nhận Đã Thanh Toán'}
                                 </button>
 
                                 <button
@@ -228,7 +224,7 @@ function PaymentPage() {
                                     onClick={handleCancel}
                                     disabled={actionLoading}
                                 >
-                                    ❌ Hủy Thanh Toán
+                                    Hủy Thanh Toán
                                 </button>
                             </div>
                         )}
@@ -244,7 +240,7 @@ function PaymentPage() {
                                     className="btn btn-primary"
                                     onClick={() => navigate('/my-orders')}
                                 >
-                                    📦 Xem Đơn Hàng Của Tôi
+                                    Xem Đơn Hàng Của Tôi
                                 </button>
                             </div>
                         )}
@@ -259,7 +255,7 @@ function PaymentPage() {
                                     className="btn btn-primary"
                                     onClick={() => navigate(-1)}
                                 >
-                                    🔄 Thử Lại
+                                    Thử Lại
                                 </button>
                             </div>
                         )}
