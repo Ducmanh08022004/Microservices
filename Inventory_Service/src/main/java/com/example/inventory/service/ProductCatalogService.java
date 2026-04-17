@@ -46,15 +46,15 @@ public class ProductCatalogService {
      * Output:
      * - Page<Product> bao gồm danh sách theo trang và metadata phân trang.
      */
-    public Page<Product> getProductsPage(int page, int size, String search) {
+    public Page<Product> getProductsPage(int page, int size, String search, Long categoryId) {
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 1), 100);
         Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "id"));
         
         if (search != null && !search.isBlank()) {
-            return productRepository.searchProducts(search, pageable);
+            return productRepository.searchProducts(search, categoryId, pageable);
         }
-        return productRepository.findAll(pageable);
+        return productRepository.findAllByCategoryId(categoryId, pageable);
     }
 
     /**

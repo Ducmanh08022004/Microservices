@@ -44,9 +44,10 @@ public class ProductController {
     public Page<Product> getProductsPaged(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "24") int size,
-            @RequestParam(name = "search", required = false) String search
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "categoryId", required = false) Long categoryId
     ) {
-        return productCatalogService.getProductsPage(page, size, search);
+        return productCatalogService.getProductsPage(page, size, search, categoryId);
     }
 
     /**

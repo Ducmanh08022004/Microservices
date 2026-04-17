@@ -1,40 +1,92 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Dùng để chuyển trang
-import { jwtDecode } from 'jwt-decode'; // Thư viện giải mã token
+import { useLocation, useNavigate } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
 
 function Dashboard() {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const queryParams = new URLSearchParams(location.search);
+
     const [products, setProducts] = useState([]);
-    const [isAdmin, setIsAdmin] = useState(false);
     const [page, setPage] = useState(0);
     const [size] = useState(24);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const observerTargetRef = useRef(null);
+    const [searchTerm, setSearchTerm] = useState(() => queryParams.get('search') || '');
+    const [debouncedSearch, setDebouncedSearch] = useState(() => queryParams.get('search') || '');
+    const [categories, setCategories] = useState([]);
+    const [selectedCategoryId, setSelectedCategoryId] = useState(() => queryParams.get('categoryId') || 'all');
     const requestInFlightRef = useRef(false);
-    const navigate = useNavigate();
+    const activeRequestIdRef = useRef(0);
+
+    const categoryChips = categories;
 
     useEffect(() => {
-        const token = localStorage.getItem('accessToken');
-        
-        if (token) {
-            try {
-                // Giải mã token để lấy role
-                const decoded = jwtDecode(token);
-                if (decoded.role === 'ADMIN') {
-                    setIsAdmin(true);
-                }
-            } catch (error) {
-                console.error("Token không hợp lệ");
-            }
-        }
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm.trim());
+        }, 350);
 
-        // Reset danh sách khi vào trang lần đầu.
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    useEffect(() => {
         setProducts([]);
         setPage(0);
         setHasMore(true);
+    }, [debouncedSearch, selectedCategoryId]);
+
+    useEffect(() => {
+        const params = new URLSearchParams();
+
+        if (debouncedSearch) {
+            params.set('search', debouncedSearch);
+        }
+
+        if (selectedCategoryId !== 'all') {
+            params.set('categoryId', selectedCategoryId);
+        }
+
+        navigate(
+            {
+                pathname: location.pathname,
+                search: params.toString() ? `?${params.toString()}` : '',
+            },
+            { replace: true }
+        );
+    }, [debouncedSearch, selectedCategoryId, location.pathname, navigate]);
+
+    useEffect(() => {
+        const searchFromUrl = new URLSearchParams(location.search).get('search') || '';
+        const categoryIdFromUrl = new URLSearchParams(location.search).get('categoryId') || 'all';
+
+        if (searchFromUrl !== searchTerm) {
+            setSearchTerm(searchFromUrl);
+            setDebouncedSearch(searchFromUrl);
+        }
+
+        if (categoryIdFromUrl !== selectedCategoryId) {
+            setSelectedCategoryId(categoryIdFromUrl);
+        }
+        // Intentionally depend on the raw URL so browser navigation keeps filters intact.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.search]);
+
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+
+        axios.get(`${API_GATEWAY}/api/categories`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { page: 0, size: 1000 },
+        })
+            .then(res => {
+                const items = Array.isArray(res.data?.content) ? res.data.content : [];
+                setCategories(items.filter(category => category?.id && category?.name));
+            })
+            .catch(() => {
+                setCategories([]);
+            });
     }, []);
 
     useEffect(() => {
@@ -42,115 +94,185 @@ function Dashboard() {
             return;
         }
 
+        const requestId = ++activeRequestIdRef.current;
         const token = localStorage.getItem('accessToken');
-
+        requestInFlightRef.current = true;
         setLoading(true);
         setError('');
-        requestInFlightRef.current = true;
 
         axios.get(`${API_GATEWAY}/api/products/paged`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-            params: { page, size }
+            headers: { Authorization: `Bearer ${token}` },
+            params: {
+                page,
+                size,
+                ...(debouncedSearch ? { search: debouncedSearch } : {}),
+                ...(selectedCategoryId !== 'all' ? { categoryId: selectedCategoryId } : {}),
+            },
         })
-        .then(res => {
-            const newItems = res.data.content || [];
-            const totalPages = res.data.totalPages || 0;
+            .then(res => {
+                if (activeRequestIdRef.current !== requestId) {
+                    return;
+                }
 
-            setProducts(prev => (page === 0 ? newItems : [...prev, ...newItems]));
-            setHasMore(page + 1 < totalPages);
-        })
-        .catch(() => {
-            setError('Không thể tải danh sách sản phẩm. Vui lòng thử lại.');
-            setHasMore(false);
-        })
-        .finally(() => {
-            requestInFlightRef.current = false;
-            setLoading(false);
-        });
-    }, [page, size]);
+                const newItems = res.data.content || [];
+                const isLastPage = typeof res.data.last === 'boolean'
+                    ? res.data.last
+                    : newItems.length < size;
+
+                setProducts(prev => (page === 0 ? newItems : [...prev, ...newItems]));
+                setHasMore(newItems.length > 0 && !isLastPage);
+            })
+            .catch(() => {
+                if (activeRequestIdRef.current !== requestId) {
+                    return;
+                }
+
+                setError('Không thể tải danh sách sản phẩm. Vui lòng thử lại.');
+                setHasMore(false);
+            })
+            .finally(() => {
+                if (activeRequestIdRef.current !== requestId) {
+                    return;
+                }
+
+                requestInFlightRef.current = false;
+                setLoading(false);
+            });
+    }, [page, size, hasMore, debouncedSearch, selectedCategoryId]);
 
     useEffect(() => {
-        const target = observerTargetRef.current;
-        if (!target) {
-            return;
-        }
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const firstEntry = entries[0];
-                if (!firstEntry.isIntersecting) {
-                    return;
-                }
-                if (!hasMore || loading || requestInFlightRef.current) {
-                    return;
-                }
-                setPage(prev => prev + 1);
-            },
-            {
-                root: null,
-                rootMargin: '200px',
-                threshold: 0
+        const checkNearBottom = () => {
+            if (!hasMore || loading || requestInFlightRef.current) {
+                return;
             }
-        );
 
-        observer.observe(target);
-        return () => observer.disconnect();
-    }, [hasMore, loading]);
+            const scrollPosition = window.innerHeight + window.scrollY;
+            const documentHeight = document.documentElement.scrollHeight;
+            if (scrollPosition >= documentHeight - 400) {
+                setPage(prev => prev + 1);
+            }
+        };
+
+        window.addEventListener('scroll', checkNearBottom, { passive: true });
+        window.addEventListener('resize', checkNearBottom);
+        checkNearBottom();
+
+        return () => {
+            window.removeEventListener('scroll', checkNearBottom);
+            window.removeEventListener('resize', checkNearBottom);
+        };
+    }, [hasMore, loading, products.length]);
+
+    const handleSearch = () => {
+        setDebouncedSearch(searchTerm.trim());
+    };
+
+    const handleClear = () => {
+        setSearchTerm('');
+        setDebouncedSearch('');
+        setSelectedCategoryId('all');
+    };
 
     return (
         <div className="page-shell">
             <div className="dashboard-wrap">
-                <div className="dashboard-head">
-                    <div>
-                        <h1 className="dashboard-title">Quản Lý Kho</h1>
-                        <p className="dashboard-subtitle">Service Node.js | Danh sách sản phẩm theo trang</p>
+                <div className="home-search card">
+                    <div className="home-search__copy">
+                        <div className="home-search__title">Tìm sản phẩm</div>
+                        <div className="home-search__subtitle">
+                            Tìm theo tên sản phẩm, thương hiệu.
+                        </div>
                     </div>
 
-                    {/* Nút thêm sản phẩm chỉ hiện nếu là ADMIN */}
+                    <div className="home-search__bar">
+                        <input
+                            className="input home-search__input"
+                            placeholder="Nhập từ khóa tìm kiếm..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleSearch();
+                                }
+                            }}
+                        />
+
+                        <button className="btn btn-primary" onClick={handleSearch}>
+                            Tìm kiếm
+                        </button>
+
+                        <button className="btn btn-ghost" onClick={handleClear}>
+                            Xóa
+                        </button>
+                    </div>
                 </div>
 
-                {/* GIAO DIỆN DẠNG THẺ (GRID) */}
-                <div className="product-grid">
+                {categoryChips.length > 0 && (
+                    <div className="marketplace-chips">
+                        <button
+                            className={`marketplace-chip marketplace-chip--button ${selectedCategoryId === 'all' ? 'is-active' : ''}`}
+                            onClick={() => setSelectedCategoryId('all')}
+                        >
+                            Tất cả
+                        </button>
+                        {categoryChips.map(category => (
+                            <button
+                                key={category.id}
+                                className={`marketplace-chip marketplace-chip--button ${selectedCategoryId === String(category.id) ? 'is-active' : ''}`}
+                                onClick={() => setSelectedCategoryId(String(category.id))}
+                            >
+                                {category.name}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                <div className="product-grid marketplace-grid">
                     {products.map(p => (
                         <div
                             key={p.product_id}
                             className="product-card"
                             onClick={() => navigate(`/product/${p.product_id}`)}
                         >
-                            {p.image_url ? (
-                                <img src={p.image_url} alt={p.name} style={{ width: '100%', height: 180, objectFit: 'cover', borderTopLeftRadius: 12, borderTopRightRadius: 12 }} />
-                            ) : (
-                                <div style={{ width: '100%', height: 180, background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01))', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTopLeftRadius: 12, borderTopRightRadius: 12 }}>
-                                    <span style={{ fontSize: 40, opacity: 0.5 }}>🛍️</span>
-                                </div>
-                            )}
-                            <div style={{ padding: '16px' }}>
-                                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', fontWeight: 600 }}>
-                                {p.brand || 'No Brand'} • {p.category?.name || 'General'}
-                                </div>
-                                <h3 className="product-name" style={{ margin: '0 0 8px', fontSize: '1.05rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</h3>
-                                
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 8, fontSize: 13, color: '#fbbf24' }}>
-                                    <span>★</span> {p.rating || 0}
+                            <div className="product-card__image">
+                                {p.image_url ? (
+                                    <img src={p.image_url} alt={p.name} />
+                                ) : (
+                                    <div className="product-card__placeholder">
+                                        <span>🛍️</span>
+                                    </div>
+                                )}
+                                <div className="product-card__flag">{p.discount_price ? 'Giảm giá' : 'Hot'}</div>
+                            </div>
+
+                            <div className="product-card__body">
+                                <div className="product-card__meta">
+                                    <span>{p.brand || 'No Brand'}</span>
+                                    <span>{p.category?.name || 'General'}</span>
                                 </div>
 
-                                <div style={{ marginBottom: 8 }}>
+                                <h3 className="product-name product-card__title">{p.name}</h3>
+
+                                <div className="product-card__rating">
+                                    <span>★</span>
+                                    <span>{p.rating || 0}</span>
+                                    <span className="product-card__sold">Đã xem nhiều</span>
+                                </div>
+
+                                <div className="product-card__price">
                                     {p.discount_price ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ fontWeight: 'bold', color: 'var(--accent)', fontSize: '1.1rem' }}>{p.discount_price.toLocaleString()} VNĐ</span>
-                                            <span style={{ textDecoration: 'line-through', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{p.price.toLocaleString()} VNĐ</span>
-                                        </div>
+                                        <>
+                                            <span className="product-card__current-price">{p.discount_price.toLocaleString()} VNĐ</span>
+                                            <span className="product-card__old-price">{p.price.toLocaleString()} VNĐ</span>
+                                        </>
                                     ) : (
-                                        <span style={{ fontWeight: 'bold', color: 'var(--brand)', fontSize: '1.1rem' }}>{p.price?.toLocaleString()} VNĐ</span>
+                                        <span className="product-card__current-price">{p.price?.toLocaleString()} VNĐ</span>
                                     )}
                                 </div>
-                                
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>Mã: {p.product_id}</span>
-                                    <span style={{ 
-                                        color: p.stock > 0 ? 'var(--ok)' : 'var(--danger)',
-                                        fontWeight: 600
-                                    }}>
+
+                                <div className="product-card__footer">
+                                    <span>Mã: {p.product_id}</span>
+                                    <span style={{ color: p.stock > 0 ? 'var(--ok)' : 'var(--danger)', fontWeight: 700 }}>
                                         Kho: {p.stock}
                                     </span>
                                 </div>
@@ -159,16 +281,35 @@ function Dashboard() {
                     ))}
                 </div>
 
-                {loading && <p className="status-text">Đang tải thêm sản phẩm...</p>}
-                {error && <p className="status-text status-error">{error}</p>}
-
-                {!hasMore && products.length > 0 && (
-                    <p className="status-text status-muted">
-                        Đã tải hết sản phẩm.
-                    </p>
+                {!loading && products.length === 0 && (debouncedSearch || selectedCategoryId !== 'all') && (
+                    <div className="card marketplace-empty">
+                        <div style={{ fontSize: 40, marginBottom: 10 }}>🔎</div>
+                        <h3>Không có sản phẩm phù hợp</h3>
+                        <p>Hãy đổi danh mục hoặc xóa tìm kiếm.</p>
+                        <button className="btn btn-primary" onClick={handleClear}>
+                            Xóa bộ lọc
+                        </button>
+                    </div>
                 )}
 
-                <div ref={observerTargetRef} style={{ height: '1px' }} />
+                {!loading && products.length === 0 && !debouncedSearch && selectedCategoryId === 'all' && (
+                    <div className="card marketplace-empty">
+                        <div style={{ fontSize: 40, marginBottom: 10 }}>🔎</div>
+                        <h3>Không có sản phẩm phù hợp</h3>
+                        <p>Hãy đổi từ khóa hoặc xóa tìm kiếm.</p>
+                        <button className="btn btn-primary" onClick={handleClear}>
+                            Xóa tìm kiếm
+                        </button>
+                    </div>
+                )}
+
+                {loading && <p className="status-text marketplace-loading">Đang tải thêm sản phẩm...</p>}
+                {error && <p className="status-text status-error marketplace-loading">{error}</p>}
+
+                {!hasMore && products.length > 0 && (
+                    <p className="status-text status-muted">Đã tải hết sản phẩm.</p>
+                )}
+
             </div>
         </div>
     );

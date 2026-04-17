@@ -15,8 +15,25 @@ import org.springframework.data.domain.Pageable;
  */
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    @Query("SELECT p FROM Product p WHERE p.productId LIKE %:search% OR p.name LIKE %:search%")
-    Page<Product> searchProducts(@Param("search") String search, Pageable pageable);
+        @Query("""
+                        SELECT p
+                        FROM Product p
+                        WHERE (
+                                :search IS NULL OR :search = ''
+                                OR p.productId LIKE %:search%
+                                OR p.name LIKE %:search%
+                                OR p.brand LIKE %:search%
+                        )
+                        AND (:categoryId IS NULL OR p.category.id = :categoryId)
+                        """)
+        Page<Product> searchProducts(@Param("search") String search, @Param("categoryId") Long categoryId, Pageable pageable);
+
+        @Query("""
+                        SELECT p
+                        FROM Product p
+                        WHERE (:categoryId IS NULL OR p.category.id = :categoryId)
+                        """)
+        Page<Product> findAllByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
 
     /**
      * Tìm sản phẩm theo productId nghiệp vụ.
