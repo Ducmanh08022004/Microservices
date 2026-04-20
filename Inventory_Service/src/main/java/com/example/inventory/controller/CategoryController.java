@@ -4,8 +4,10 @@ import com.example.inventory.model.Category;
 import com.example.inventory.repository.CategoryRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,11 +21,21 @@ public class CategoryController {
     }
 
     @GetMapping
-    public org.springframework.data.domain.Page<Category> getAllCategories(
+    public Page<Category> getAllCategories(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return categoryRepository.findAll(org.springframework.data.domain.PageRequest.of(page, size));
+        return getCategoriesPage(page, size);
+    }
+
+    @GetMapping("/paged")
+    public Page<Category> getCategoriesPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        return categoryRepository.findAll(PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "id")));
     }
 
     @PostMapping("/admin")

@@ -1,10 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+const ADMIN_TAB_PATHS = {
+    products: '/admin/products',
+    categories: '/admin/categories',
+    orders: '/admin/orders',
+    users: '/admin/users',
+    reports: '/admin/reports'
+};
+
+function getActiveTabFromPath(pathname) {
+    const match = Object.entries(ADMIN_TAB_PATHS).find(([, path]) => path === pathname);
+    return match ? match[0] : 'products';
+}
+
+function normalizePaginationPayload(data) {
+    const content = Array.isArray(data?.content) ? data.content : Array.isArray(data) ? data : [];
+    const pageInfo = data?.page || data;
+
+    const numberValue = Number.isFinite(Number(pageInfo?.number)) ? Number(pageInfo.number) : 0;
+    const totalPagesValue = Number.isFinite(Number(pageInfo?.totalPages)) ? Number(pageInfo.totalPages) : 0;
+
+    return {
+        content,
+        number: numberValue,
+        totalPages: totalPagesValue
+    };
+}
 
 const AdminPanel = () => {
-    const [activeTab, setActiveTab] = useState('products');
     const [data, setData] = useState([]);
     const [stats, setStats] = useState({ 
         revenue: 0, daily: 0, weekly: 0, monthly: 0,
@@ -20,9 +46,12 @@ const AdminPanel = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [userFilters, setUserFilters] = useState({ role: '', status: '' });
+    const lastQueryKeyRef = React.useRef('');
     
+    const location = useLocation();
     const navigate = useNavigate();
     const token = localStorage.getItem('accessToken');
+    const activeTab = getActiveTabFromPath(location.pathname);
 
     // Debounce search term
     useEffect(() => {
@@ -33,12 +62,32 @@ const AdminPanel = () => {
     }, [searchTerm]);
 
     useEffect(() => {
+        setSearchTerm('');
+        setDebouncedSearch('');
+        setUserFilters({ role: '', status: '' });
+        setData([]);
+        setTotalPages(0);
         setPage(0);
-        fetchData(0);
+    }, [activeTab]);
+
+    useEffect(() => {
         if (activeTab === 'reports') {
             fetchStats();
+            return;
         }
-    }, [activeTab, debouncedSearch, userFilters]);
+
+        const queryKey = `${activeTab}|${debouncedSearch}|${userFilters.role}|${userFilters.status}`;
+
+        if (lastQueryKeyRef.current !== queryKey) {
+            lastQueryKeyRef.current = queryKey;
+            if (page !== 0) {
+                setPage(0);
+                return;
+            }
+        }
+
+        fetchData(page);
+    }, [activeTab, page, debouncedSearch, userFilters]);
 
     const fetchData = async (targetPage) => {
         setLoading(true);
@@ -52,8 +101,8 @@ const AdminPanel = () => {
                 if (debouncedSearch) params.search = debouncedSearch;
             } 
             else if (activeTab === 'categories') {
-                url = `${API_GATEWAY}/api/categories`;
-                if (debouncedSearch) params.search = debouncedSearch; // Note: You might need to add search support to CategoryController too later
+                url = `${API_GATEWAY}/api/categories/paged`;
+                if (debouncedSearch) params.search = debouncedSearch; 
             } 
             else if (activeTab === 'orders' || activeTab === 'reports') {
                 url = `${API_GATEWAY}/api/orders/admin`;
@@ -71,17 +120,10 @@ const AdminPanel = () => {
                 params: params 
             });
 
-            // Standardize handling of Page object vs Simple List
-            if (res.data && res.data.content) {
-                setData(res.data.content);
-                setTotalPages(res.data.totalPages);
-                setPage(res.data.number);
-            } else {
-                const items = Array.isArray(res.data) ? res.data : [];
-                setData(items);
-                setTotalPages(1);
-                setPage(0);
-            }
+            const normalized = normalizePaginationPayload(res.data);
+            setData(normalized.content);
+            setTotalPages(normalized.totalPages);
+            setPage(normalized.number);
         } catch (err) {
             setError("Lỗi khi tải dữ liệu.");
         } finally {
@@ -109,7 +151,7 @@ const AdminPanel = () => {
 
     const handlePageChange = (newPage) => {
         if (newPage >= 0 && newPage < totalPages) {
-            fetchData(newPage);
+            setPage(newPage);
         }
     };
 
@@ -168,7 +210,7 @@ const AdminPanel = () => {
                     fontWeight: 600,
                     color: 'var(--brand)'
                 }}>
-                    Trang {page + 1} / {totalPages}
+                    Trang {Number(page) + 1} / {Number(totalPages)}
                 </div>
 
                 <button 
@@ -197,7 +239,7 @@ const AdminPanel = () => {
                 <div className="dashboard-head">
                     <h1 className="dashboard-title">Hệ thống Quản trị</h1>
                     {activeTab === 'products' && (
-                        <button className="btn btn-primary" onClick={() => navigate('/admin/add-product')}>+ Thêm sản phẩm</button>
+                        <button className="btn btn-primary" onClick={() => navigate('/admin/products/new')}>+ Thêm sản phẩm</button>
                     )}
                 </div>
 
@@ -209,7 +251,7 @@ const AdminPanel = () => {
                         { id: 'users', name: 'Người dùng' },
                         { id: 'reports', name: 'Báo cáo' }
                     ].map(t => (
-                        <button key={t.id} className={`btn ${activeTab === t.id ? 'btn-primary' : 'btn-ghost'}`} onClick={() => { setActiveTab(t.id); setSearchTerm(''); }}>
+                        <button key={t.id} className={`btn ${activeTab === t.id ? 'btn-primary' : 'btn-ghost'}`} onClick={() => navigate(ADMIN_TAB_PATHS[t.id])}>
                             {t.name}
                         </button>
                     ))}
@@ -325,7 +367,7 @@ const AdminPanel = () => {
                                                     <td>{item.stock}</td>
                                                     <td>
                                                         <div style={{ display: 'flex', gap: 10 }}>
-                                                            <button className="btn btn-ghost" style={{ color: 'var(--brand)' }} onClick={() => navigate(`/admin/product/edit/${item.product_id}`)}>Sửa</button>
+                                                            <button className="btn btn-ghost" style={{ color: 'var(--brand)' }} onClick={() => navigate(`/admin/products/edit/${item.product_id}`)}>Sửa</button>
                                                             <button className="btn btn-ghost" style={{ color: 'var(--danger)' }} onClick={() => handleDeleteProduct(item.product_id)}>Xóa</button>
                                                         </div>
                                                     </td>

@@ -3,6 +3,7 @@ services:
   mysql_auth:
     image: mysql:8.0
     container_name: mysql_auth
+    cpus: "0.75"
     volumes:
       - ./data/mysql_auth:/var/lib/mysql  # Mount dữ liệu DB Auth ra ngoài
       - ./init/auth:/docker-entrypoint-initdb.d
@@ -19,6 +20,7 @@ services:
   mysql_kho:
     image: mysql:8.0   
     container_name: mysql_inventory 
+    cpus: "0.75"
     command: --default-authentication-plugin=mysql_native_password
     volumes:
       - ./data/mysql_kho:/var/lib/mysql # Mount dữ liệu DB Kho ra ngoài
@@ -36,6 +38,7 @@ services:
   mysql_order:
     image: mysql:8.0
     container_name: mysql_order
+    cpus: "0.75"
     command: --default-authentication-plugin=mysql_native_password
     volumes:
       - ./data/mysql_order:/var/lib/mysql # Mount dữ liệu DB Order ra ngoài
@@ -53,6 +56,7 @@ services:
   mysql_payment:
     image: mysql:8.0
     container_name: mysql_payment
+    cpus: "0.75"
     command: --default-authentication-plugin=mysql_native_password
     volumes:
       - ./data/mysql_payment:/var/lib/mysql
@@ -70,6 +74,7 @@ services:
   redis_kho:
     image: redis:7.2
     container_name: redis_inventory
+    cpus: "0.25"
     volumes:
       - ./data/redis_kho:/data # Mount dữ liệu Redis ra ngoài
     ports: ["6379:6379"]
@@ -82,6 +87,7 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
+    cpus: "0.5"
     volumes:
       - ./data/zookeeper_data:/var/lib/zookeeper/data # Lưu trạng thái Zookeeper
       - ./data/zookeeper_log:/var/lib/zookeeper/log # Lưu log Zookeeper
@@ -91,6 +97,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
+    cpus: "1.0"
     depends_on:
       - zookeeper
     volumes:
@@ -128,6 +135,8 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2
+    cpus: "1.0"
 
   notification-service:
     image: microservices/notification-service:dev
@@ -140,6 +149,8 @@ services:
         condition: service_healthy
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=1 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=1
+    cpus: "0.5"
 
   inventory-service:
     image: microservices/inventory-service:dev
@@ -163,6 +174,8 @@ services:
       REDIS_HOST: redis_kho
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       CLOUDINARY_URL: cloudinary://732429112868935:wpFskhgTDxq7XgLMr2gdk5MOitk@dlw2pfjvt
+      JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2
+    cpus: "1.0"
 
   order-service:
     image: microservices/order-service:dev
@@ -185,6 +198,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       INVENTORY_BASE_URL: http://inventory-service:8080
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2
+    cpus: "1.0"
 
   payment-service:
     image: microservices/payment-service:dev
@@ -204,6 +219,8 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=1 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=1
+    cpus: "0.75"
 
   api-gateway:
     image: microservices/api-gateway:dev
@@ -224,6 +241,8 @@ services:
         condition: service_started
     environment:
       JWT_SECRET: project_microservices_myscret_token_token_1234567789
+      JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=1 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=1
+    cpus: "0.5"
 
   frontend:
     image: microservices/frontend:dev
@@ -242,6 +261,7 @@ services:
     ports: ["3000:80"]
     depends_on:
       - api-gateway
+    cpus: "0.25"
 
 volumes:
   maven_repo:

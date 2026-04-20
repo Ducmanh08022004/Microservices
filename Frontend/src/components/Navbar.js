@@ -35,7 +35,11 @@ function Navbar() {
     navigate('/login');
   };
 
-  const isActive = (path) => location.pathname === path ? 'active' : '';
+  const isActive = (path) => {
+    if (location.pathname === path) return 'active';
+    if (path === '/admin' && location.pathname.startsWith('/admin/')) return 'active';
+    return '';
+  };
 
   return (
     <nav className="navbar">

@@ -20,7 +20,7 @@ public class OrderKafkaConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(OrderKafkaConsumer.class);
 
-    // Lắng nghe topic order-paid (thay vì order cũ)
+    // Lắng nghe topic order-paid 
     private static final String ORDER_PAID_TOPIC = "order-paid";
     private static final String ORDER_STATUS_TOPIC = "order-status";
     private static final String ORDER_GROUP = "kho-db-updater";

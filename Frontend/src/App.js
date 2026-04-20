@@ -25,8 +25,15 @@ function AppRoutes() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/" element={<Login />} />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/products" element={<AdminPanel />} />
+        <Route path="/admin/categories" element={<AdminPanel />} />
+        <Route path="/admin/orders" element={<AdminPanel />} />
+        <Route path="/admin/users" element={<AdminPanel />} />
+        <Route path="/admin/reports" element={<AdminPanel />} />
         <Route path="/admin/add-product" element={<AddProduct />} />
+        <Route path="/admin/products/new" element={<AddProduct />} />
         <Route path="/admin/product/edit/:id" element={<AddProduct />} />
+        <Route path="/admin/products/edit/:id" element={<AddProduct />} />
         <Route path="/admin/categories/edit/:id" element={<CategoryEdit />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/my-orders" element={<MyOrders />} />
