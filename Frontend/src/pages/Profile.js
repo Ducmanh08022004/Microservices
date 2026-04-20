@@ -4,6 +4,7 @@ import { API_GATEWAY } from '../config';
 
 const Profile = () => {
     const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
+    const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -11,9 +12,15 @@ const Profile = () => {
     const token = localStorage.getItem('accessToken');
 
     useEffect(() => {
-        // Có thể lấy email hiện tại từ JWT hoặc thêm 1 endpoint GET /auth/me
-        // Ở đây để đơn giản ta cho phép cập nhật đè
-    }, []);
+        axios.get(`${API_GATEWAY}/auth/me`,{
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => {
+            setCurrentUser(res.data);
+            setForm(prev => ({ ...prev, email: res.data.email  || ''}));
+        })
+        .catch(() => setError('Không lấy được thông tin người dùng!'));
+    }, [token]);
 
     const handleChange = e => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -45,7 +52,6 @@ const Profile = () => {
             setLoading(false);
         }
     };
-
     return (
         <div className="page-shell" style={{ padding: '40px 20px' }}>
             <div style={{ maxWidth: 600, margin: '0 auto' }}>
@@ -62,7 +68,20 @@ const Profile = () => {
                         <h2 style={{ fontSize: 24, color: 'var(--brand)' }}>Thông tin cá nhân</h2>
                         <p style={{ color: '#666' }}>Cập nhật thông tin tài khoản của bạn</p>
                     </div>
-
+                    {currentUser && (
+                        <div style={{ marginBottom: 20, padding: '12px 16px', 
+                                    background: 'rgba(15,118,110,0.06)', borderRadius: 12 }}>
+                            <div style={{ fontWeight: 700, fontSize: 16 }}>
+                                👤 {currentUser.username}
+                            </div>
+                            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
+                                Role: <span style={{ 
+                                    color: currentUser.role === 'ADMIN' ? 'var(--accent)' : 'var(--brand)', 
+                                    fontWeight: 600 
+                                }}>{currentUser.role}</span>
+                            </div>
+                        </div>
+                    )}
                     <form className="form-col" onSubmit={handleSubmit} style={{ gap: 20 }}>
                         <div className="form-group">
                             <label style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 5, display: 'block' }}>Email mới</label>

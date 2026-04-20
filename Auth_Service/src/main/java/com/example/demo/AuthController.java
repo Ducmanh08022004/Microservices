@@ -79,6 +79,32 @@ public class AuthController {
                 .build());
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getMe(
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestHeader(value = "X-User-Email", required = false) String xUserEmail,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole
+    ) {
+        // Gateway đã xác thực JWT và inject các header X-User-*
+        if (xUserId == null || xUserId.isBlank()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Bạn chưa đăng nhập!"));
+        }
+        try {
+            Long userId = Long.valueOf(xUserId);
+            return userRepository.findById(userId.intValue())
+                    .map(user -> ResponseEntity.ok(Map.of(
+                            "id",        user.getId(),
+                            "username",  user.getUsername(),
+                            "email",     user.getEmail() != null ? user.getEmail() : "",
+                            "role",      user.getRole(),
+                            "isEnabled", user.getIsEnabled()
+                    )))
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(400).body(Map.of("error", "X-User-Id không hợp lệ"));
+        }
+    }
+
     @GetMapping("/admin/users")
     public Page<User> listUsers(
             @RequestParam(defaultValue = "0") int page,

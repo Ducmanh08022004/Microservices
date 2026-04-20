@@ -102,7 +102,7 @@ function MyOrders() {
                                     {/* Thông tin đơn hàng */}
                                     <div style={{ flex: 1, minWidth: 200 }}>
                                         <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 15 }}>
-                                            🛍️ {order.product_id}
+                                            🛍️ {order.product_name || order.product_id}
                                         </p>
                                         <p style={{ margin: '0 0 4px', color: 'var(--text-muted)', fontSize: 13 }}>
                                             Mã đơn: <code style={{ background: 'rgba(255,255,255,0.08)', padding: '1px 6px', borderRadius: 4 }}>
@@ -112,6 +112,11 @@ function MyOrders() {
                                         <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 13 }}>
                                             Số lượng: <b>{order.quantity}</b>
                                         </p>
+                                        {order.created_at && (
+                                            <p style={{margin: 0,color: 'var(--text-muted)',fontSize:13}}>
+                                                Ngày đặt hàng: <b>{new Date(order.created_at).toLocaleString('vi-VN')}</b>
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Giá & trạng thái */}

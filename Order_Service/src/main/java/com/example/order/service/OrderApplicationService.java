@@ -123,9 +123,12 @@ public class OrderApplicationService {
         OrderResponse response = new OrderResponse();
         response.setOrderId(order.getOrderId());
         response.setProductId(order.getProductId());
+        response.setProductName(order.getProductName());
         response.setQuantity(order.getQuantity());
         response.setTotalPrice(order.getTotalPrice());
         response.setStatus(order.getStatus());
+        response.setCreatedAt(order.getCreatedAt());
+
         return response;
     }
 }

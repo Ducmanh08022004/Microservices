@@ -1,7 +1,7 @@
 package com.example.order.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import java.time.LocalDateTime;
 public class OrderResponse {
     @JsonProperty("order_id")
     private String orderId;
@@ -12,6 +12,26 @@ public class OrderResponse {
     private Double totalPrice;
     private String status;
 
+    @JsonProperty("product_name")
+    private String productName;
+
+    @JsonProperty("created_at")
+    private LocalDateTime createdAt;
+
+    public String getProductName() {
+        return productName;
+    }
+     
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
     public String getOrderId() {
         return orderId;
     }
