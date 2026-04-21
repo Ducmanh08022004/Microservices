@@ -3,12 +3,18 @@ package com.example.order.controller;
 import com.example.order.model.Coupon;
 import com.example.order.model.CouponType;
 import com.example.order.repository.CouponRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/coupons")
@@ -20,6 +26,99 @@ public class CouponController {
         this.repository = repository;
     }
 
+    @GetMapping("/admin")
+    public ResponseEntity<?> getCoupons(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestHeader(value = "X-User-Role", required = false) String role
+    ) {
+        if (!"ADMIN".equals(role)) return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+
+        Page<Coupon> result = repository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/admin")
+    public ResponseEntity<?> createCoupon(@RequestBody Map<String, Object> request, @RequestHeader(value = "X-User-Role", required = false) String role) {
+        if (!"ADMIN".equals(role)) return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+
+        String code = normalizeCode(asString(request.get("code")));
+        if (code == null || code.isBlank()) {
+            code = generateCode();
+        }
+        if (code.length() > 15) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Mã code tối đa 15 ký tự"));
+        }
+        if (repository.existsByCodeIgnoreCase(code)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Mã code đã tồn tại"));
+        }
+
+        String typeRaw = asString(request.get("type"));
+        CouponType couponType;
+        try {
+            couponType = CouponType.valueOf(typeRaw == null ? "" : typeRaw.trim().toUpperCase(Locale.ROOT));
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Loại mã giảm giá không hợp lệ"));
+        }
+
+        Double value = asDouble(request.get("value"));
+        if (value == null || value <= 0) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Giá trị mã giảm giá phải lớn hơn 0"));
+        }
+        if (couponType == CouponType.PERCENT && value > 100) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Mã phần trăm không được vượt quá 100%"));
+        }
+
+        Integer maxUsage = asInteger(request.get("maxUsage"));
+        if (maxUsage == null || maxUsage <= 0) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Số lượt dùng phải lớn hơn 0"));
+        }
+
+        Double minOrderValue = asDouble(request.get("minOrderValue"));
+        if (minOrderValue == null || minOrderValue < 0) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Đơn hàng tối thiểu không hợp lệ"));
+        }
+
+        Double maxDiscountAmount = asDouble(request.get("maxDiscountAmount"));
+        if (maxDiscountAmount == null || maxDiscountAmount <= 0) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Giá trị tối đa được giảm phải lớn hơn 0"));
+        }
+
+        LocalDateTime expiresAt;
+        try {
+            String expiresAtRaw = asString(request.get("expiresAt"));
+            if (expiresAtRaw == null || expiresAtRaw.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng chọn ngày hết hiệu lực"));
+            }
+            expiresAt = LocalDateTime.parse(expiresAtRaw);
+        } catch (DateTimeParseException ex) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Ngày hết hiệu lực không hợp lệ"));
+        }
+
+        String categoryName = asString(request.get("categoryName"));
+
+        Coupon coupon = new Coupon();
+        coupon.setCode(code);
+        coupon.setType(couponType);
+        coupon.setCategoryName((categoryName == null || categoryName.isBlank()) ? "ALL" : categoryName);
+        coupon.setValue(value);
+        coupon.setMinOrderValue(minOrderValue);
+        coupon.setMaxUsage(maxUsage);
+        coupon.setMaxDiscountAmount(maxDiscountAmount);
+        coupon.setExpiresAt(expiresAt);
+        if (coupon.getIsActive() == null) coupon.setIsActive(true);
+        if (coupon.getUsedCount() == null) coupon.setUsedCount(0);
+
+        return ResponseEntity.ok(repository.save(coupon));
+    }
+
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<?> deleteCoupon(@PathVariable Long id, @RequestHeader(value="X-User-Role", required=false) String role) {
+        if (!"ADMIN".equals(role)) return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        repository.deleteById(id);
+        return ResponseEntity.ok(Map.of("message", "Deleted"));
+    }
+
     @PostMapping("/validate")
     public ResponseEntity<?> validateCoupon(@RequestBody Map<String, Object> req) {
         if (!req.containsKey("code") || !req.containsKey("order_value")) {
@@ -29,7 +128,7 @@ public class CouponController {
         String code = (String) req.get("code");
         Double orderValue = Double.valueOf(req.get("order_value").toString());
 
-        Optional<Coupon> opt = repository.findByCode(code);
+        Optional<Coupon> opt = repository.findByCodeIgnoreCase(code);
         if (opt.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Mã giảm giá không tồn tại"));
         }
@@ -45,14 +144,62 @@ public class CouponController {
             return ResponseEntity.badRequest().body(Map.of("error", "Đơn hàng của bạn chưa đạt giá trị tối thiểu " + c.getMinOrderValue()));
         }
 
+        String requestCategory = asString(req.get("category_name"));
+        if (requestCategory == null) requestCategory = asString(req.get("categoryName"));
+        if (c.getCategoryName() != null
+                && !c.getCategoryName().isBlank()
+                && !"ALL".equalsIgnoreCase(c.getCategoryName())
+                && requestCategory != null
+                && !requestCategory.isBlank()
+                && !c.getCategoryName().equalsIgnoreCase(requestCategory)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Mã giảm giá không áp dụng cho danh mục này"));
+        }
+
         double discount = c.getType() == CouponType.PERCENT 
                 ? orderValue * (c.getValue() / 100.0) 
                 : c.getValue();
+        if (c.getMaxDiscountAmount() != null && c.getMaxDiscountAmount() > 0) {
+            discount = Math.min(discount, c.getMaxDiscountAmount());
+        }
+        discount = Math.min(discount, orderValue);
 
         // Không cấu hình sử dụng trừ coupon thật vì mock flow
         return ResponseEntity.ok(Map.of(
             "discount_amount", discount,
             "message", "Mã giảm giá hợp lệ"
         ));
+    }
+
+    private static String asString(Object value) {
+        return value == null ? null : String.valueOf(value).trim();
+    }
+
+    private static Double asDouble(Object value) {
+        if (value == null) return null;
+        try {
+            return Double.valueOf(String.valueOf(value));
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private static Integer asInteger(Object value) {
+        if (value == null) return null;
+        try {
+            return Integer.valueOf(String.valueOf(value));
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private static String normalizeCode(String code) {
+        if (code == null) return null;
+        return code.replaceAll("\\s+", "").toUpperCase(Locale.ROOT);
+    }
+
+    private static String generateCode() {
+        return ("CP" + UUID.randomUUID().toString().replace("-", ""))
+                .toUpperCase(Locale.ROOT)
+                .substring(0, 15);
     }
 }

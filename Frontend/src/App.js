@@ -46,6 +46,7 @@ function AppRoutes() {
         <Route path="/admin/categories"          element={<PrivateRoute requiredRole="ADMIN"><AdminPanel /></PrivateRoute>} />
         <Route path="/admin/orders"              element={<PrivateRoute requiredRole="ADMIN"><AdminPanel /></PrivateRoute>} />
         <Route path="/admin/users"               element={<PrivateRoute requiredRole="ADMIN"><AdminPanel /></PrivateRoute>} />
+        <Route path="/admin/coupons"             element={<PrivateRoute requiredRole="ADMIN"><AdminPanel /></PrivateRoute>} />
         <Route path="/admin/reports"             element={<PrivateRoute requiredRole="ADMIN"><AdminPanel /></PrivateRoute>} />
         <Route path="/admin/add-product"         element={<PrivateRoute requiredRole="ADMIN"><AddProduct /></PrivateRoute>} />
         <Route path="/admin/products/new"        element={<PrivateRoute requiredRole="ADMIN"><AddProduct /></PrivateRoute>} />

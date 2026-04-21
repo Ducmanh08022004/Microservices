@@ -124,7 +124,8 @@ function Product_Detail() {
             // Gọi API tạo đơn hàng tại Order_Service
             const orderRes = await axios.post(`${API_GATEWAY}/api/orders`, {
                 product_id: id,
-                quantity: Number(quantity)
+                quantity: Number(quantity),
+                coupon_code: (couponCode || '').trim() || null
             }, { 
                 headers: { 'Authorization': `Bearer ${token}` } 
             });

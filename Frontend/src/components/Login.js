@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
 import { useNavigate, Link } from 'react-router-dom';
+import { dispatchAuthChanged } from '../utils/authStorage';
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -21,6 +22,7 @@ function Login() {
             if (response.data.refreshToken) {
                 localStorage.setItem('refreshToken', response.data.refreshToken);
             }
+            dispatchAuthChanged();
             navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.error || "Sai tài khoản hoặc mật khẩu!");

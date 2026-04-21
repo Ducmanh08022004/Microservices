@@ -1,5 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { dispatchAuthChanged } from '../utils/authStorage';
 
 /**
  * Bảo vệ route: kiểm tra JWT token và role yêu cầu.
@@ -17,6 +18,8 @@ function PrivateRoute({ children, requiredRole = null }) {
         // Kiểm tra token hết hạn
         if (payload.exp && Date.now() / 1000 > payload.exp) {
             localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            dispatchAuthChanged();
             return <Navigate to="/login" replace />;
         }
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
+import { dispatchAuthChanged } from '../utils/authStorage';
 
 const Profile = () => {
     const [form, setForm] = useState({ displayName: '', email: '', password: '', confirmPassword: '' });
@@ -57,6 +58,7 @@ const Profile = () => {
             if (res.data.refreshToken) {
                 localStorage.setItem('refreshToken', res.data.refreshToken);
             }
+            dispatchAuthChanged();
             setMessage("Cập nhật thông tin thành công! Đang tải lại...");
             setForm({ ...form, password: '', confirmPassword: '' });
             setTimeout(() => window.location.reload(), 1000);

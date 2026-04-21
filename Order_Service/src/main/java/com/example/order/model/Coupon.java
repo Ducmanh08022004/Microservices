@@ -15,9 +15,11 @@ public class Coupon {
     @Enumerated(EnumType.STRING)
     private CouponType type;
 
+    private String categoryName;
     private Double value;
     private Double minOrderValue;
     private Integer maxUsage;
+    private Double maxDiscountAmount;
     private Integer usedCount = 0;
     private LocalDateTime expiresAt;
     private Boolean isActive = true;
@@ -28,12 +30,16 @@ public class Coupon {
     public void setCode(String code) { this.code = code; }
     public CouponType getType() { return type; }
     public void setType(CouponType type) { this.type = type; }
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
     public Double getValue() { return value; }
     public void setValue(Double value) { this.value = value; }
     public Double getMinOrderValue() { return minOrderValue; }
     public void setMinOrderValue(Double minOrderValue) { this.minOrderValue = minOrderValue; }
     public Integer getMaxUsage() { return maxUsage; }
     public void setMaxUsage(Integer maxUsage) { this.maxUsage = maxUsage; }
+    public Double getMaxDiscountAmount() { return maxDiscountAmount; }
+    public void setMaxDiscountAmount(Double maxDiscountAmount) { this.maxDiscountAmount = maxDiscountAmount; }
     public Integer getUsedCount() { return usedCount; }
     public void setUsedCount(Integer usedCount) { this.usedCount = usedCount; }
     public LocalDateTime getExpiresAt() { return expiresAt; }

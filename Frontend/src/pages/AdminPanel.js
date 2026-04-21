@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ff6b6b'];
 
@@ -11,6 +11,7 @@ const ADMIN_TAB_PATHS = {
     categories: '/admin/categories',
     orders: '/admin/orders',
     users: '/admin/users',
+    coupons: '/admin/coupons',
     reports: '/admin/reports'
 };
 
@@ -40,7 +41,19 @@ const AdminPanel = () => {
         statusStats: [], topProducts: [], totalUsers: 0, dailyChart: []
     });
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [, setError] = useState(null);
+    const [showCouponModal, setShowCouponModal] = useState(false);
+    const [couponCategories, setCouponCategories] = useState([]);
+    const [newCoupon, setNewCoupon] = useState({
+        code: '',
+        categoryName: '',
+        type: 'PERCENT',
+        value: '',
+        maxUsage: '',
+        minOrderValue: '',
+        maxDiscountAmount: '',
+        expiresAt: ''
+    });
 
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
@@ -72,6 +85,24 @@ const AdminPanel = () => {
         setTotalPages(0);
         setPage(0);
     }, [activeTab]);
+
+    useEffect(() => {
+        if (!showCouponModal) return;
+
+        const loadCategories = async () => {
+            try {
+                const res = await axios.get(`${API_GATEWAY}/api/categories`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    params: { page: 0, size: 100 }
+                });
+                setCouponCategories(res.data?.content || []);
+            } catch {
+                setCouponCategories([]);
+            }
+        };
+
+        loadCategories();
+    }, [showCouponModal, token]);
 
     useEffect(() => {
         if (activeTab === 'reports') {
@@ -116,6 +147,9 @@ const AdminPanel = () => {
                 if (debouncedSearch) params.query = debouncedSearch;
                 if (userFilters.role) params.role = userFilters.role;
                 if (userFilters.status !== '') params.isEnabled = userFilters.status === 'active';
+            }
+            else if (activeTab === 'coupons') {
+                url = `${API_GATEWAY}/api/coupons/admin`;
             }
 
             const res = await axios.get(url, { 
@@ -173,6 +207,56 @@ const AdminPanel = () => {
         } catch (err) {
             alert("Lỗi khi thay đổi trạng thái user.");
         }
+    };
+
+    const handleCreateCoupon = async (e) => {
+        e.preventDefault();
+        try {
+            const payload = {
+                code: (newCoupon.code || '').trim().toUpperCase().slice(0, 15),
+                categoryName: newCoupon.categoryName || 'ALL',
+                type: newCoupon.type,
+                value: Number(newCoupon.value),
+                maxUsage: Number(newCoupon.maxUsage),
+                minOrderValue: Number(newCoupon.minOrderValue),
+                maxDiscountAmount: Number(newCoupon.maxDiscountAmount),
+                expiresAt: `${newCoupon.expiresAt}T23:59:59`
+            };
+
+            await axios.post(`${API_GATEWAY}/api/coupons/admin`, payload, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setShowCouponModal(false);
+            setNewCoupon({
+                code: '',
+                categoryName: '',
+                type: 'PERCENT',
+                value: '',
+                maxUsage: '',
+                minOrderValue: '',
+                maxDiscountAmount: '',
+                expiresAt: ''
+            });
+            fetchData(page);
+        } catch (err) {
+            alert("Lỗi tạo Coupon! " + (err.response?.data?.error || ''));
+        }
+    };
+
+    const handleDeleteCoupon = async (id) => {
+        if (window.confirm("Xóa Mã Giảm Giá này?")) {
+            await axios.delete(`${API_GATEWAY}/api/coupons/admin/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            fetchData(page);
+        }
+    };
+
+    const generateRandomCouponCode = () => {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let result = 'CP';
+        for (let i = 0; i < 8; i += 1) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        setNewCoupon(prev => ({ ...prev, code: result.slice(0, 15) }));
     };
 
     const renderPagination = () => {
@@ -245,6 +329,9 @@ const AdminPanel = () => {
                     {activeTab === 'products' && (
                         <button className="btn btn-primary" onClick={() => navigate('/admin/products/new')}>+ Thêm sản phẩm</button>
                     )}
+                    {activeTab === 'coupons' && (
+                        <button className="btn btn-primary" onClick={() => setShowCouponModal(true)}>+ Thêm Mã Giảm Giá</button>
+                    )}
                 </div>
 
                 <div className="tabs" style={{ display: 'flex', gap: 10, marginBottom: 12, overflowX: 'auto' }}>
@@ -253,6 +340,7 @@ const AdminPanel = () => {
                         { id: 'categories', name: 'Danh mục' },
                         { id: 'orders', name: 'Đơn hàng' },
                         { id: 'users', name: 'Người dùng' },
+                        { id: 'coupons', name: 'Mã giảm giá' },
                         { id: 'reports', name: 'Báo cáo' }
                     ].map(t => (
                         <button key={t.id} className={`btn ${activeTab === t.id ? 'btn-primary' : 'btn-ghost'}`} onClick={() => navigate(ADMIN_TAB_PATHS[t.id])}>
@@ -389,6 +477,7 @@ const AdminPanel = () => {
                                             {activeTab === 'categories' && <><th style={{padding: '8px 12px'}}>ID</th><th style={{padding: '8px 12px'}}>Tên danh mục</th><th style={{padding: '8px 12px'}}>Mô tả</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
                                             {activeTab === 'orders' && <><th style={{padding: '8px 12px'}}>Mã Đơn</th><th style={{padding: '8px 12px'}}>Tổng tiền</th><th style={{padding: '8px 12px'}}>Trạng thái</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
                                             {activeTab === 'users' && <><th style={{padding: '8px 12px'}}>Username</th><th style={{padding: '8px 12px'}}>Email</th><th style={{padding: '8px 12px'}}>Role</th><th style={{padding: '8px 12px'}}>Trạng thái</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
+                                            {activeTab === 'coupons' && <><th style={{padding: '8px 12px'}}>Mã giảm giá</th><th style={{padding: '8px 12px'}}>Danh mục</th><th style={{padding: '8px 12px'}}>Loại</th><th style={{padding: '8px 12px'}}>Giá trị</th><th style={{padding: '8px 12px'}}>Giảm tối đa</th><th style={{padding: '8px 12px'}}>Hiệu lực</th><th style={{padding: '8px 12px'}}>Đã dùng</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -435,6 +524,18 @@ const AdminPanel = () => {
                                                         </button>
                                                     </td>
                                                 </>}
+                                                {activeTab === 'coupons' && <>
+                                                    <td style={{ padding: '8px 12px' }}><strong>{item.code}</strong></td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.categoryName || 'ALL'}</td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.type}</td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.type === 'PERCENT' ? `${item.value}%` : `${item.value?.toLocaleString()} đ`}</td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.maxDiscountAmount?.toLocaleString()} đ</td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.expiresAt ? new Date(item.expiresAt).toLocaleDateString('vi-VN') : '-'}</td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.usedCount} / {item.maxUsage || "∞"}</td>
+                                                    <td style={{ padding: '8px 12px' }}>
+                                                        <button className="btn btn-ghost" style={{ color: 'var(--danger)', padding: '6px 10px', fontSize: '0.85rem' }} onClick={() => handleDeleteCoupon(item.id)}>Xóa</button>
+                                                    </td>
+                                                </>}
                                             </tr>
                                         ))}
                                     </tbody>
@@ -444,6 +545,70 @@ const AdminPanel = () => {
                         </div>
                     )}
                 </div>
+
+                {showCouponModal && (
+                    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
+                        <div className="card" style={{ padding: 20, width: 400, maxWidth: '90%' }}>
+                            <h3>Tạo Mã Giảm Giá</h3>
+                            <form className="form-col" onSubmit={handleCreateCoupon}>
+                                <div className="form-field">
+                                    <label>Mã Code (nhập tay hoặc random, tối đa 15 ký tự)</label>
+                                    <div style={{ display: 'flex', gap: 8 }}>
+                                        <input
+                                            className="input"
+                                            maxLength={15}
+                                            value={newCoupon.code}
+                                            onChange={e => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase().replace(/\s+/g, '').slice(0, 15) })}
+                                            placeholder="VD: TET2026"
+                                            style={{ flex: 1 }}
+                                        />
+                                        <button className="btn btn-ghost" type="button" onClick={generateRandomCouponCode}>Random</button>
+                                    </div>
+                                </div>
+                                <div className="form-field">
+                                    <label>Danh mục áp dụng</label>
+                                    <select className="input" value={newCoupon.categoryName} onChange={e => setNewCoupon({ ...newCoupon, categoryName: e.target.value })}>
+                                        <option value="">Tất cả danh mục</option>
+                                        {couponCategories.map(cat => (
+                                            <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-field">
+                                    <label>Loại Giảm Giá</label>
+                                    <select className="input" value={newCoupon.type} onChange={e => setNewCoupon({...newCoupon, type: e.target.value})}>
+                                        <option value="PERCENT">Giảm theo %</option>
+                                        <option value="FIXED">Giảm trực tiếp (đ)</option>
+                                    </select>
+                                </div>
+                                <div className="form-field">
+                                    <label>Giá trị (số % hoặc số tiền)</label>
+                                    <input className="input" type="number" min="0" required value={newCoupon.value} onChange={e => setNewCoupon({...newCoupon, value: e.target.value})} />
+                                </div>
+                                <div className="form-field">
+                                    <label>Số lượt sử dụng tối đa</label>
+                                    <input className="input" type="number" min="1" required value={newCoupon.maxUsage} onChange={e => setNewCoupon({...newCoupon, maxUsage: e.target.value})} />
+                                </div>
+                                <div className="form-field">
+                                    <label>Đơn hàng tối thiểu (đ)</label>
+                                    <input className="input" type="number" min="0" required value={newCoupon.minOrderValue} onChange={e => setNewCoupon({...newCoupon, minOrderValue: e.target.value})} />
+                                </div>
+                                <div className="form-field">
+                                    <label>Giá trị tối đa được giảm (đ)</label>
+                                    <input className="input" type="number" min="0" required value={newCoupon.maxDiscountAmount} onChange={e => setNewCoupon({...newCoupon, maxDiscountAmount: e.target.value})} />
+                                </div>
+                                <div className="form-field">
+                                    <label>Hiệu lực đến ngày</label>
+                                    <input className="input" type="date" required value={newCoupon.expiresAt} onChange={e => setNewCoupon({...newCoupon, expiresAt: e.target.value})} />
+                                </div>
+                                <div style={{ display: 'flex', gap: 10, marginTop: 15 }}>
+                                    <button className="btn btn-primary" type="submit" style={{ flex: 1 }}>Tạo Code</button>
+                                    <button className="btn btn-ghost" type="button" onClick={() => setShowCouponModal(false)} style={{ flex: 1 }}>Hủy</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

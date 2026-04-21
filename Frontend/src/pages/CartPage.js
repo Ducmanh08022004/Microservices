@@ -14,6 +14,9 @@ function CartPage() {
     const applyCoupon = async () => {
         const token = localStorage.getItem('accessToken');
         if (!token) return alert('Vui lòng đăng nhập!');
+        if (cart.length !== 1) {
+            return alert('Hiện tại mã giảm giá chỉ áp dụng cho giỏ có 1 sản phẩm khi thanh toán.');
+        }
         try {
             const res = await axios.post(`${API_GATEWAY}/api/coupons/validate`, {
                 code: couponCode,
@@ -41,7 +44,8 @@ function CartPage() {
         try {
             const batchRequests = cart.map(item => ({
                 product_id: item.product_id,
-                quantity: item.quantity
+                quantity: item.quantity,
+                coupon_code: cart.length === 1 ? ((couponCode || '').trim() || null) : null
             }));
             
             await axios.post(`${API_GATEWAY}/api/orders/batch`, batchRequests, {

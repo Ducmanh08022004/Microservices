@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_GATEWAY } from './config';
+import { dispatchAuthChanged } from './utils/authStorage';
 
 axios.defaults.baseURL = API_GATEWAY;
 
@@ -16,12 +17,14 @@ axios.interceptors.response.use(
                 const res = await axios.post(`${API_GATEWAY}/auth/refresh-token`, { refreshToken });
                 localStorage.setItem('accessToken', res.data.accessToken);
                 localStorage.setItem('refreshToken', res.data.refreshToken);
+                dispatchAuthChanged();
                 
                 original.headers.Authorization = `Bearer ${res.data.accessToken}`;
                 return axios(original);
             } catch (err) {
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
+                dispatchAuthChanged();
                 window.location.href = '/login';
             }
         }

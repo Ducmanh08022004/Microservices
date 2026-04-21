@@ -5,11 +5,15 @@ import com.example.order.dto.CreateOrderRequest;
 import com.example.order.dto.InventoryCheckStockResponse;
 import com.example.order.dto.InventoryProductResponse;
 import com.example.order.dto.OrderResponse;
+import com.example.order.model.Coupon;
+import com.example.order.model.CouponType;
 import com.example.order.model.OrderEntity;
+import com.example.order.repository.CouponRepository;
 import com.example.order.repository.OrderRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -23,19 +27,23 @@ public class OrderApplicationService {
     private static final String ORDER_STATUS_PROCESSING = "PROCESSING";
 
     private final OrderRepository orderRepository;
+    private final CouponRepository couponRepository;
     private final InventoryClient inventoryClient;
     private final OrderEventPublisher orderEventPublisher;
 
     public OrderApplicationService(
             OrderRepository orderRepository,
+            CouponRepository couponRepository,
             InventoryClient inventoryClient,
             OrderEventPublisher orderEventPublisher
     ) {
         this.orderRepository = orderRepository;
+        this.couponRepository = couponRepository;
         this.inventoryClient = inventoryClient;
         this.orderEventPublisher = orderEventPublisher;
     }
 
+    @Transactional
     public OrderResponse createOrder(CreateOrderRequest request, AuthUser authUser) {
         validateRequest(request);
 
@@ -57,7 +65,9 @@ public class OrderApplicationService {
         order.setProductId(product.getProductId());
         order.setProductName(product.getName());
         order.setQuantity(request.getQuantity());
-        order.setTotalPrice(product.getPrice() * request.getQuantity());
+        double grossTotal = product.getPrice() * request.getQuantity();
+        double discount = resolveCouponDiscount(request.getCouponCode(), grossTotal);
+        order.setTotalPrice(Math.max(0.0, grossTotal - discount));
         order.setStatus(ORDER_STATUS_PROCESSING);
 
         OrderEntity saved = orderRepository.save(order);
@@ -154,5 +164,43 @@ public class OrderApplicationService {
         response.setCreatedAt(order.getCreatedAt());
 
         return response;
+    }
+
+    private double resolveCouponDiscount(String couponCode, double orderValue) {
+        if (couponCode == null || couponCode.isBlank()) {
+            return 0.0;
+        }
+
+        Coupon coupon = couponRepository.findByCodeIgnoreCase(couponCode.trim())
+                .orElseThrow(() -> new IllegalStateException("Mã giảm giá không tồn tại"));
+
+        if (!Boolean.TRUE.equals(coupon.getIsActive())
+                || (coupon.getExpiresAt() != null && coupon.getExpiresAt().isBefore(LocalDateTime.now()))) {
+            throw new IllegalStateException("Mã giảm giá đã hết hạn hoặc bị vô hiệu hóa");
+        }
+
+        int usedCount = coupon.getUsedCount() == null ? 0 : coupon.getUsedCount();
+        if (coupon.getMaxUsage() != null && usedCount >= coupon.getMaxUsage()) {
+            throw new IllegalStateException("Mã giảm giá đã hết lượt sử dụng");
+        }
+
+        if (coupon.getMinOrderValue() != null && orderValue < coupon.getMinOrderValue()) {
+            throw new IllegalStateException("Đơn hàng chưa đạt giá trị tối thiểu để áp mã");
+        }
+
+        double discount = coupon.getType() == CouponType.PERCENT
+                ? orderValue * (coupon.getValue() / 100.0)
+                : coupon.getValue();
+
+        if (coupon.getMaxDiscountAmount() != null && coupon.getMaxDiscountAmount() > 0) {
+            discount = Math.min(discount, coupon.getMaxDiscountAmount());
+        }
+
+        discount = Math.min(discount, orderValue);
+
+        coupon.setUsedCount(usedCount + 1);
+        couponRepository.save(coupon);
+
+        return discount;
     }
 }

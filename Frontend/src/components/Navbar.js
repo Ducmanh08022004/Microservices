@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { dispatchAuthChanged } from '../utils/authStorage';
 
 function getRole() {
   try {
@@ -36,6 +37,8 @@ function Navbar() {
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    dispatchAuthChanged();
     navigate('/login');
   };
 

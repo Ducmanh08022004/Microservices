@@ -1,16 +1,54 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { AUTH_CHANGED_EVENT, getScopedStorageKey } from '../utils/authStorage';
 
 const CartContext = createContext(null);
 
+function readCartByKey(scopedKey) {
+    try {
+        const scopedRaw = localStorage.getItem(scopedKey);
+        if (scopedRaw !== null) {
+            const parsed = JSON.parse(scopedRaw);
+            return Array.isArray(parsed) ? parsed : [];
+        }
+
+        const legacyRaw = localStorage.getItem('cart');
+        if (legacyRaw !== null) {
+            const parsedLegacy = JSON.parse(legacyRaw);
+            const safeLegacy = Array.isArray(parsedLegacy) ? parsedLegacy : [];
+            localStorage.setItem(scopedKey, JSON.stringify(safeLegacy));
+            localStorage.removeItem('cart');
+            return safeLegacy;
+        }
+
+        return [];
+    } catch {
+        return [];
+    }
+}
+
 export function CartProvider({ children }) {
-    const [cart, setCart] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('cart') || '[]'); }
-        catch { return []; }
-    });
+    const [storageKey, setStorageKey] = useState(() => getScopedStorageKey('cart'));
+    const [cart, setCart] = useState(() => readCartByKey(getScopedStorageKey('cart')));
 
     useEffect(() => {
-        localStorage.setItem('cart', JSON.stringify(cart));
-    }, [cart]);
+        const syncCartByAuth = () => {
+            const nextKey = getScopedStorageKey('cart');
+            setStorageKey(nextKey);
+            setCart(readCartByKey(nextKey));
+        };
+
+        window.addEventListener(AUTH_CHANGED_EVENT, syncCartByAuth);
+        window.addEventListener('storage', syncCartByAuth);
+
+        return () => {
+            window.removeEventListener(AUTH_CHANGED_EVENT, syncCartByAuth);
+            window.removeEventListener('storage', syncCartByAuth);
+        };
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem(storageKey, JSON.stringify(cart));
+    }, [cart, storageKey]);
 
     const addToCart = (product, quantity = 1) => {
         setCart(prev => {

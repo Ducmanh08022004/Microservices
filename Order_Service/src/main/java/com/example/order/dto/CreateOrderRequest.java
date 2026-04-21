@@ -8,6 +8,9 @@ public class CreateOrderRequest {
     private String productId;
     private Integer quantity;
 
+    @JsonProperty("coupon_code")
+    private String couponCode;
+
     public String getProductId() {
         return productId;
     }
@@ -22,5 +25,13 @@ public class CreateOrderRequest {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public String getCouponCode() {
+        return couponCode;
+    }
+
+    public void setCouponCode(String couponCode) {
+        this.couponCode = couponCode;
     }
 }
