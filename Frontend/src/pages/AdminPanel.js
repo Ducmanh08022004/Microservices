@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ff6b6b'];
 
 const ADMIN_TAB_PATHS = {
     products: '/admin/products',
@@ -34,7 +37,7 @@ const AdminPanel = () => {
     const [data, setData] = useState([]);
     const [stats, setStats] = useState({ 
         revenue: 0, daily: 0, weekly: 0, monthly: 0,
-        statusStats: [], topProducts: [], totalUsers: 0 
+        statusStats: [], topProducts: [], totalUsers: 0, dailyChart: []
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -144,7 +147,8 @@ const AdminPanel = () => {
                 monthly: orderRes.data.monthly_revenue,
                 statusStats: orderRes.data.status_distribution,
                 topProducts: orderRes.data.top_products,
-                totalUsers: authRes.data.total_users
+                totalUsers: authRes.data.total_users,
+                dailyChart: orderRes.data.daily_chart || []
             });
         } catch (err) {}
     };
@@ -311,34 +315,64 @@ const AdminPanel = () => {
                                 </div>
                             </div>
 
+                            <div className="card" style={{ padding: 20, marginBottom: 25 }}>
+                                <h4>Biểu đồ Doanh thu (30 ngày)</h4>
+                                <div style={{ height: 300, marginTop: 20 }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={stats.dailyChart}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                                            <XAxis dataKey="date" tick={{fontSize: 12}} />
+                                            <YAxis tickFormatter={(val) => `${val/1000}k`} tick={{fontSize: 12}} />
+                                            <Tooltip formatter={(value) => `${value.toLocaleString()} đ`} />
+                                            <Line type="monotone" dataKey="revenue" stroke="#0ea5e9" strokeWidth={3} dot={{r: 4}} activeDot={{r: 6}} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                                 <div className="card" style={{ padding: 20 }}>
                                     <h4>Top Sản phẩm bán chạy</h4>
-                                    <div style={{ marginTop: 15 }}>
-                                        {stats.topProducts.map((p, i) => (
-                                            <div key={i} style={{ marginBottom: 12 }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                                                    <span>{p.product_name}</span>
-                                                    <strong>{p.total_sold}</strong>
-                                                </div>
-                                                <div style={{ height: 6, background: '#eee', borderRadius: 3, marginTop: 4 }}>
-                                                    <div style={{ height: '100%', background: 'var(--brand)', width: `${(p.total_sold / (stats.topProducts[0]?.total_sold || 1)) * 100}%` }}></div>
-                                                </div>
-                                            </div>
-                                        ))}
+                                    <div style={{ height: 250, marginTop: 20 }}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={stats.topProducts} layout="vertical" margin={{top: 5, right: 30, left: 20, bottom: 5}}>
+                                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#eee" />
+                                                <XAxis type="number" hide />
+                                                <YAxis dataKey="product_name" type="category" width={100} tick={{fontSize: 12}} />
+                                                <Tooltip />
+                                                <Bar dataKey="total_sold" fill="#10b981" radius={[0, 4, 4, 0]}>
+                                                    {stats.topProducts.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
                                     </div>
                                 </div>
 
                                 <div className="card" style={{ padding: 20 }}>
                                     <h4>Tỉ lệ Trạng thái Đơn hàng</h4>
-                                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 15, height: 180, padding: '20px 0' }}>
-                                        {stats.statusStats.map((s, i) => (
-                                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                                <small style={{ fontSize: 10 }}>{s.count}</small>
-                                                <div style={{ width: 30, background: 'var(--accent)', height: `${(s.count / (Math.max(...stats.statusStats.map(x => x.count)) || 1)) * 120}px` }}></div>
-                                                <small style={{ fontSize: 9, transform: 'rotate(-45deg)', marginTop: 10 }}>{s.status}</small>
-                                            </div>
-                                        ))}
+                                    <div style={{ height: 250, marginTop: 20 }}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={stats.statusStats}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    labelLine={false}
+                                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                                    outerRadius={80}
+                                                    fill="#8884d8"
+                                                    dataKey="count"
+                                                    nameKey="status"
+                                                >
+                                                    {stats.statusStats.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                            </PieChart>
+                                        </ResponsiveContainer>
                                     </div>
                                 </div>
                             </div>

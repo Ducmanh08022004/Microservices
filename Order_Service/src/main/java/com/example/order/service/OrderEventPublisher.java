@@ -38,10 +38,9 @@ public class OrderEventPublisher {
             EmailEventPayload emailPayload = new EmailEventPayload();
             emailPayload.setTo(authUser.getEmail());
             emailPayload.setSubject("Xác nhận đơn hàng - Chờ thanh toán");
-            emailPayload.setContent("Đơn hàng " + order.getOrderId()
-                    + " đã được tạo. Sản phẩm: " + order.getProductName()
-                    + ". Tổng tiền: " + order.getTotalPrice()
-                    + " VNĐ. Vui lòng hoàn tất thanh toán.");
+            emailPayload.setContent(
+                EmailTemplates.orderConfirmation(authUser.getEmail(), order.getOrderId(), order.getTotalPrice())
+            );
             emailPayload.setOrderId(order.getOrderId());
             kafkaTemplate.send(EMAIL_TOPIC, authUser.getEmail(), toJson(emailPayload));
         }

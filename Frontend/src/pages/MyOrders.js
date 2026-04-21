@@ -10,6 +10,7 @@ const STATUS_CONFIG = {
     CONFIRMED:       { label: 'Đã xác nhận',     color: '#10b981', bg: 'rgba(16,185,129,0.15)',  icon: '✅' },
     PAYMENT_FAILED:  { label: 'TT thất bại',     color: '#ef4444', bg: 'rgba(239,68,68,0.15)',   icon: '❌' },
     FAILED_UPDATE:   { label: 'Lỗi cập nhật',   color: '#ef4444', bg: 'rgba(239,68,68,0.15)',   icon: '⚠️' },
+    CANCELLED:       { label: 'Đã hủy',         color: '#64748b', bg: 'rgba(100,116,139,0.15)', icon: '🚫' },
 };
 
 const PAYMENT_ACTIONABLE_STATUSES = new Set(['PROCESSING', 'PENDING_PAYMENT']);
@@ -37,6 +38,8 @@ function StatusBadge({ status }) {
 
 function MyOrders() {
     const [orders, setOrders] = useState([]);
+    const [totalPages, setTotalPages] = useState(0);
+    const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -48,13 +51,18 @@ function MyOrders() {
             setLoading(false);
             return;
         }
+        setLoading(true);
         axios.get(`${API_GATEWAY}/api/orders`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
+            params: { page: page, size: 5 }
         })
-            .then(res => setOrders(res.data))
+            .then(res => {
+                setOrders(res.data.content || []);
+                setTotalPages(res.data.totalPages || 0);
+            })
             .catch(() => setError('Không lấy được đơn hàng!'))
             .finally(() => setLoading(false));
-    }, []);
+    }, [page]);
 
     if (loading) return (
         <div className="page-shell">
@@ -130,10 +138,57 @@ function MyOrders() {
                                                 Nhấn để thanh toán →
                                             </p>
                                         )}
+                                        {order.status === 'PROCESSING' && (
+                                            <button
+                                                className="btn btn-ghost"
+                                                style={{ marginTop: 8, color: 'var(--danger)', fontSize: 12, padding: '4px 8px', width: '100%' }}
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    if (!window.confirm('Xác nhận hủy đơn hàng này?')) return;
+                                                    const token = localStorage.getItem('accessToken');
+                                                    try {
+                                                        await axios.post(
+                                                            `${API_GATEWAY}/api/orders/${order.order_id}/cancel`,
+                                                            {},
+                                                            { headers: { Authorization: `Bearer ${token}` } }
+                                                        );
+                                                        // Reload danh sách
+                                                        setOrders(prev => prev.map(o =>
+                                                            o.order_id === order.order_id 
+                                                                ? { ...o, status: 'CANCELLED' } 
+                                                                : o
+                                                        ));
+                                                    } catch (err) {
+                                                        alert(err?.response?.data?.error || 'Lỗi hủy đơn!');
+                                                    }
+                                                }}
+                                            >
+                                                ✕ Hủy đơn
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         ))}
+                    </div>
+                )}
+                {totalPages > 1 && (
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 24 }}>
+                        <button 
+                            className="btn btn-ghost" 
+                            disabled={page === 0}
+                            onClick={() => setPage(p => p - 1)}
+                        >
+                            ← Trước
+                        </button>
+                        <span style={{ padding: '8px 12px', fontWeight: 600 }}>Trang {page + 1} / {totalPages}</span>
+                        <button 
+                            className="btn btn-ghost" 
+                            disabled={page >= totalPages - 1}
+                            onClick={() => setPage(p => p + 1)}
+                        >
+                            Sau →
+                        </button>
                     </div>
                 )}
             </div>

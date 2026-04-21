@@ -66,6 +66,24 @@ public class OrderApplicationService {
         return toOrderResponse(saved);
     }
 
+    public Optional<OrderResponse> cancelOrder(String orderId, Long userId) {
+        return orderRepository.findByOrderId(orderId).map(order -> {
+            // Chỉ user chủ đơn mới được hủy
+            if (!order.getUserId().equals(userId)) {
+                throw new IllegalStateException("Bạn không có quyền hủy đơn này!");
+            }
+            // Chỉ được hủy khi đang ở trạng thái PROCESSING
+            if (!"PROCESSING".equals(order.getStatus())) {
+                throw new IllegalStateException(
+                    "Chỉ được hủy đơn ở trạng thái PROCESSING. " +
+                    "Trạng thái hiện tại: " + order.getStatus()
+                );
+            }
+            order.setStatus("CANCELLED");
+            return toOrderResponse(orderRepository.save(order));
+        });
+    }
+
     public Optional<OrderResponse> getOrderByOrderId(String orderId) {
         return orderRepository.findByOrderId(orderId).map(this::toOrderResponse);
     }
@@ -74,6 +92,11 @@ public class OrderApplicationService {
         return orderRepository.findAllByUserIdOrderByCreatedAtDesc(userId).stream()
                 .map(this::toOrderResponse)
                 .toList();
+    }
+
+    public Page<OrderResponse> getOrdersByUserIdPaged(Long userId, Pageable pageable) {
+        return orderRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable)
+                .map(this::toOrderResponse);
     }
 
     public Page<OrderResponse> getAllOrders(Pageable pageable, String orderId) {
@@ -100,6 +123,7 @@ public class OrderApplicationService {
         stats.put("monthly_revenue", coalesce(orderRepository.getRevenueSince(LocalDateTime.now().minusMonths(1))));
         stats.put("status_distribution", orderRepository.getOrderStatusStats());
         stats.put("top_products", orderRepository.getTopSellingProducts());
+        stats.put("daily_chart", orderRepository.getDailyRevenue(LocalDateTime.now().minusDays(30)));
         return stats;
     }
 

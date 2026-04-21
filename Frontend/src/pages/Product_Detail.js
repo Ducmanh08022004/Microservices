@@ -2,13 +2,40 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
+import { useCart } from '../context/CartContext';
+
+function StarRating({ value, onChange }) {
+    return (
+        <div style={{ display: 'flex', gap: 4 }}>
+            {[1,2,3,4,5].map(star => (
+                <span 
+                    key={star}
+                    onClick={() => onChange && onChange(star)}
+                    style={{ 
+                        fontSize: 24, cursor: onChange ? 'pointer' : 'default',
+                        color: star <= value ? '#f59e0b' : '#d1d5db',
+                        userSelect: 'none'
+                    }}
+                >★</span>
+            ))}
+        </div>
+    );
+}
 
 function Product_Detail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { addToCart } = useCart();
     const [product, setProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [error, setError] = useState(''); // Thêm state báo lỗi
+    const [reviews, setReviews] = useState([]);
+    const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
+    const [reviewSubmitting, setReviewSubmitting] = useState(false);
+    
+    // Coupon state
+    const [couponCode, setCouponCode] = useState('');
+    const [couponDiscount, setCouponDiscount] = useState(0);
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
@@ -22,7 +49,54 @@ function Product_Detail() {
             console.log(err);
             setError("Không thể tải dữ liệu. Hãy kiểm tra API GET /api/products/:id của Inventory_Service.");
         });
+
+        // Tải danh sách đánh giá
+        axios.get(`${API_GATEWAY}/api/products/${id}/reviews`)
+            .then(res => setReviews(res.data))
+            .catch(() => {});
     }, [id]);
+
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('accessToken');
+        if (!token) return alert('Vui lòng đăng nhập để đánh giá!');
+        
+        setReviewSubmitting(true);
+        try {
+            await axios.post(`${API_GATEWAY}/api/products/${id}/reviews`, reviewForm, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            alert('Đánh giá thành công!');
+            setReviewForm({ rating: 5, comment: '' });
+            
+            const revRes = await axios.get(`${API_GATEWAY}/api/products/${id}/reviews`);
+            setReviews(revRes.data);
+            const prodRes = await axios.get(`${API_GATEWAY}/api/products/${id}`, { headers: { 'Authorization': `Bearer ${token}` }});
+            setProduct(prodRes.data);
+        } catch (error) {
+            alert(error?.response?.data?.error || 'Lỗi gửi đánh giá');
+        } finally {
+            setReviewSubmitting(false);
+        }
+    };
+
+    const validateCoupon = async () => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return alert('Vui lòng đăng nhập!');
+        const orderValue = (product.discount_price || product.price) * quantity;
+        
+        try {
+            const res = await axios.post(`${API_GATEWAY}/api/coupons/validate`, {
+                code: couponCode,
+                order_value: orderValue
+            }, { headers: { 'Authorization': `Bearer ${token}` } });
+            setCouponDiscount(res.data.discount_amount);
+            alert('Áp dụng mã thành công!');
+        } catch (error) {
+            alert(error?.response?.data?.error || 'Mã không hợp lệ');
+            setCouponDiscount(0);
+        }
+    };
 
     const handleCheckAndBuy = async () => {
         const token = localStorage.getItem('accessToken');
@@ -106,6 +180,55 @@ function Product_Detail() {
                         </span>
                     </p>
                 </div>
+
+                <div style={{ marginTop: 40 }}>
+                    <h3>Đánh giá sản phẩm</h3>
+                    <hr className="detail-divider" />
+                    
+                    <form onSubmit={handleReviewSubmit} style={{ marginBottom: 30, background: 'rgba(255,255,255,0.03)', padding: 16, borderRadius: 8 }}>
+                        <div style={{ marginBottom: 12 }}>
+                            <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>Cho điểm đánh giá</label>
+                            <StarRating 
+                                value={reviewForm.rating} 
+                                onChange={(val) => setReviewForm(prev => ({...prev, rating: val}))} 
+                            />
+                        </div>
+                        <div style={{ marginBottom: 12 }}>
+                            <textarea 
+                                className="input" 
+                                rows="3" 
+                                placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."
+                                value={reviewForm.comment}
+                                onChange={(e) => setReviewForm(prev => ({...prev, comment: e.target.value}))}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="btn btn-primary" disabled={reviewSubmitting}>
+                            {reviewSubmitting ? 'Đang gửi...' : 'Gửi đánh giá'}
+                        </button>
+                    </form>
+
+                    {reviews.length === 0 ? (
+                        <p style={{ color: 'var(--text-muted)' }}>Chưa có đánh giá nào.</p>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            {reviews.map(r => (
+                                <div key={r.id} style={{ padding: 12, border: '1px solid var(--border-color)', borderRadius: 8 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                                        <b style={{ color: 'var(--brand)' }}>{r.username}</b>
+                                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                                            {r.created_at ? new Date(r.created_at).toLocaleDateString('vi-VN') : ''}
+                                        </span>
+                                    </div>
+                                    <div style={{ marginBottom: 8 }}>
+                                        <StarRating value={r.rating} />
+                                    </div>
+                                    <p style={{ margin: 0, fontSize: 14 }}>{r.comment}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* CỘT PHẢI: Khung nhập số lượng & Nút mua */}
@@ -125,16 +248,48 @@ function Product_Detail() {
                     />
                 </div>
 
+                <div className="form-field" style={{ display: 'flex', gap: 8 }}>
+                    <input 
+                        className="input" 
+                        placeholder="Mã giảm giá (ví dụ: SUMMER20)" 
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value)}
+                        style={{ flex: 1 }}
+                    />
+                    <button className="btn btn-ghost" onClick={validateCoupon} disabled={!couponCode}>
+                        Áp dụng
+                    </button>
+                </div>
+                {couponDiscount > 0 && (
+                    <div style={{ color: 'var(--ok)', marginBottom: 12, fontWeight: 600 }}>
+                        Đã giảm: - {couponDiscount.toLocaleString()} đ! 
+                        <span style={{color:'var(--text-muted)', fontWeight: 'normal', fontSize: 13, display: 'block'}}>Giá sau giảm: {((product.discount_price || product.price) * quantity - couponDiscount).toLocaleString()} đ</span>
+                    </div>
+                )}
+
                 <button 
                     className="btn btn-primary"
                     onClick={handleCheckAndBuy}
+                    style={{ marginBottom: 12 }}
                 >
-                    Mua hàng
+                    Mua ngay
+                </button>
+
+                <button 
+                    className="btn "
+                    onClick={() => {
+                        addToCart(product, Number(quantity));
+                        alert(`Đã thêm ${quantity} x ${product.name} vào giỏ!`);
+                    }}
+                    style={{ background: 'var(--card-bg-elevated)', color: 'var(--text-color)', border: '1px solid var(--border-color)', marginBottom: 12, width: '100%', padding: '12px 24px', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}
+                >
+                    🛒 Thêm vào giỏ hàng
                 </button>
 
                 <button 
                     className="btn btn-ghost"
                     onClick={() => navigate(-1)}
+                    style={{ width: '100%' }}
                 >
                     Quay lại
                 </button>

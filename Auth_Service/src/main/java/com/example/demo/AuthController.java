@@ -48,7 +48,11 @@ public class AuthController {
 
             User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
             String token = jwtService.generateToken(user);
-            return ResponseEntity.ok(token);
+            String refreshToken = jwtService.generateRefreshToken(user);
+            return ResponseEntity.ok(Map.of(
+                    "accessToken", token,
+                    "refreshToken", refreshToken
+            ));
         } catch (org.springframework.security.authentication.DisabledException e) {
             return ResponseEntity.status(403).body(Map.of("error", "Tài khoản của bạn đã bị khóa!"));
         } catch (org.springframework.security.authentication.BadCredentialsException e) {
@@ -77,6 +81,22 @@ public class AuthController {
                 .role("USER")
                 .isEnabled(true)
                 .build());
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> body) {
+        String refreshToken = body.get("refreshToken");
+        if (refreshToken == null) return ResponseEntity.badRequest().build();
+        try {
+            String username = jwtService.extractUsername(refreshToken);
+            User user = userRepository.findByUsername(username).orElseThrow();
+            return ResponseEntity.ok(Map.of(
+                    "accessToken", jwtService.generateToken(user),
+                    "refreshToken", jwtService.generateRefreshToken(user)
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("error", "Refresh token is expired or invalid"));
+        }
     }
 
     @GetMapping("/me")

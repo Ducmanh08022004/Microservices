@@ -48,6 +48,55 @@ public class OrderController {
         }
     }
 
+    @PostMapping("/batch")
+    public ResponseEntity<?> createBatchOrders(
+            @RequestBody java.util.List<CreateOrderRequest> requests,
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestHeader(value = "X-User-Email", required = false) String xUserEmail
+    ) {
+        Optional<AuthUser> authUser = resolveAuthUserFromGatewayHeaders(xUserId, xUserEmail);
+        if (authUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Bạn chưa đăng nhập!"));
+        }
+
+        try {
+            java.util.List<OrderResponse> createdOrders = new java.util.ArrayList<>();
+            for (CreateOrderRequest request : requests) {
+                OrderResponse created = orderApplicationService.createOrder(request, authUser.get());
+                createdOrders.add(created);
+            }
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Tạo nhiều đơn thành công");
+            response.put("data", createdOrders);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
+        }
+    }
+
+    @PostMapping("/{orderId}/cancel")
+    public ResponseEntity<?> cancelOrder(
+            @PathVariable String orderId,
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId
+    ) {
+        if (xUserId == null || xUserId.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Bạn chưa đăng nhập!"));
+        }
+        try {
+            Long userId = Long.valueOf(xUserId);
+            Optional<OrderResponse> result = orderApplicationService.cancelOrder(orderId, userId);
+            return result.<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Không tìm thấy đơn hàng")));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", ex.getMessage()));
+        }
+    }
+
     @GetMapping("/{orderId}")
     public ResponseEntity<?> getOrderById(@PathVariable String orderId) {
         Optional<OrderResponse> order = orderApplicationService.getOrderByOrderId(orderId);
@@ -58,7 +107,9 @@ public class OrderController {
 
     @GetMapping
     public ResponseEntity<?> listMyOrders(
-            @RequestHeader(value = "X-User-Id", required = false) String xUserId
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         if (xUserId == null || xUserId.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Bạn chưa đăng nhập!"));
@@ -66,8 +117,9 @@ public class OrderController {
 
         try {
             Long userId = Long.valueOf(xUserId);
-            java.util.List<OrderResponse> list = orderApplicationService.getOrdersByUserId(userId);
-            return ResponseEntity.ok(list);
+            org.springframework.data.domain.Page<OrderResponse> result = orderApplicationService
+                .getOrdersByUserIdPaged(userId, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+            return ResponseEntity.ok(result);
         } catch (NumberFormatException ex) {
             return ResponseEntity.badRequest().body(Map.of("error", "X-User-Id không hợp lệ"));
         }

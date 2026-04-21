@@ -14,11 +14,12 @@ function AddProduct() {
         price: 0,
         image_url: '',
         description: '',
-        category: '',
+        categoryId: null,
         brand: '',
         sku: '',
         discount_price: null
     });
+    const [categories, setCategories] = useState([]);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [loadingData, setLoadingData] = useState(isEdit);
     const navigate = useNavigate();
@@ -38,7 +39,7 @@ function AddProduct() {
                     price: p.price,
                     image_url: p.image_url || p.imageUrl,
                     description: p.description,
-                    category: p.category?.name || p.category || '',
+                    categoryId: p.category?.id || null,
                     brand: p.brand,
                     sku: p.sku,
                     discount_price: p.discount_price || p.discountPrice
@@ -51,6 +52,16 @@ function AddProduct() {
             });
         }
     }, [id, isEdit, navigate]);
+
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        axios.get(`${API_GATEWAY}/api/categories`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            params: { page: 0, size: 100 }
+        })
+        .then(res => setCategories(res.data?.content || []))
+        .catch(() => {});
+    }, []);
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -155,10 +166,18 @@ function AddProduct() {
                             onChange={(e) => setFormData({...formData, brand: e.target.value})} />
                     </div>
                     <div className="form-field">
-                        <label>Danh mục (Tên):</label>
-                        <input className="input" type="text"
-                            value={formData.category}
-                            onChange={(e) => setFormData({...formData, category: e.target.value})} />
+                        <label>Danh mục:</label>
+                        <select className="input"
+                            value={formData.categoryId || ''}
+                            onChange={(e) => setFormData({
+                                ...formData, 
+                                categoryId: e.target.value ? Number(e.target.value) : null
+                            })}>
+                            <option value="">-- Chọn danh mục --</option>
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                        </select>
                     </div>
                     <div className="form-field" style={{ gridColumn: '1 / -1' }}>
                         <label>Mô tả sản phẩm:</label>

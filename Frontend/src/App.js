@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import './api'; // Global interceptor
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './pages/Dashboard';
@@ -13,6 +14,10 @@ import PrivateRoute from './components/PrivateRoute';
 import AdminPanel from './pages/AdminPanel';
 import Profile from './pages/Profile';
 import CategoryEdit from './pages/CategoryEdit';
+import CartPage from './pages/CartPage';
+import WishlistPage from './pages/WishlistPage';
+import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
 
 function AppRoutes() {
   const location = useLocation();
@@ -25,6 +30,8 @@ function AppRoutes() {
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/wishlist" element={<WishlistPage />} />
 
         {/* User routes — cần đăng nhập */}
         <Route path="/dashboard"        element={<PrivateRoute><Dashboard /></PrivateRoute>} />
@@ -53,7 +60,11 @@ function AppRoutes() {
 function App() {
   return (
     <Router>
-      <AppRoutes />
+      <CartProvider>
+        <WishlistProvider>
+          <AppRoutes />
+        </WishlistProvider>
+      </CartProvider>
     </Router>
   );
 }

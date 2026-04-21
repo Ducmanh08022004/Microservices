@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
 function getRole() {
   try {
@@ -29,6 +30,7 @@ function Navbar() {
   const token = localStorage.getItem('accessToken');
   const role = getRole();
   const username = getUsername();
+  const { totalItems } = useCart();
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -60,6 +62,12 @@ function Navbar() {
         )}
 
         <div className="navbar-actions">
+          <Link to="/wishlist" className="nav-link" style={{ marginRight: 16 }}>
+            ❤️ {useWishlist().wishlist.length > 0 && <span className="cart-badge" style={{ verticalAlign: 'top', background: 'var(--danger)', color: 'white', borderRadius: 12, padding: '2px 6px', fontSize: 11, marginLeft: 2 }}>{useWishlist().wishlist.length}</span>}
+          </Link>
+          <Link to="/cart" className="nav-link" style={{ marginRight: 16 }}>
+            🛒 Giỏ hàng {totalItems > 0 && <span className="cart-badge" style={{ verticalAlign: 'top', background: 'var(--danger)', color: 'white', borderRadius: 12, padding: '2px 6px', fontSize: 11, marginLeft: 4 }}>{totalItems}</span>}
+          </Link>
           {token ? (
             <div className="nav-user-info">
               <Link to="/profile" className="nav-username" style={{ textDecoration: 'none' }}>

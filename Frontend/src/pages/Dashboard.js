@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
+import { useWishlist } from '../context/WishlistContext';
 
 function Dashboard() {
     const location = useLocation();
@@ -20,6 +21,7 @@ function Dashboard() {
     const [selectedCategoryId, setSelectedCategoryId] = useState(() => queryParams.get('categoryId') || 'all');
     const requestInFlightRef = useRef(false);
     const activeRequestIdRef = useRef(0);
+    const { isWishlisted, addToWishlist, removeFromWishlist } = useWishlist();
 
     const categoryChips = categories;
 
@@ -235,6 +237,22 @@ function Dashboard() {
                             onClick={() => navigate(`/product/${p.product_id}`)}
                         >
                             <div className="product-card__image">
+                                <div className="product-card__wishlist" 
+                                     onClick={(e) => {
+                                         e.stopPropagation();
+                                         isWishlisted(p.product_id)
+                                             ? removeFromWishlist(p.product_id)
+                                             : addToWishlist(p);
+                                     }}
+                                     style={{ 
+                                         position: 'absolute', top: 8, right: 8, 
+                                         background: 'rgba(255,255,255,0.85)', padding: '5px', 
+                                         borderRadius: '50%', cursor: 'pointer', zIndex: 10,
+                                         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                         display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28
+                                     }}>
+                                    {isWishlisted(p.product_id) ? '❤️' : '🤍'}
+                                </div>
                                 {p.image_url ? (
                                     <img src={p.image_url} alt={p.name} />
                                 ) : (
@@ -256,7 +274,7 @@ function Dashboard() {
                                 <div className="product-card__rating">
                                     <span>★</span>
                                     <span>{p.rating || 0}</span>
-                                    <span className="product-card__sold">Đã xem nhiều</span>
+                                    <span className="product-card__sold">{p.num_reviews ? `${p.num_reviews} đánh giá` : 'Mới'}</span>
                                 </div>
 
                                 <div className="product-card__price">

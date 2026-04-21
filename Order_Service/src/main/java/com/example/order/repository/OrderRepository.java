@@ -14,6 +14,7 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     List<OrderEntity> findAllByUserIdOrderByCreatedAtDesc(Long userId);
+    Page<OrderEntity> findAllByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
     Optional<OrderEntity> findByOrderId(String orderId);
     Page<OrderEntity> findAll(Pageable pageable);
 
@@ -25,6 +26,16 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     @Query(value = "SELECT SUM(total_price) FROM orders WHERE (status = 'PAID' OR status = 'DELIVERED') AND created_at >= :since", nativeQuery = true)
     Double getRevenueSince(@Param("since") LocalDateTime since);
+
+    @Query(value = """
+        SELECT DATE(created_at) as date, SUM(total_price) as revenue
+        FROM orders
+        WHERE status IN ('PAID', 'DELIVERED') 
+          AND created_at >= :since
+        GROUP BY DATE(created_at)
+        ORDER BY date ASC
+        """, nativeQuery = true)
+    List<Map<String, Object>> getDailyRevenue(@Param("since") LocalDateTime since);
 
     @Query(value = "SELECT status, COUNT(*) as count FROM orders GROUP BY status", nativeQuery = true)
     List<Map<String, Object>> getOrderStatusStats();

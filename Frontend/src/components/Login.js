@@ -16,8 +16,11 @@ function Login() {
         setError('');
         try {
             const response = await axios.post(`${API_GATEWAY}/auth/login`, { username, password });
-            const token = response.data;
+            const token = response.data.accessToken || response.data;
             localStorage.setItem('accessToken', token);
+            if (response.data.refreshToken) {
+                localStorage.setItem('refreshToken', response.data.refreshToken);
+            }
             navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.error || "Sai tài khoản hoặc mật khẩu!");
