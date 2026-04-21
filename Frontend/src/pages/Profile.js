@@ -48,13 +48,20 @@ const Profile = () => {
             };
             if (form.password) updates.password = form.password;
 
-            await axios.put(`${API_GATEWAY}/auth/profile`, updates, {
+            const res = await axios.put(`${API_GATEWAY}/auth/profile`, updates, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            setMessage("Cập nhật thông tin thành công!");
+            if (res.data.accessToken) {
+                localStorage.setItem('accessToken', res.data.accessToken);
+            }
+            if (res.data.refreshToken) {
+                localStorage.setItem('refreshToken', res.data.refreshToken);
+            }
+            setMessage("Cập nhật thông tin thành công! Đang tải lại...");
             setForm({ ...form, password: '', confirmPassword: '' });
+            setTimeout(() => window.location.reload(), 1000);
         } catch (err) {
-            setError("Lỗi khi cập nhật thông tin!");
+            setError(err.response?.data?.error || "Lỗi khi cập nhật thông tin!");
         } finally {
             setLoading(false);
         }

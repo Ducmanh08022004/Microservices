@@ -32,6 +32,7 @@ public class ReviewController {
             @PathVariable String productId,
             @RequestBody ReviewRequest request,
             @RequestHeader(value = "X-User-Id", required = false) String userIdStr,
+            @RequestHeader(value = "X-User-DisplayName", required = false) String displayName,
             @RequestHeader(value = "X-User-Name", required = false) String username,
             @RequestHeader(value = "X-User-Email", required = false) String userEmail
     ) {
@@ -47,7 +48,9 @@ public class ReviewController {
         }
 
         String nameStr = "Khách hàng";
-        if (username != null && !username.isBlank()) {
+        if (displayName != null && !displayName.isBlank()) {
+            nameStr = displayName;
+        } else if (username != null && !username.isBlank()) {
             nameStr = username;
         } else if (userEmail != null && !userEmail.isBlank()) {
             nameStr = userEmail.split("@")[0];
@@ -72,6 +75,38 @@ public class ReviewController {
         updateProductRating(productId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Đã lưu đánh giá thành công"));
+    }
+
+    @PutMapping
+    public ResponseEntity<?> updateReview(
+            @PathVariable String productId,
+            @RequestBody ReviewRequest request,
+            @RequestHeader(value = "X-User-Id", required = false) String userIdStr
+    ) {
+        if (userIdStr == null || userIdStr.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Bạn chưa đăng nhập"));
+        }
+        
+        Long userId;
+        try {
+            userId = Long.valueOf(userIdStr);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Token không hợp lệ"));
+        }
+
+        if (request.getRating() == null || request.getRating() < 1 || request.getRating() > 5) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Đánh giá phải từ 1 đến 5 sao"));
+        }
+
+        return reviewRepository.findByProductIdAndUserId(productId, userId)
+            .map(review -> {
+                review.setRating(request.getRating());
+                review.setComment(request.getComment());
+                reviewRepository.save(review);
+                updateProductRating(productId);
+                return ResponseEntity.ok(Map.of("message", "Cập nhật đánh giá thành công"));
+            })
+            .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Không tìm thấy đánh giá của bạn")));
     }
 
     private void updateProductRating(String productId) {

@@ -165,20 +165,40 @@ public class AuthController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(Authentication auth, @RequestBody Map<String, String> updates) {
-        String username = auth.getName();
-        return userRepository.findByUsername(username).map(user -> {
-            if (updates.containsKey("email")) {
-                user.setEmail(updates.get("email"));
+    public ResponseEntity<?> updateProfile(
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestBody Map<String, String> updates
+    ) {
+        if (xUserId == null || xUserId.isBlank()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Bạn chưa đăng nhập!"));
+        }
+        Long userId = Long.valueOf(xUserId);
+        return userRepository.findById(userId.intValue()).map(user -> {
+            try {
+                if (updates.containsKey("email")) {
+                    user.setEmail(updates.get("email"));
+                }
+                if (updates.containsKey("displayName") && !updates.get("displayName").isBlank()) {
+                    user.setDisplayName(updates.get("displayName"));
+                }
+                if (updates.containsKey("password") && !updates.get("password").isBlank()) {
+                    user.setPassword(passwordEncoder.encode(updates.get("password")));
+                }
+                userRepository.save(user);
+
+                String newToken = jwtService.generateToken(user);
+                String newRefreshToken = jwtService.generateRefreshToken(user);
+
+                return ResponseEntity.ok(Map.of(
+                        "message", "Cập nhật thành công!",
+                        "accessToken", newToken,
+                        "refreshToken", newRefreshToken
+                ));
+            } catch (org.springframework.dao.DataIntegrityViolationException e) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Tên hiển thị này đã có người sử dụng, vui lòng chọn tên khác!"));
+            } catch (Exception e) {
+                return ResponseEntity.internalServerError().body(Map.of("error", "Lỗi lưu dữ liệu: " + e.getMessage()));
             }
-            if (updates.containsKey("displayName") && !updates.get("displayName").isBlank()) {
-                user.setDisplayName(updates.get("displayName"));
-            }
-            if (updates.containsKey("password") && !updates.get("password").isBlank()) {
-                user.setPassword(passwordEncoder.encode(updates.get("password")));
-            }
-            userRepository.save(user);
-            return ResponseEntity.ok(Map.of("message", "Cập nhật thành công!"));
         }).orElse(ResponseEntity.notFound().build());
     }
 }
