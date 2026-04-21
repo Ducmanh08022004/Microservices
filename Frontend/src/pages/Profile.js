@@ -3,7 +3,7 @@ import axios from 'axios';
 import { API_GATEWAY } from '../config';
 
 const Profile = () => {
-    const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
+    const [form, setForm] = useState({ displayName: '', email: '', password: '', confirmPassword: '' });
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -17,7 +17,11 @@ const Profile = () => {
         })
         .then(res => {
             setCurrentUser(res.data);
-            setForm(prev => ({ ...prev, email: res.data.email  || ''}));
+            setForm(prev => ({ 
+                ...prev, 
+                email: res.data.email || '',
+                displayName: res.data.displayName || ''
+            }));
         })
         .catch(() => setError('Không lấy được thông tin người dùng!'));
     }, [token]);
@@ -38,7 +42,10 @@ const Profile = () => {
         setMessage('');
 
         try {
-            const updates = { email: form.email };
+            const updates = { 
+                email: form.email,
+                displayName: form.displayName
+            };
             if (form.password) updates.password = form.password;
 
             await axios.put(`${API_GATEWAY}/auth/profile`, updates, {
@@ -84,12 +91,24 @@ const Profile = () => {
                     )}
                     <form className="form-col" onSubmit={handleSubmit} style={{ gap: 20 }}>
                         <div className="form-group">
+                            <label style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 5, display: 'block' }}>Tên hiển thị (Display Name)</label>
+                            <input 
+                                className="input" 
+                                name="displayName" 
+                                placeholder="Nhập tên hiển thị" 
+                                value={form.displayName} 
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="form-group">
                             <label style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 5, display: 'block' }}>Email mới</label>
                             <input 
                                 className="input" 
                                 name="email" 
                                 placeholder="Nhập email mới" 
                                 value={form.email} 
+                                readOnly
                                 onChange={handleChange}
                                 required 
                             />

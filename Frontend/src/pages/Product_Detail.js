@@ -4,6 +4,15 @@ import axios from 'axios';
 import { API_GATEWAY } from '../config';
 import { useCart } from '../context/CartContext';
 
+function getUserId() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return null;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.userId;
+    } catch { return null; }
+}
+
 function StarRating({ value, onChange }) {
     return (
         <div style={{ display: 'flex', gap: 4 }}>
@@ -32,6 +41,7 @@ function Product_Detail() {
     const [reviews, setReviews] = useState([]);
     const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
     const [reviewSubmitting, setReviewSubmitting] = useState(false);
+    const [isEditingReview, setIsEditingReview] = useState(false);
     
     // Coupon state
     const [couponCode, setCouponCode] = useState('');
@@ -51,7 +61,9 @@ function Product_Detail() {
         });
 
         // Tải danh sách đánh giá
-        axios.get(`${API_GATEWAY}/api/products/${id}/reviews`)
+        axios.get(`${API_GATEWAY}/api/products/${id}/reviews`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
             .then(res => setReviews(res.data))
             .catch(() => {});
     }, [id]);
@@ -63,10 +75,18 @@ function Product_Detail() {
         
         setReviewSubmitting(true);
         try {
-            await axios.post(`${API_GATEWAY}/api/products/${id}/reviews`, reviewForm, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            alert('Đánh giá thành công!');
+            if (isEditingReview) {
+                await axios.put(`${API_GATEWAY}/api/products/${id}/reviews`, reviewForm, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                alert('Cập nhật đánh giá thành công!');
+                setIsEditingReview(false);
+            } else {
+                await axios.post(`${API_GATEWAY}/api/products/${id}/reviews`, reviewForm, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                alert('Đánh giá thành công!');
+            }
             setReviewForm({ rating: 5, comment: '' });
             
             const revRes = await axios.get(`${API_GATEWAY}/api/products/${id}/reviews`);
@@ -130,18 +150,19 @@ function Product_Detail() {
         <div className="page-shell">
             <div className="detail-layout">
             
-            {/* CỘT TRÁI: Thông tin sản phẩm */}
+            {/* CỘT TRÁI: Hình ảnh, Thông tin sản phẩm & Đánh giá */}
             <div className="card detail-main">
                 {product.image_url ? (
-                    <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                        <img src={product.image_url} alt={product.name} style={{ maxWidth: '100%', maxHeight: 400, borderRadius: 12, objectFit: 'contain' }} />
+                    <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                        <img src={product.image_url} alt={product.name} style={{ maxWidth: '100%', maxHeight: '40vh', borderRadius: 8, objectFit: 'contain' }} />
                     </div>
                 ) : (
-                    <div style={{ width: '100%', height: 300, background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01))', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, marginBottom: 20 }}>
+                    <div style={{ width: '100%', height: '30vh', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01))', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, marginBottom: 16 }}>
                         <span style={{ fontSize: 40, opacity: 0.5 }}>🛍️</span>
                     </div>
                 )}
-                <div className="product-meta" style={{ marginBottom: 12 }}>
+                
+                <div className="product-meta" style={{ marginBottom: 10 }}>
                     {product.brand && <span className="badge badge-brand">{product.brand}</span>}
                     {product.category?.name && <span className="badge badge-category">{product.category.name}</span>}
                 </div>
@@ -170,19 +191,19 @@ function Product_Detail() {
                     {product.description || "Chưa có mô tả cho sản phẩm này."}
                 </div>
 
-                <div style={{ marginTop: 24, fontSize: '0.95rem' }}>
-                    <p><strong>Mã SKU:</strong> <span className="sku-text">{product.sku || 'N/A'}</span></p>
-                    <p><strong>Mã hệ thống:</strong> {product.product_id}</p>
-                    <p>
+                <div style={{ marginTop: 20, fontSize: '0.9rem' }}>
+                    <p style={{ margin: '4px 0' }}><strong>Mã SKU:</strong> <span className="sku-text">{product.sku || 'N/A'}</span></p>
+                    <p style={{ margin: '4px 0' }}><strong>Mã hệ thống:</strong> {product.product_id}</p>
+                    <p style={{ margin: '4px 0' }}>
                         <strong>Trạng thái:</strong> 
-                        <span style={{ marginLeft: 8, color: product.stock > 0 ? '#166534' : '#b91c1c', fontWeight: 600 }}>
+                        <span style={{ marginLeft: 6, color: product.stock > 0 ? '#166534' : '#b91c1c', fontWeight: 600 }}>
                             {product.stock > 0 ? "Còn hàng" : "Hết hàng"} ({product.stock})
                         </span>
                     </p>
                 </div>
 
-                <div style={{ marginTop: 40 }}>
-                    <h3>Đánh giá sản phẩm</h3>
+                <div style={{ marginTop: 24 }}>
+                    <h3 style={{ fontSize: '1.2rem' }}>Đánh giá sản phẩm</h3>
                     <hr className="detail-divider" />
                     
                     <form onSubmit={handleReviewSubmit} style={{ marginBottom: 30, background: 'rgba(255,255,255,0.03)', padding: 16, borderRadius: 8 }}>
@@ -203,9 +224,19 @@ function Product_Detail() {
                                 required
                             />
                         </div>
-                        <button type="submit" className="btn btn-primary" disabled={reviewSubmitting}>
-                            {reviewSubmitting ? 'Đang gửi...' : 'Gửi đánh giá'}
-                        </button>
+                        <div style={{ display: 'flex', gap: 10 }}>
+                            <button type="submit" className="btn btn-primary" disabled={reviewSubmitting}>
+                                {reviewSubmitting ? 'Đang gửi...' : (isEditingReview ? 'Cập nhật đánh giá' : 'Gửi đánh giá')}
+                            </button>
+                            {isEditingReview && (
+                                <button type="button" className="btn btn-ghost" onClick={() => {
+                                    setIsEditingReview(false);
+                                    setReviewForm({ rating: 5, comment: '' });
+                                }}>
+                                    Hủy
+                                </button>
+                            )}
+                        </div>
                     </form>
 
                     {reviews.length === 0 ? (
@@ -216,9 +247,18 @@ function Product_Detail() {
                                 <div key={r.id} style={{ padding: 12, border: '1px solid var(--border-color)', borderRadius: 8 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                                         <b style={{ color: 'var(--brand)' }}>{r.username}</b>
-                                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                                            {r.created_at ? new Date(r.created_at).toLocaleDateString('vi-VN') : ''}
-                                        </span>
+                                        <div>
+                                            {r.userId === getUserId() && (
+                                                <button className="btn btn-ghost" style={{ padding: '2px 8px', fontSize: 12, marginRight: 8, color: 'var(--accent)' }} onClick={() => {
+                                                    setReviewForm({ rating: r.rating, comment: r.comment });
+                                                    setIsEditingReview(true);
+                                                    window.scrollTo({ top: 400, behavior: 'smooth' });
+                                                }}>Sửa đánh giá</button>
+                                            )}
+                                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                                                {r.created_at ? new Date(r.created_at).toLocaleDateString('vi-VN') : ''}
+                                            </span>
+                                        </div>
                                     </div>
                                     <div style={{ marginBottom: 8 }}>
                                         <StarRating value={r.rating} />
@@ -233,7 +273,7 @@ function Product_Detail() {
 
             {/* CỘT PHẢI: Khung nhập số lượng & Nút mua */}
             <div className="card detail-side">
-                <h3>Mua hàng</h3>
+                <h3 style={{ fontSize: '1.2rem' }}>Mua hàng</h3>
                 <hr className="detail-divider" />
                 <div className="form-field">
                     <label>
@@ -251,7 +291,7 @@ function Product_Detail() {
                 <div className="form-field" style={{ display: 'flex', gap: 8 }}>
                     <input 
                         className="input" 
-                        placeholder="Mã giảm giá (ví dụ: SUMMER20)" 
+                        placeholder="Mã giảm giá (VD: SUMMER20)" 
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
                         style={{ flex: 1 }}
@@ -268,7 +308,7 @@ function Product_Detail() {
                 )}
 
                 <button 
-                    className="btn btn-primary"
+                    className="btn btn-primary btn-block"
                     onClick={handleCheckAndBuy}
                     style={{ marginBottom: 12 }}
                 >
@@ -276,20 +316,28 @@ function Product_Detail() {
                 </button>
 
                 <button 
-                    className="btn "
+                    className="btn btn-block"
                     onClick={() => {
                         addToCart(product, Number(quantity));
                         alert(`Đã thêm ${quantity} x ${product.name} vào giỏ!`);
                     }}
-                    style={{ background: 'var(--card-bg-elevated)', color: 'var(--text-color)', border: '1px solid var(--border-color)', marginBottom: 12, width: '100%', padding: '12px 24px', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}
+                    style={{ 
+                    background: '#1d1d1f', // Đen xám sâu
+                    color: '#fff', 
+                    border: 'none', 
+                    marginBottom: 12, 
+                    padding: '12px 24px', 
+                    borderRadius: 8, 
+                    fontWeight: 600, 
+                    cursor: 'pointer',
+                    transition: 'opacity 0.2s'}}
                 >
                     🛒 Thêm vào giỏ hàng
                 </button>
 
                 <button 
-                    className="btn btn-ghost"
+                    className="btn btn-ghost btn-block"
                     onClick={() => navigate(-1)}
-                    style={{ width: '100%' }}
                 >
                     Quay lại
                 </button>

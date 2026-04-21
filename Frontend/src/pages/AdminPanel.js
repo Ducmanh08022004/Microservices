@@ -44,7 +44,7 @@ const AdminPanel = () => {
 
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
-    const [pageSize] = useState(10);
+    const [pageSize] = useState(7);
     
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -238,16 +238,16 @@ const AdminPanel = () => {
     };
 
     return (
-        <div className="page-shell">
+        <div className="page-shell" style={{ padding: 'calc(var(--nav-height) + 16px) 20px 20px' }}>
             <div className="dashboard-wrap">
-                <div className="dashboard-head">
-                    <h1 className="dashboard-title">Hệ thống Quản trị</h1>
+                <div className="dashboard-head" style={{ marginBottom: 12 }}>
+                    <h1 className="dashboard-title" style={{ fontSize: '1.5rem' }}>Hệ thống Quản trị</h1>
                     {activeTab === 'products' && (
                         <button className="btn btn-primary" onClick={() => navigate('/admin/products/new')}>+ Thêm sản phẩm</button>
                     )}
                 </div>
 
-                <div className="tabs" style={{ display: 'flex', gap: 10, marginBottom: 20, overflowX: 'auto' }}>
+                <div className="tabs" style={{ display: 'flex', gap: 10, marginBottom: 12, overflowX: 'auto' }}>
                     {[
                         { id: 'products', name: 'Sản phẩm' },
                         { id: 'categories', name: 'Danh mục' },
@@ -263,7 +263,7 @@ const AdminPanel = () => {
 
                 {/* Search and Filters Area */}
                 {activeTab !== 'reports' && (
-                    <div className="card" style={{ padding: '15px 20px', marginBottom: 20, display: 'flex', gap: 15, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div className="card" style={{ padding: '10px 16px', marginBottom: 12, display: 'flex', gap: 15, alignItems: 'center', flexWrap: 'wrap' }}>
                         <div style={{ flex: 1, minWidth: 250, position: 'relative' }}>
                             <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
                             <input 
@@ -292,12 +292,12 @@ const AdminPanel = () => {
                     </div>
                 )}
 
-                <div className="card" style={{ padding: 25, minHeight: 500 }}>
-                    {loading && <div style={{ textAlign: 'center', padding: '50px 0' }}><p>Đang tải dữ liệu...</p></div>}
+                <div className="card" style={{ padding: '16px', minHeight: 400 }}>
+                    {loading && <div style={{ textAlign: 'center', padding: '30px 0' }}><p>Đang tải dữ liệu...</p></div>}
                     {!loading && activeTab === 'reports' ? (
                         <div className="reports-area">
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 15, marginBottom: 25 }}>
-                                <div className="card" style={{ padding: 20, background: '#f0f9ff', borderLeft: '4px solid #0ea5e9' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 16 }}>
+                                <div className="card" style={{ padding: '12px 16px', background: '#f0f9ff', borderLeft: '4px solid #0ea5e9' }}>
                                     <small>Doanh thu Ngày</small>
                                     <h3 style={{ margin: '5px 0' }}>{stats.daily?.toLocaleString()} đ</h3>
                                 </div>
@@ -315,9 +315,9 @@ const AdminPanel = () => {
                                 </div>
                             </div>
 
-                            <div className="card" style={{ padding: 20, marginBottom: 25 }}>
-                                <h4>Biểu đồ Doanh thu (30 ngày)</h4>
-                                <div style={{ height: 300, marginTop: 20 }}>
+                            <div className="card" style={{ padding: '12px 16px', marginBottom: 16 }}>
+                                <h4 style={{ margin: '0 0 10px' }}>Biểu đồ Doanh thu (30 ngày)</h4>
+                                <div style={{ height: 200 }}>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <LineChart data={stats.dailyChart}>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
@@ -330,10 +330,10 @@ const AdminPanel = () => {
                                 </div>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                                <div className="card" style={{ padding: 20 }}>
-                                    <h4>Top Sản phẩm bán chạy</h4>
-                                    <div style={{ height: 250, marginTop: 20 }}>
+                            <div className="admin-charts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
+                                <div className="card" style={{ padding: '12px 16px' }}>
+                                    <h4 style={{ margin: '0 0 10px' }}>Top Sản phẩm bán chạy</h4>
+                                    <div style={{ height: 180 }}>
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={stats.topProducts} layout="vertical" margin={{top: 5, right: 30, left: 20, bottom: 5}}>
                                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#eee" />
@@ -350,9 +350,9 @@ const AdminPanel = () => {
                                     </div>
                                 </div>
 
-                                <div className="card" style={{ padding: 20 }}>
-                                    <h4>Tỉ lệ Trạng thái Đơn hàng</h4>
-                                    <div style={{ height: 250, marginTop: 20 }}>
+                                <div className="card" style={{ padding: '12px 16px' }}>
+                                    <h4 style={{ margin: '0 0 10px' }}>Tỉ lệ Trạng thái Đơn hàng</h4>
+                                    <div style={{ height: 180 }}>
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
                                                 <Pie
@@ -378,59 +378,59 @@ const AdminPanel = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="table-area">
-                            {!loading && data.length === 0 && <p style={{ textAlign: 'center', opacity: 0.5, padding: '40px 0' }}>Không tìm thấy kết quả nào phù hợp.</p>}
+                        <div className="table-area" style={{ overflowX: 'auto' }}>
+                            {!loading && data.length === 0 && <p style={{ textAlign: 'center', opacity: 0.5, padding: '20px 0' }}>Không tìm thấy kết quả nào phù hợp.</p>}
                             
                             {data.length > 0 && (
-                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                                     <thead style={{ background: '#f8f9fa' }}>
                                         <tr style={{ textAlign: 'left' }}>
-                                            {activeTab === 'products' && <><th>ID</th><th>Tên</th><th>Giá</th><th>Kho</th><th>Hành động</th></>}
-                                            {activeTab === 'categories' && <><th>ID</th><th>Tên danh mục</th><th>Mô tả</th><th>Hành động</th></>}
-                                            {activeTab === 'orders' && <><th>Mã Đơn</th><th>Tổng tiền</th><th>Trạng thái</th><th>Hành động</th></>}
-                                            {activeTab === 'users' && <><th>Username</th><th>Email</th><th>Role</th><th>Trạng thái</th><th>Hành động</th></>}
+                                            {activeTab === 'products' && <><th style={{padding: '8px 12px'}}>ID</th><th style={{padding: '8px 12px'}}>Tên</th><th style={{padding: '8px 12px'}}>Giá</th><th style={{padding: '8px 12px'}}>Kho</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
+                                            {activeTab === 'categories' && <><th style={{padding: '8px 12px'}}>ID</th><th style={{padding: '8px 12px'}}>Tên danh mục</th><th style={{padding: '8px 12px'}}>Mô tả</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
+                                            {activeTab === 'orders' && <><th style={{padding: '8px 12px'}}>Mã Đơn</th><th style={{padding: '8px 12px'}}>Tổng tiền</th><th style={{padding: '8px 12px'}}>Trạng thái</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
+                                            {activeTab === 'users' && <><th style={{padding: '8px 12px'}}>Username</th><th style={{padding: '8px 12px'}}>Email</th><th style={{padding: '8px 12px'}}>Role</th><th style={{padding: '8px 12px'}}>Trạng thái</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {data.map((item, idx) => (
                                             <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
                                                 {activeTab === 'products' && <>
-                                                    <td style={{ padding: '15px 12px', fontSize: 13, color: 'var(--text-muted)' }}>{item.product_id}</td>
-                                                    <td><strong>{item.name}</strong></td>
-                                                    <td>{item.price?.toLocaleString()} đ</td>
-                                                    <td>{item.stock}</td>
-                                                    <td>
-                                                        <div style={{ display: 'flex', gap: 10 }}>
-                                                            <button className="btn btn-ghost" style={{ color: 'var(--brand)' }} onClick={() => navigate(`/admin/products/edit/${item.product_id}`)}>Sửa</button>
-                                                            <button className="btn btn-ghost" style={{ color: 'var(--danger)' }} onClick={() => handleDeleteProduct(item.product_id)}>Xóa</button>
+                                                    <td style={{ padding: '8px 12px', fontSize: 13, color: 'var(--text-muted)' }}>{item.product_id}</td>
+                                                    <td style={{ padding: '8px 12px' }}><strong>{item.name}</strong></td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.price?.toLocaleString()} đ</td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.stock}</td>
+                                                    <td style={{ padding: '8px 12px' }}>
+                                                        <div style={{ display: 'flex', gap: 6 }}>
+                                                            <button className="btn btn-ghost" style={{ color: 'var(--brand)', padding: '6px 10px', fontSize: '0.85rem' }} onClick={() => navigate(`/admin/products/edit/${item.product_id}`)}>Sửa</button>
+                                                            <button className="btn btn-ghost" style={{ color: 'var(--danger)', padding: '6px 10px', fontSize: '0.85rem' }} onClick={() => handleDeleteProduct(item.product_id)}>Xóa</button>
                                                         </div>
                                                     </td>
                                                 </>}
                                                 {activeTab === 'categories' && <>
-                                                    <td style={{ padding: 12 }}>{item.id}</td>
-                                                    <td><strong>{item.name}</strong></td>
-                                                    <td>{item.description}</td>
-                                                    <td>
-                                                        <button className="btn btn-ghost" style={{ color: 'var(--brand)' }} onClick={() => navigate(`/admin/categories/edit/${item.id}`)}>Sửa</button>
+                                                    <td style={{ padding: '8px 12px' }}>{item.id}</td>
+                                                    <td style={{ padding: '8px 12px' }}><strong>{item.name}</strong></td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.description}</td>
+                                                    <td style={{ padding: '8px 12px' }}>
+                                                        <button className="btn btn-ghost" style={{ color: 'var(--brand)', padding: '6px 10px', fontSize: '0.85rem' }} onClick={() => navigate(`/admin/categories/edit/${item.id}`)}>Sửa</button>
                                                     </td>
                                                 </>}
                                                 {activeTab === 'orders' && <>
-                                                    <td style={{ padding: 12 }}>{item.order_id?.substring(0,8)}...</td>
-                                                    <td>{item.total_price?.toLocaleString()} đ</td>
-                                                    <td><span className="badge">{item.status}</span></td>
-                                                    <td><button className="btn btn-ghost" onClick={() => navigate(`/payment/${item.order_id}`)}>Chi tiết</button></td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.order_id?.substring(0,8)}...</td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.total_price?.toLocaleString()} đ</td>
+                                                    <td style={{ padding: '8px 12px' }}><span className="badge" style={{ padding: '3px 8px', fontSize: '0.75rem' }}>{item.status}</span></td>
+                                                    <td style={{ padding: '8px 12px' }}><button className="btn btn-ghost" style={{ padding: '6px 10px', fontSize: '0.85rem' }} onClick={() => navigate(`/payment/${item.order_id}`)}>Chi tiết</button></td>
                                                 </>}
                                                 {activeTab === 'users' && <>
-                                                    <td style={{ padding: 12 }}>{item.username}</td>
-                                                    <td>{item.email}</td>
-                                                    <td><span className="badge" style={{ background: item.role === 'ADMIN' ? 'var(--accent)' : 'rgba(255,255,255,0.05)' }}>{item.role}</span></td>
-                                                    <td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.username}</td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.email}</td>
+                                                    <td style={{ padding: '8px 12px' }}><span className="badge" style={{ background: item.role === 'ADMIN' ? 'var(--accent)' : 'rgba(255,255,255,0.05)', padding: '3px 8px', fontSize: '0.75rem' }}>{item.role}</span></td>
+                                                    <td style={{ padding: '8px 12px' }}>
                                                         <span style={{ color: item.isEnabled ? 'var(--ok)' : 'var(--danger)', fontWeight: 600 }}>
                                                             {item.isEnabled ? 'Hoạt động' : 'Đã khóa'}
                                                         </span>
                                                     </td>
-                                                    <td>
-                                                        <button className="btn btn-ghost" onClick={() => handleToggleUserStatus(item.id)}>
+                                                    <td style={{ padding: '8px 12px' }}>
+                                                        <button className="btn btn-ghost" style={{ padding: '6px 10px', fontSize: '0.85rem' }} onClick={() => handleToggleUserStatus(item.id)}>
                                                             {item.isEnabled ? 'Khóa' : 'Mở khóa'}
                                                         </button>
                                                     </td>

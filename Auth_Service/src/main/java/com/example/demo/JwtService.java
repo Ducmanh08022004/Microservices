@@ -29,6 +29,7 @@ public class JwtService {
                 .claim("role", user.getRole())
                 .claim("email",user.getEmail())
                 .claim("username",user.getUsername())
+                .claim("displayName", user.getDisplayName() != null ? user.getDisplayName() : "")
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 giờ
                 .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
@@ -40,6 +41,7 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(user.getUsername())
                 .claim("userId", user.getId())
+                .claim("displayName", user.getDisplayName() != null ? user.getDisplayName() : "")
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7)) // 7 ngày
                 .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))

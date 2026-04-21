@@ -33,7 +33,6 @@ function Register() {
       <div className="card login-panel" style={{ width: 400, padding: 40, borderRadius: 20, boxShadow: '0 15px 35px rgba(0,0,0,0.1)', background: '#fff' }}>
         <div style={{ textAlign: 'center', marginBottom: 30 }}>
           <h2 style={{ fontSize: 28, color: 'var(--brand)', marginBottom: 10 }}>Tham gia ngay</h2>
-          <p style={{ color: '#666' }}>Trải nghiệm hệ thống E-Commerce hiện đại nhất</p>
         </div>
         
         <form className="form-col" onSubmit={handleSubmit} style={{ gap: 20 }}>

@@ -35,4 +35,7 @@ public class User {
     @Column(name = "is_enabled", nullable = false, columnDefinition = "boolean default true")
     @Builder.Default
     private Boolean isEnabled = true;
+
+    @Column(name = "display_name", unique = true)
+    private String displayName;
 }

@@ -51,7 +51,7 @@ h4 {
 
 .page-shell {
   min-height: 100vh;
-  padding: calc(var(--nav-height) + 32px) 32px 32px;
+  padding: calc(var(--nav-height) + 16px) 24px 24px;
 }
 
 .card {
@@ -179,8 +179,8 @@ h4 {
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
 }
 
 .home-search {
@@ -349,7 +349,7 @@ h4 {
 
 .product-card__image {
   position: relative;
-  height: 190px;
+  height: 160px;
   overflow: hidden;
   background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(249, 115, 22, 0.1));
 }
@@ -541,51 +541,47 @@ h4 {
 
 .detail-layout {
   max-width: 1040px;
-  margin: 30px auto;
+  margin: 20px auto;
   display: grid;
-  gap: 16px;
-  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  grid-template-columns: 2fr 340px;
+  align-items: start;
 }
 
 .detail-main,
 .detail-side {
-  padding: 22px;
-}
-
-.detail-main {
-  border: 1px solid #d8e1eb;
-}
-
-.detail-side {
+  padding: 24px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   border: 1px solid #dce6f2;
-  background: var(--surface-soft);
 }
 
 .detail-side .form-field {
   margin-bottom: 12px;
 }
 
-.detail-side .btn {
+.btn-block {
   width: 100%;
 }
 
-.detail-side .btn + .btn {
+.btn-block + .btn-block {
   margin-top: 10px;
 }
 
 .detail-divider {
   border: 0;
   border-top: 1px solid #deebf8;
-  margin: 14px 0;
+  margin: 12px 0;
 }
 
 .detail-price {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--accent);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .price-original {
@@ -658,6 +654,12 @@ h4 {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 992px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
   }
 }
 

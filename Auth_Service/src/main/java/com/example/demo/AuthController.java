@@ -79,6 +79,7 @@ public class AuthController {
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role("USER")
+                .displayName(request.getUsername()) // Default to username if not provided
                 .isEnabled(true)
                 .build());
     }
@@ -115,6 +116,7 @@ public class AuthController {
                     .map(user -> ResponseEntity.ok(Map.of(
                             "id",        user.getId(),
                             "username",  user.getUsername(),
+                            "displayName", user.getDisplayName() != null ? user.getDisplayName() : "",
                             "email",     user.getEmail() != null ? user.getEmail() : "",
                             "role",      user.getRole(),
                             "isEnabled", user.getIsEnabled()
@@ -168,6 +170,9 @@ public class AuthController {
         return userRepository.findByUsername(username).map(user -> {
             if (updates.containsKey("email")) {
                 user.setEmail(updates.get("email"));
+            }
+            if (updates.containsKey("displayName") && !updates.get("displayName").isBlank()) {
+                user.setDisplayName(updates.get("displayName"));
             }
             if (updates.containsKey("password") && !updates.get("password").isBlank()) {
                 user.setPassword(passwordEncoder.encode(updates.get("password")));

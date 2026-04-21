@@ -60,7 +60,7 @@ function CartPage() {
 
     if (cart.length === 0) {
         return (
-            <div className="page-shell" style={{ textAlign: 'center', paddingTop: 60 }}>
+            <div className="page-shell" style={{ textAlign: 'center' }}>
                 <h2>🛒 Giỏ hàng trống</h2>
                 <p style={{ color: 'var(--text-muted)' }}>Bạn chưa có sản phẩm nào trong giỏ hàng.</p>
                 <button className="btn btn-primary" onClick={() => navigate('/dashboard')} style={{ marginTop: 20 }}>
@@ -74,7 +74,7 @@ function CartPage() {
         <div className="page-shell">
             <h1 style={{ marginBottom: 24 }}>🛒 Giỏ hàng của bạn</h1>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-                <div style={{ flex: '1 1 60%' }}>
+                <div style={{ flex: '1 1 60%', minWidth: '320px' }}>
                     {cart.map(item => (
                         <div key={item.product_id} className="card" style={{ display: 'flex', gap: 16, padding: 16, marginBottom: 16, alignItems: 'center' }}>
                             {item.image_url ? (
@@ -99,7 +99,7 @@ function CartPage() {
                         </div>
                     ))}
                 </div>
-                <div className="card" style={{ flex: '1 1 30%', height: 'fit-content', padding: 24 }}>
+                <div className="card" style={{ flex: '1 1 30%', minWidth: '320px', height: 'fit-content', padding: 24 }}>
                     <h3 style={{ margin: '0 0 16px' }}>Tóm tắt đơn hàng</h3>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
                         <span>Tổng số lượng:</span>

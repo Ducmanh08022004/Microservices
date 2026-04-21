@@ -25,6 +25,7 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     private static final List<String> PUBLIC_PATH_PREFIXES = List.of(
             "/auth/login",
             "/auth/register",
+            "/auth/refresh-token",
             "/auth/health",
             "/actuator"
     );
@@ -59,6 +60,7 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
                     .header("X-User-Id", stringClaim(claims, "userId", "id"))
                     .header("X-User-Email", stringClaim(claims, "email", "username"))
                     .header("X-User-Role", stringClaim(claims, "role", ""))
+                    .header("X-User-DisplayName", stringClaim(claims, "displayName", "username"))
                     .build();
 
             return chain.filter(exchange.mutate().request(mutatedRequest).build());

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 function getRole() {
   try {
@@ -18,7 +19,7 @@ function getUsername() {
     const token = localStorage.getItem('accessToken');
     if (!token) return '';
     const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.sub || payload.username || '';
+    return payload.displayName || payload.sub || payload.username || '';
   } catch {
     return '';
   }
@@ -31,6 +32,7 @@ function Navbar() {
   const role = getRole();
   const username = getUsername();
   const { totalItems } = useCart();
+  const { wishlist } = useWishlist();
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -47,7 +49,7 @@ function Navbar() {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/dashboard" className="navbar-logo">
-          🛍️ <span>MicroStore</span>
+          🛍️ <span>MiniStore</span>
         </Link>
 
         {token && (
@@ -63,7 +65,7 @@ function Navbar() {
 
         <div className="navbar-actions">
           <Link to="/wishlist" className="nav-link" style={{ marginRight: 16 }}>
-            ❤️ {useWishlist().wishlist.length > 0 && <span className="cart-badge" style={{ verticalAlign: 'top', background: 'var(--danger)', color: 'white', borderRadius: 12, padding: '2px 6px', fontSize: 11, marginLeft: 2 }}>{useWishlist().wishlist.length}</span>}
+            ❤️ {wishlist.length > 0 && <span className="cart-badge" style={{ verticalAlign: 'top', background: 'var(--danger)', color: 'white', borderRadius: 12, padding: '2px 6px', fontSize: 11, marginLeft: 2 }}>{wishlist.length}</span>}
           </Link>
           <Link to="/cart" className="nav-link" style={{ marginRight: 16 }}>
             🛒 Giỏ hàng {totalItems > 0 && <span className="cart-badge" style={{ verticalAlign: 'top', background: 'var(--danger)', color: 'white', borderRadius: 12, padding: '2px 6px', fontSize: 11, marginLeft: 4 }}>{totalItems}</span>}
