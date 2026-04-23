@@ -22,7 +22,7 @@ function Dashboard() {
     const requestInFlightRef = useRef(false);
     const activeRequestIdRef = useRef(0);
     const { isWishlisted, addToWishlist, removeFromWishlist } = useWishlist();
-
+    const [dailyCoupon, setDailyCoupon] = useState(null);
     const categoryChips = categories;
 
     useEffect(() => {
@@ -89,6 +89,16 @@ function Dashboard() {
             .catch(() => {
                 setCategories([]);
             });
+    }, []);
+
+    useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+    axios.get(`${API_GATEWAY}/api/coupons/my-daily`, {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => setDailyCoupon(res.data))
+    .catch(() => {});
     }, []);
 
     useEffect(() => {
@@ -177,6 +187,40 @@ function Dashboard() {
 
     return (
         <div className="page-shell">
+            {dailyCoupon && (
+                <div className="card" style={{
+                    background: 'linear-gradient(135deg, #0f766e 0%, #065f46 100%)',
+                    color: '#fff', padding: '16px 20px', marginBottom: 16,
+                    borderRadius: 12, display: 'flex', justifyContent: 'space-between',
+                    alignItems: 'center', animation: 'fadeIn 0.5s ease'
+                }}>
+                    <div>
+                        <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 4 }}>
+                            🎁 Mã giảm giá hôm nay dành cho bạn
+                        </div>
+                        <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 2 }}>
+                            {dailyCoupon.code}
+                        </div>
+                        <div style={{ fontSize: 13, marginTop: 4, opacity: 0.8 }}>
+                            Giảm {dailyCoupon.value}% · Tối đa {dailyCoupon.maxDiscountAmount?.toLocaleString()}đ
+                            · HSD: Hôm nay
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => {
+                            navigator.clipboard.writeText(dailyCoupon.code);
+                            alert('Đã copy mã: ' + dailyCoupon.code);
+                        }}
+                        style={{
+                            background: 'rgba(255,255,255,0.2)', border: 'none',
+                            color: '#fff', padding: '10px 20px', borderRadius: 8,
+                            cursor: 'pointer', fontWeight: 600, fontSize: 14
+                        }}
+                    >
+                        📋 Copy
+                    </button>
+                </div>
+            )}
             <div className="dashboard-wrap">
                 <div className="home-search card">
                     <div className="home-search__copy">

@@ -3,6 +3,7 @@ package com.example.order.controller;
 import com.example.order.model.Coupon;
 import com.example.order.model.CouponType;
 import com.example.order.repository.CouponRepository;
+import com.example.order.service.InventoryClient;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -11,19 +12,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/coupons")
 public class CouponController {
 
     private final CouponRepository repository;
+    private final InventoryClient inventoryClient;
 
-    public CouponController(CouponRepository repository) {
+    public CouponController(CouponRepository repository, InventoryClient inventoryClient) {
         this.repository = repository;
+        this.inventoryClient = inventoryClient;
     }
 
     @GetMapping("/admin")
@@ -37,7 +37,59 @@ public class CouponController {
         Page<Coupon> result = repository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
         return ResponseEntity.ok(result);
     }
-    
+
+    @GetMapping("/my-daily")
+    public ResponseEntity<?> getOrCreateDailyCoupon(
+                @RequestHeader(value = "X-User-Id", required = false) String id) {
+        if (id == null || id.isBlank())
+        {
+            return ResponseEntity.status(401).body(Map.of("error","Bạn chưa đăng nhập."));
+        }
+        Long userId = Long.valueOf(id);
+        LocalDateTime startDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+        LocalDateTime endDay = LocalDateTime.now().toLocalDate().atTime(23,59,59);
+
+        Optional<Coupon> existing = repository.findByOwnerUserIdAndCreatedAtBetween(userId,startDay,endDay);
+        if (existing.isPresent()){
+            return ResponseEntity.ok(existing.get());
+        }
+
+        Random random = new Random();
+        int discountPercent = 5 + random.nextInt(21); //min:5 ; max:25
+        Coupon coupon = new Coupon();
+        coupon.setCode(("DL" + userId + "_"
+                        + UUID.randomUUID().toString().replace("-", "").substring(0, 6))
+                        .toUpperCase(Locale.ROOT));
+        coupon.setType(CouponType.PERCENT);
+        coupon.setOwnerUserId(userId);
+        coupon.setValue((double) discountPercent);
+        coupon.setMaxUsage(1);
+        coupon.setUsedCount(0);
+        coupon.setMinOrderValue(50000.0);
+        coupon.setMaxDiscountAmount(30000.0);
+        coupon.setExpiresAt(endDay);
+        coupon.setIsActive(true);
+        coupon.setCreatedAt(LocalDateTime.now());
+        // Randomly pick a category from existing categories
+        List<String> categoryNames = inventoryClient.fetchCategoryNames();
+        if (categoryNames.isEmpty()) {
+            coupon.setCategoryName("ALL");
+        } else {
+            coupon.setCategoryName(categoryNames.get(random.nextInt(categoryNames.size())));
+        }
+        return ResponseEntity.ok(repository.save(coupon));
+    }
+    @GetMapping("/my-coupons")
+    public ResponseEntity<?> getMyCoupons(
+            @RequestHeader(value = "X-User-Id", required = false) String id
+    ) {
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Chưa đăng nhập"));
+        }
+        Long userId = Long.valueOf(id);
+        return ResponseEntity.ok(repository.findByOwnerUserId(userId));
+    }
+
     @PostMapping("/admin")
     public ResponseEntity<?> createCoupon(
                 @RequestBody Map<String, Object> request, 
@@ -136,6 +188,14 @@ public class CouponController {
         }
 
         Coupon c = opt.get();
+        if (c.getOwnerUserId() != null) {
+            String reqUserId = req.get("user_id") != null
+                    ? String.valueOf(req.get("user_id")) : null;
+            if (reqUserId == null || !c.getOwnerUserId().equals(Long.valueOf(reqUserId))) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Mã giảm giá này không thuộc về bạn"));
+            }
+        }
         if (!c.getIsActive() || (c.getExpiresAt() != null && c.getExpiresAt().isBefore(LocalDateTime.now()))) {
             return ResponseEntity.badRequest().body(Map.of("error", "Mã giảm giá đã hết hạn hoặc bị vô hiệu hóa"));
         }

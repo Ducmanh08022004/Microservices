@@ -46,6 +46,7 @@ function Product_Detail() {
     // Coupon state
     const [couponCode, setCouponCode] = useState('');
     const [couponDiscount, setCouponDiscount] = useState(0);
+    const [dailyCoupon, setDailyCoupon] = useState(null);
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
@@ -66,6 +67,12 @@ function Product_Detail() {
         })
             .then(res => setReviews(res.data))
             .catch(() => {});
+        // Lấy daily coupon
+        axios.get(`${API_GATEWAY}/api/coupons/my-daily`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => setDailyCoupon(res.data))
+        .catch(() => {});
     }, [id]);
 
     const handleReviewSubmit = async (e) => {
@@ -108,7 +115,8 @@ function Product_Detail() {
         try {
             const res = await axios.post(`${API_GATEWAY}/api/coupons/validate`, {
                 code: couponCode,
-                order_value: orderValue
+                order_value: orderValue,
+                user_id: getUserId()
             }, { headers: { 'Authorization': `Bearer ${token}` } });
             setCouponDiscount(res.data.discount_amount);
             alert('Áp dụng mã thành công!');
@@ -288,6 +296,22 @@ function Product_Detail() {
                         onChange={(e) => setQuantity(e.target.value)}
                     />
                 </div>
+                {dailyCoupon && !couponCode && (
+                    <div style={{
+                        background: 'rgba(15,118,110,0.08)', padding: '10px 14px',
+                        borderRadius: 8, marginBottom: 10, fontSize: 13,
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                    }}>
+                        <span>🎁 Bạn có mã hôm nay: <b>{dailyCoupon.code}</b> (-{dailyCoupon.value}%)</span>
+                        <button
+                            className="btn btn-ghost"
+                            style={{ padding: '4px 10px', fontSize: 12 }}
+                            onClick={() => setCouponCode(dailyCoupon.code)}
+                        >
+                            Dùng ngay
+                        </button>
+                    </div>
+                )}
 
                 <div className="form-field" style={{ display: 'flex', gap: 8 }}>
                     <input 

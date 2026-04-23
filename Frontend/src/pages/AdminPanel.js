@@ -212,14 +212,15 @@ const AdminPanel = () => {
     const handleCreateCoupon = async (e) => {
         e.preventDefault();
         try {
+            const isFixed = newCoupon.type === 'FIXED';
             const payload = {
                 code: (newCoupon.code || '').trim().toUpperCase().slice(0, 15),
                 categoryName: newCoupon.categoryName || 'ALL',
                 type: newCoupon.type,
                 value: Number(newCoupon.value),
-                maxUsage: Number(newCoupon.maxUsage),
+                maxUsage: isFixed ? 1 : Number(newCoupon.maxUsage),
                 minOrderValue: Number(newCoupon.minOrderValue),
-                maxDiscountAmount: Number(newCoupon.maxDiscountAmount),
+                maxDiscountAmount: isFixed ? Number(newCoupon.value) : Number(newCoupon.maxDiscountAmount),
                 expiresAt: `${newCoupon.expiresAt}T23:59:59`
             };
 
@@ -477,7 +478,7 @@ const AdminPanel = () => {
                                             {activeTab === 'categories' && <><th style={{padding: '8px 12px'}}>ID</th><th style={{padding: '8px 12px'}}>Tên danh mục</th><th style={{padding: '8px 12px'}}>Mô tả</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
                                             {activeTab === 'orders' && <><th style={{padding: '8px 12px'}}>Mã Đơn</th><th style={{padding: '8px 12px'}}>Tổng tiền</th><th style={{padding: '8px 12px'}}>Trạng thái</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
                                             {activeTab === 'users' && <><th style={{padding: '8px 12px'}}>Username</th><th style={{padding: '8px 12px'}}>Email</th><th style={{padding: '8px 12px'}}>Role</th><th style={{padding: '8px 12px'}}>Trạng thái</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
-                                            {activeTab === 'coupons' && <><th style={{padding: '8px 12px'}}>Mã giảm giá</th><th style={{padding: '8px 12px'}}>Danh mục</th><th style={{padding: '8px 12px'}}>Loại</th><th style={{padding: '8px 12px'}}>Giá trị</th><th style={{padding: '8px 12px'}}>Giảm tối đa</th><th style={{padding: '8px 12px'}}>Hiệu lực</th><th style={{padding: '8px 12px'}}>Đã dùng</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
+                                            {activeTab === 'coupons' && <><th style={{padding: '8px 12px'}}>Mã giảm giá</th><th style={{padding: '8px 12px'}}>Danh mục</th><th style={{padding: '8px 12px'}}>Loại</th><th style={{padding: '8px 12px'}}>Giá trị</th><th style={{padding: '8px 12px'}}>Giảm tối đa</th><th style={{padding: '8px 12px'}}>Hiệu lực</th><th style={{padding: '8px 12px'}}>Đã dùng</th><th style={{padding: '8px 12px'}}>Sở hữu</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -532,8 +533,9 @@ const AdminPanel = () => {
                                                     <td style={{ padding: '8px 12px' }}>{item.maxDiscountAmount?.toLocaleString()} đ</td>
                                                     <td style={{ padding: '8px 12px' }}>{item.expiresAt ? new Date(item.expiresAt).toLocaleDateString('vi-VN') : '-'}</td>
                                                     <td style={{ padding: '8px 12px' }}>{item.usedCount} / {item.maxUsage || "∞"}</td>
+                                                    <td style={{ padding: '8px 12px' }}>{item.ownerUserId?<span style={{ color: 'var(--accent)', fontSize: 12 }}>User #{item.ownerUserId}</span> : <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>Công khai</span>}</td>
                                                     <td style={{ padding: '8px 12px' }}>
-                                                        <button className="btn btn-ghost" style={{ color: 'var(--danger)', padding: '6px 10px', fontSize: '0.85rem' }} onClick={() => handleDeleteCoupon(item.id)}>Xóa</button>
+                                                    <button className="btn btn-ghost" style={{ color: 'var(--danger)', padding: '6px 10px', fontSize: '0.85rem' }} onClick={() => handleDeleteCoupon(item.id)}>Xóa</button>
                                                     </td>
                                                 </>}
                                             </tr>
@@ -585,18 +587,27 @@ const AdminPanel = () => {
                                     <label>Giá trị (số % hoặc số tiền)</label>
                                     <input className="input" type="number" min="0" required value={newCoupon.value} onChange={e => setNewCoupon({...newCoupon, value: e.target.value})} />
                                 </div>
+                                {newCoupon.type !== 'FIXED' && (
                                 <div className="form-field">
                                     <label>Số lượt sử dụng tối đa</label>
                                     <input className="input" type="number" min="1" required value={newCoupon.maxUsage} onChange={e => setNewCoupon({...newCoupon, maxUsage: e.target.value})} />
                                 </div>
+                                )}
+                                {newCoupon.type === 'FIXED' && (
+                                <div style={{ padding: '6px 10px', background: 'rgba(15, 118, 110, 0.06)', borderRadius: 8, fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>
+                                    ℹ️ Mã giảm cố định sẽ tự động giới hạn <strong>1 lượt sử dụng</strong> và giá trị giảm tối đa bằng giá trị mã.
+                                </div>
+                                )}
                                 <div className="form-field">
                                     <label>Đơn hàng tối thiểu (đ)</label>
                                     <input className="input" type="number" min="0" required value={newCoupon.minOrderValue} onChange={e => setNewCoupon({...newCoupon, minOrderValue: e.target.value})} />
                                 </div>
+                                {newCoupon.type !== 'FIXED' && (
                                 <div className="form-field">
                                     <label>Giá trị tối đa được giảm (đ)</label>
                                     <input className="input" type="number" min="0" required value={newCoupon.maxDiscountAmount} onChange={e => setNewCoupon({...newCoupon, maxDiscountAmount: e.target.value})} />
                                 </div>
+                                )}
                                 <div className="form-field">
                                     <label>Hiệu lực đến ngày</label>
                                     <input className="input" type="date" required value={newCoupon.expiresAt} onChange={e => setNewCoupon({...newCoupon, expiresAt: e.target.value})} />
