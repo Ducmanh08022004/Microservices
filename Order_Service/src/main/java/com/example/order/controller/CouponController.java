@@ -32,15 +32,17 @@ public class CouponController {
             @RequestParam(defaultValue = "10") int size,
             @RequestHeader(value = "X-User-Role", required = false) String role
     ) {
-        if (!"ADMIN".equals(role)) return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        if (!"ADMIN".equalsIgnoreCase(role)) return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
 
         Page<Coupon> result = repository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/admin")
-    public ResponseEntity<?> createCoupon(@RequestBody Map<String, Object> request, @RequestHeader(value = "X-User-Role", required = false) String role) {
-        if (!"ADMIN".equals(role)) return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+    public ResponseEntity<?> createCoupon(
+                @RequestBody Map<String, Object> request, 
+                @RequestHeader(value = "X-User-Role", required = false) String role) {
+        if (!"ADMIN".equalsIgnoreCase(role)) return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
 
         String code = normalizeCode(asString(request.get("code")));
         if (code == null || code.isBlank()) {
@@ -114,7 +116,7 @@ public class CouponController {
 
     @DeleteMapping("/admin/{id}")
     public ResponseEntity<?> deleteCoupon(@PathVariable Long id, @RequestHeader(value="X-User-Role", required=false) String role) {
-        if (!"ADMIN".equals(role)) return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        if (!"ADMIN".equalsIgnoreCase(role)) return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
         repository.deleteById(id);
         return ResponseEntity.ok(Map.of("message", "Deleted"));
     }

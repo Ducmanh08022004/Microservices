@@ -9,6 +9,8 @@ public class InventoryProductResponse {
     private String name;
     private Integer stock;
     private Double price;
+    @JsonProperty("discount_price")
+    private Double discountPrice;
 
     public String getProductId() {
         return productId;
@@ -40,5 +42,13 @@ public class InventoryProductResponse {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public Double getDiscountPrice() {
+        return discountPrice;
+    }
+
+    public void setDiscountPrice(Double discountPrice) {
+        this.discountPrice = discountPrice;
     }
 }

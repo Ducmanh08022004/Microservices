@@ -2,6 +2,7 @@ package com.example.order.service;
 
 import com.example.order.dto.AuthUser;
 import com.example.order.dto.EmailEventPayload;
+import com.example.order.dto.EmailTemplates;
 import com.example.order.dto.OrderEventPayload;
 import com.example.order.model.OrderEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,30 +29,28 @@ public class OrderEventPublisher {
 
     /**
      * Publish đơn hàng mới lên topic order-created (gửi sang Payment_Service).
-     * Đồng thời gửi email xác nhận đơn hàng đến người dùng.
      */
-    public void publishOrderCreated(OrderEntity order, AuthUser authUser) {
+    public void publishOrderCreated(OrderEntity order) {
         OrderEventPayload orderPayload = buildOrderPayload(order);
         kafkaTemplate.send(ORDER_CREATED_TOPIC, order.getProductId(), toJson(orderPayload));
-
-        if (authUser.getEmail() != null && !authUser.getEmail().isBlank()) {
-            EmailEventPayload emailPayload = new EmailEventPayload();
-            emailPayload.setTo(authUser.getEmail());
-            emailPayload.setSubject("Xác nhận đơn hàng - Chờ thanh toán");
-            emailPayload.setContent(
-                EmailTemplates.orderConfirmation(authUser.getEmail(), order.getOrderId(), order.getTotalPrice())
-            );
-            emailPayload.setOrderId(order.getOrderId());
-            kafkaTemplate.send(EMAIL_TOPIC, authUser.getEmail(), toJson(emailPayload));
-        }
     }
 
     /**
      * Publish đơn hàng đã thanh toán lên topic order-paid (gửi sang Inventory_Service để trừ kho).
      */
-    public void publishOrderPaid(OrderEntity order) {
+    public void publishOrderPaid(OrderEntity order, AuthUser authUser) {
         OrderEventPayload orderPayload = buildOrderPayload(order);
         kafkaTemplate.send(ORDER_PAID_TOPIC, order.getProductId(), toJson(orderPayload));
+        if (authUser != null && authUser.getEmail() != null && !authUser.getEmail().isBlank()) {
+            EmailEventPayload emailPayload = new EmailEventPayload();
+            emailPayload.setTo(authUser.getEmail());
+            emailPayload.setSubject("Thanh toán thành công");
+            emailPayload.setContent(
+                    EmailTemplates.paymentSuccess(authUser.getEmail(), order.getOrderId(), order.getTotalPrice())
+            );
+            emailPayload.setOrderId(order.getOrderId());
+            kafkaTemplate.send(EMAIL_TOPIC, authUser.getEmail(), toJson(emailPayload));
+        }
     }
 
     private OrderEventPayload buildOrderPayload(OrderEntity order) {

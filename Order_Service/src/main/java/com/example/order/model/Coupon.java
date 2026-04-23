@@ -15,13 +15,28 @@ public class Coupon {
     @Enumerated(EnumType.STRING)
     private CouponType type;
 
+    @Column(name = "category_name")
     private String categoryName;
+
+    @Column(name = "value")
     private Double value;
+
+    @Column(name = "min_order_value")
     private Double minOrderValue;
+
+    @Column(name = "max_usage")
     private Integer maxUsage;
+
+    @Column(name = "max_discount_amount")
     private Double maxDiscountAmount;
+
+    @Column(name = "used_count")
     private Integer usedCount = 0;
+    
+    @Column(name = "expires_at")
     private LocalDateTime expiresAt;
+
+    @Column(name = "is_active")
     private Boolean isActive = true;
 
     public Long getId() { return id; }

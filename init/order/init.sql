@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS orders (
     product_name VARCHAR(255) NOT NULL,
     quantity INT NOT NULL,
     total_price DOUBLE NOT NULL,
+    coupon_code VARCHAR(255),
     status VARCHAR(50) NOT NULL,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
@@ -35,3 +36,4 @@ CREATE TABLE IF NOT EXISTS coupons (
 
 ALTER TABLE coupons ADD COLUMN IF NOT EXISTS category_name VARCHAR(100);
 ALTER TABLE coupons ADD COLUMN IF NOT EXISTS max_discount_amount DOUBLE;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_code VARCHAR(255);

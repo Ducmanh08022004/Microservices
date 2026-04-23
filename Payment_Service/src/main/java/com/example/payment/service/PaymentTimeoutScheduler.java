@@ -16,12 +16,9 @@ public class PaymentTimeoutScheduler {
     private static final int TIMEOUT_MINUTES = 30;
 
     private final PaymentRepository paymentRepository;
-    private final PaymentEventPublisher paymentEventPublisher;
 
-    public PaymentTimeoutScheduler(PaymentRepository paymentRepository,
-                                   PaymentEventPublisher paymentEventPublisher) {
+    public PaymentTimeoutScheduler(PaymentRepository paymentRepository) {
         this.paymentRepository = paymentRepository;
-        this.paymentEventPublisher = paymentEventPublisher;
     }
 
     /**

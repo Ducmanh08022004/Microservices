@@ -2,12 +2,14 @@ package com.example.order.service;
 
 import com.example.order.dto.OrderStatusEventPayload;
 import com.example.order.model.OrderEntity;
+import com.example.order.repository.CouponRepository;
 import com.example.order.repository.OrderRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -33,15 +35,18 @@ public class OrderStatusEventConsumer {
 
     private final ObjectMapper objectMapper;
     private final OrderRepository orderRepository;
+    private final CouponRepository couponRepository;
     private final OrderEventPublisher orderEventPublisher;
 
     public OrderStatusEventConsumer(
             ObjectMapper objectMapper,
             OrderRepository orderRepository,
+            CouponRepository couponRepository,
             OrderEventPublisher orderEventPublisher
     ) {
         this.objectMapper = objectMapper;
         this.orderRepository = orderRepository;
+        this.couponRepository = couponRepository;
         this.orderEventPublisher = orderEventPublisher;
     }
 
@@ -88,6 +93,7 @@ public class OrderStatusEventConsumer {
      * - Nếu PAYMENT_FAILED: cập nhật đơn thành PAYMENT_FAILED.
      */
     @KafkaListener(topics = PAYMENT_RESULT_TOPIC, groupId = PAYMENT_RESULT_GROUP)
+    @Transactional
     public void consumePaymentResultEvent(String message) {
         try {
             OrderStatusEventPayload event = objectMapper.readValue(message, OrderStatusEventPayload.class);
@@ -102,13 +108,22 @@ public class OrderStatusEventConsumer {
             }
 
             OrderEntity order = orderOptional.get();
-            order.setStatus(event.getStatus());
-            orderRepository.save(order);
-            log.info("Đã cập nhật orderId={} sang status={} từ payment-result", event.getOrderId(), event.getStatus());
+            String previousStatus = order.getStatus();
+
+            if (!event.getStatus().equals(previousStatus)) {
+                order.setStatus(event.getStatus());
+                orderRepository.save(order);
+                log.info("Đã cập nhật orderId={} sang status={} từ payment-result", event.getOrderId(), event.getStatus());
+            }
 
             // Nếu thanh toán thành công → publish order-paid để Inventory trừ kho
-            if (STATUS_PAID.equals(event.getStatus())) {
-                orderEventPublisher.publishOrderPaid(order);
+            if (STATUS_PAID.equals(event.getStatus()) && !STATUS_PAID.equals(previousStatus)) {
+                applyCouponUsage(order.getCouponCode());
+                com.example.order.dto.AuthUser authUser = null;
+                if (order.getUserEmail() != null) {
+                    authUser = new com.example.order.dto.AuthUser(order.getUserId(), order.getUserEmail());
+                }
+                orderEventPublisher.publishOrderPaid(order, authUser);
                 log.info("Đã publish order-paid cho orderId={}", order.getOrderId());
             } else if (STATUS_PAYMENT_FAILED.equals(event.getStatus())) {
                 log.info("Thanh toán thất bại cho orderId={}, không trừ kho", order.getOrderId());
@@ -117,5 +132,18 @@ public class OrderStatusEventConsumer {
         } catch (Exception ex) {
             log.error("Lỗi xử lý payment-result event: {}", ex.getMessage(), ex);
         }
+    }
+
+    private void applyCouponUsage(String couponCode) {
+        if (couponCode == null || couponCode.isBlank()) {
+            return;
+        }
+
+        couponRepository.findByCodeIgnoreCase(couponCode.trim()).ifPresentOrElse(coupon -> {
+            int usedCount = coupon.getUsedCount() == null ? 0 : coupon.getUsedCount();
+            coupon.setUsedCount(usedCount + 1);
+            couponRepository.save(coupon);
+            log.info("Đã cập nhật used_count cho coupon={} thành {}", coupon.getCode(), usedCount + 1);
+        }, () -> log.warn("Không tìm thấy coupon={} để cập nhật used_count", couponCode));
     }
 }

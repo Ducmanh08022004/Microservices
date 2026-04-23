@@ -33,6 +33,12 @@ public class OrderEntity {
     @Column(name = "status", nullable = false)
     private String status;
 
+    @Column(name = "coupon_code")
+    private String couponCode;
+
+    @Column(name = "user_email")
+    private String userEmail;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -113,6 +119,22 @@ public class OrderEntity {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getCouponCode() {
+        return couponCode;
+    }
+
+    public void setCouponCode(String couponCode) {
+        this.couponCode = couponCode;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
 
     public LocalDateTime getCreatedAt() {

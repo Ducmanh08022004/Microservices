@@ -65,13 +65,19 @@ public class OrderApplicationService {
         order.setProductId(product.getProductId());
         order.setProductName(product.getName());
         order.setQuantity(request.getQuantity());
-        double grossTotal = product.getPrice() * request.getQuantity();
-        double discount = resolveCouponDiscount(request.getCouponCode(), grossTotal);
+        double unitPrice = resolveEffectiveUnitPrice(product);
+        double grossTotal = unitPrice * request.getQuantity();
+        String normalizedCouponCode = normalizeCouponCode(request.getCouponCode());
+        double discount = resolveCouponDiscount(normalizedCouponCode, grossTotal);
         order.setTotalPrice(Math.max(0.0, grossTotal - discount));
         order.setStatus(ORDER_STATUS_PROCESSING);
+        order.setCouponCode(normalizedCouponCode);
+        if (authUser.getEmail() != null && !authUser.getEmail().isBlank()) {
+            order.setUserEmail(authUser.getEmail());
+        }
 
         OrderEntity saved = orderRepository.save(order);
-        orderEventPublisher.publishOrderCreated(saved, authUser);
+        orderEventPublisher.publishOrderCreated(saved);
 
         return toOrderResponse(saved);
     }
@@ -166,12 +172,20 @@ public class OrderApplicationService {
         return response;
     }
 
-    private double resolveCouponDiscount(String couponCode, double orderValue) {
+    private String normalizeCouponCode(String couponCode) {
         if (couponCode == null || couponCode.isBlank()) {
+            return null;
+        }
+
+        return couponCode.trim();
+    }
+
+    private double resolveCouponDiscount(String couponCode, double orderValue) {
+        if (couponCode == null) {
             return 0.0;
         }
 
-        Coupon coupon = couponRepository.findByCodeIgnoreCase(couponCode.trim())
+        Coupon coupon = couponRepository.findByCodeIgnoreCase(couponCode)
                 .orElseThrow(() -> new IllegalStateException("Mã giảm giá không tồn tại"));
 
         if (!Boolean.TRUE.equals(coupon.getIsActive())
@@ -198,9 +212,20 @@ public class OrderApplicationService {
 
         discount = Math.min(discount, orderValue);
 
-        coupon.setUsedCount(usedCount + 1);
-        couponRepository.save(coupon);
-
         return discount;
+    }
+
+    private double resolveEffectiveUnitPrice(InventoryProductResponse product) {
+        Double discountPrice = product.getDiscountPrice();
+        if (discountPrice != null && discountPrice > 0) {
+            return discountPrice;
+        }
+
+        Double price = product.getPrice();
+        if (price == null || price <= 0) {
+            throw new IllegalStateException("Giá sản phẩm không hợp lệ");
+        }
+
+        return price;
     }
 }
