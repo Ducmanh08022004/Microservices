@@ -37,7 +37,7 @@ public class CouponController {
         Page<Coupon> result = repository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
         return ResponseEntity.ok(result);
     }
-
+    
     @PostMapping("/admin")
     public ResponseEntity<?> createCoupon(
                 @RequestBody Map<String, Object> request, 
