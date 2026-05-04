@@ -10,7 +10,7 @@ public class OrderCreatedEventPayload {
     private String productId;
     private String name;
     private int quantity;
-    private double totalPrice;
+    private Long totalPrice;
     private String status;
 
     public String getOrderId() { return orderId; }
@@ -28,8 +28,8 @@ public class OrderCreatedEventPayload {
     public int getQuantity() { return quantity; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
 
-    public double getTotalPrice() { return totalPrice; }
-    public void setTotalPrice(double totalPrice) { this.totalPrice = totalPrice; }
+    public Long getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(Long totalPrice) { this.totalPrice = totalPrice; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

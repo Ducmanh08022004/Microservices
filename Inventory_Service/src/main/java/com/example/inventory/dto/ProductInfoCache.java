@@ -5,12 +5,12 @@ package com.example.inventory.dto;
  */
 public class ProductInfoCache {
     private String name;
-    private Double price;
+    private Long price;
 
     public ProductInfoCache() {
     }
 
-    public ProductInfoCache(String name, Double price) {
+    public ProductInfoCache(String name, Long price) {
         this.name = name;
         this.price = price;
     }
@@ -23,11 +23,11 @@ public class ProductInfoCache {
         this.name = name;
     }
 
-    public Double getPrice() {
+    public Long getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(Long price) {
         this.price = price;
     }
 }

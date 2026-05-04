@@ -8,6 +8,7 @@ import AddProduct from './pages/AddProduct';
 import ProductDetail from './pages/Product_Detail';
 import MyOrders from './pages/MyOrders';
 import PaymentPage from './pages/PaymentPage';
+import VnPayReturnPage from './pages/VnPayReturnPage';
 import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
 
@@ -37,6 +38,7 @@ function AppRoutes() {
         <Route path="/dashboard"        element={<PrivateRoute><Dashboard /></PrivateRoute>} />
         <Route path="/product/:id"      element={<PrivateRoute><ProductDetail /></PrivateRoute>} />
         <Route path="/my-orders"        element={<PrivateRoute><MyOrders /></PrivateRoute>} />
+        <Route path="/payment/vnpay-return" element={<VnPayReturnPage />} />
         <Route path="/payment/:orderId" element={<PrivateRoute><PaymentPage /></PrivateRoute>} />
         <Route path="/profile"          element={<PrivateRoute><Profile /></PrivateRoute>} />
 

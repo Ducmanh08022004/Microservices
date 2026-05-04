@@ -84,7 +84,7 @@ public class ProductCatalogService {
         product.setProductId(request.getProductId());
         product.setName(request.getName());
         product.setStock(request.getStock() == null ? 0 : request.getStock());
-        product.setPrice(request.getPrice() == null ? 0D : request.getPrice());
+        product.setPrice(request.getPrice() == null ? 0L : request.getPrice());
         product.setImageUrl(request.getImageUrl());
         
         // Cập nhật các trường mới

@@ -59,7 +59,7 @@ public class ProductInfoCacheService {
      * Output:
      * - Không trả về giá trị; side effect là ghi Redis key info:{productId}.
      */
-    public void set(String productId, String name, Double price, Duration ttl) {
+    public void set(String productId, String name, Long price, Duration ttl) {
         try {
             String value = objectMapper.writeValueAsString(new ProductInfoCache(name, price));
             redisTemplate.opsForValue().set(infoKey(productId), value, ttl);

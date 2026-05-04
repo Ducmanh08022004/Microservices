@@ -2,6 +2,7 @@ package com.example.payment.controller;
 
 import com.example.payment.dto.PaymentResponse;
 import com.example.payment.service.PaymentApplicationService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -63,5 +64,66 @@ public class PaymentController {
         } catch (IllegalStateException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
         }
+    }
+
+    // ==================== VNPay Endpoints ====================
+
+    /**
+     * Tạo URL thanh toán VNPay.
+     * POST /api/payments/{orderId}/vnpay-create
+     * Frontend sẽ redirect user tới URL này.
+     */
+    @PostMapping("/{orderId}/vnpay-create")
+    public ResponseEntity<?> createVnPayUrl(@PathVariable String orderId, HttpServletRequest request) {
+        try {
+            String ipAddress = getClientIp(request);
+            String paymentUrl = paymentApplicationService.createVnPayUrl(orderId, ipAddress);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Tạo URL thanh toán VNPay thành công",
+                    "paymentUrl", paymentUrl
+            ));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
+        }
+    }
+
+    /**
+     * VNPay IPN (Instant Payment Notification) — server-to-server callback.
+     * GET /api/payments/vnpay-ipn
+     * KHÔNG yêu cầu JWT — VNPay gọi trực tiếp.
+     */
+    @GetMapping("/vnpay-ipn")
+    public ResponseEntity<?> vnpayIpn(@RequestParam Map<String, String> params) {
+        Map<String, String> result = paymentApplicationService.processVnPayIpn(params);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * VNPay Return URL — redirect trình duyệt sau khi user thanh toán.
+     * GET /api/payments/vnpay-return
+     * Verify checksum và trả về kết quả để frontend hiển thị.
+     */
+    @GetMapping("/vnpay-return")
+    public ResponseEntity<?> vnpayReturn(@RequestParam Map<String, String> params) {
+        Map<String, Object> result = paymentApplicationService.processVnPayReturn(params);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Lấy IP client từ request (hỗ trợ proxy/load balancer).
+     */
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        // X-Forwarded-For có thể chứa nhiều IP, lấy cái đầu tiên
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip;
     }
 }

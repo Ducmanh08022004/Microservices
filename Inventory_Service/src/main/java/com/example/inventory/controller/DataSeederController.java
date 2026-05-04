@@ -149,10 +149,8 @@ public class DataSeederController {
                 String productId = "PROD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
                 String sku = t.brand.substring(0, Math.min(t.brand.length(), 3)).toUpperCase() + "-" + (random.nextInt(90000) + i);
                 
-                double price = 15 + (random.nextDouble() * 1200);
-                price = Math.round(price * 100.0) / 100.0;
-                double discountPrice = price * (0.8 + (random.nextDouble() * 0.15));
-                discountPrice = Math.round(discountPrice * 100.0) / 100.0;
+                long price = 15000 + random.nextInt(1200000);
+                long discountPrice = (long) (price * (0.8 + (random.nextDouble() * 0.15)));
 
                 // Build specific Image URL
                 String imageUrl = "https://loremflickr.com/640/480/" + t.imgKeyword + "?random=" + (i + random.nextInt(5000));

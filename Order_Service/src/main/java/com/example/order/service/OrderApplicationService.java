@@ -65,11 +65,11 @@ public class OrderApplicationService {
         order.setProductId(product.getProductId());
         order.setProductName(product.getName());
         order.setQuantity(request.getQuantity());
-        double unitPrice = resolveEffectiveUnitPrice(product);
-        double grossTotal = unitPrice * request.getQuantity();
+        long unitPrice = resolveEffectiveUnitPrice(product);
+        long grossTotal = unitPrice * request.getQuantity();
         String normalizedCouponCode = normalizeCouponCode(request.getCouponCode());
-        double discount = resolveCouponDiscount(normalizedCouponCode, grossTotal);
-        order.setTotalPrice(Math.max(0.0, grossTotal - discount));
+        long discount = resolveCouponDiscount(normalizedCouponCode, grossTotal);
+        order.setTotalPrice(Math.max(0L, grossTotal - discount));
         order.setStatus(ORDER_STATUS_PROCESSING);
         order.setCouponCode(normalizedCouponCode);
         if (authUser.getEmail() != null && !authUser.getEmail().isBlank()) {
@@ -143,8 +143,8 @@ public class OrderApplicationService {
         return stats;
     }
 
-    private Double coalesce(Double val) {
-        return val != null ? val : 0.0;
+    private Long coalesce(Long val) {
+        return val != null ? val : 0L;
     }
 
     private void validateRequest(CreateOrderRequest request) {
@@ -180,9 +180,9 @@ public class OrderApplicationService {
         return couponCode.trim();
     }
 
-    private double resolveCouponDiscount(String couponCode, double orderValue) {
+    private long resolveCouponDiscount(String couponCode, long orderValue) {
         if (couponCode == null) {
-            return 0.0;
+            return 0L;
         }
 
         Coupon coupon = couponRepository.findByCodeIgnoreCase(couponCode)
@@ -202,8 +202,8 @@ public class OrderApplicationService {
             throw new IllegalStateException("Đơn hàng chưa đạt giá trị tối thiểu để áp mã");
         }
 
-        double discount = coupon.getType() == CouponType.PERCENT
-                ? orderValue * (coupon.getValue() / 100.0)
+        long discount = coupon.getType() == CouponType.PERCENT
+                ? (long) (orderValue * (coupon.getValue() / 100.0))
                 : coupon.getValue();
 
         if (coupon.getMaxDiscountAmount() != null && coupon.getMaxDiscountAmount() > 0) {
@@ -215,13 +215,13 @@ public class OrderApplicationService {
         return discount;
     }
 
-    private double resolveEffectiveUnitPrice(InventoryProductResponse product) {
-        Double discountPrice = product.getDiscountPrice();
+    private long resolveEffectiveUnitPrice(InventoryProductResponse product) {
+        Long discountPrice = product.getDiscountPrice();
         if (discountPrice != null && discountPrice > 0) {
             return discountPrice;
         }
 
-        Double price = product.getPrice();
+        Long price = product.getPrice();
         if (price == null || price <= 0) {
             throw new IllegalStateException("Giá sản phẩm không hợp lệ");
         }

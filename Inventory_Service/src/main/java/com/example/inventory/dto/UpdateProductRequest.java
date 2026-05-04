@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class UpdateProductRequest {
     private String name;
     private Integer stock;
-    private Double price;
+    private Long price;
     
     @JsonProperty("image_url")
     private String imageUrl;
@@ -19,7 +19,7 @@ public class UpdateProductRequest {
     private String sku;
     
     @JsonProperty("discount_price")
-    private Double discountPrice;
+    private Long discountPrice;
     
     private String status;
 
@@ -28,8 +28,8 @@ public class UpdateProductRequest {
     public void setName(String name) { this.name = name; }
     public Integer getStock() { return stock; }
     public void setStock(Integer stock) { this.stock = stock; }
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
+    public Long getPrice() { return price; }
+    public void setPrice(Long price) { this.price = price; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public String getDescription() { return description; }
@@ -40,8 +40,8 @@ public class UpdateProductRequest {
     public void setBrand(String brand) { this.brand = brand; }
     public String getSku() { return sku; }
     public void setSku(String sku) { this.sku = sku; }
-    public Double getDiscountPrice() { return discountPrice; }
-    public void setDiscountPrice(Double discountPrice) { this.discountPrice = discountPrice; }
+    public Long getDiscountPrice() { return discountPrice; }
+    public void setDiscountPrice(Long discountPrice) { this.discountPrice = discountPrice; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 }

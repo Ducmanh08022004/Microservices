@@ -1,7 +1,7 @@
 package com.example.order.dto;
 
 public class EmailTemplates {
-    public static String paymentSuccess(String username, String orderId, double amount) {
+    public static String paymentSuccess(String username, String orderId, long amount) {
         return """
             <html><body style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; color: #374151;">
               <div style="background: #15803d; color: white; padding: 24px; border-radius: 8px 8px 0 0; text-align: center;">

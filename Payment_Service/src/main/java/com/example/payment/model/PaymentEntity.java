@@ -21,13 +21,25 @@ public class PaymentEntity {
     private Long userId;
 
     @Column(name = "amount", nullable = false)
-    private Double amount;
+    private Long amount;
 
     /**
      * Trạng thái: PROCESSING, PAID, FAILED
      */
     @Column(name = "status", nullable = false)
     private String status;
+
+    @Column(name = "payment_method")
+    private String paymentMethod = "MOCK";
+
+    @Column(name = "vnp_txn_ref")
+    private String vnpTxnRef;
+
+    @Column(name = "vnp_transaction_no")
+    private String vnpTransactionNo;
+
+    @Column(name = "vnp_bank_code")
+    private String vnpBankCode;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -59,11 +71,23 @@ public class PaymentEntity {
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
 
-    public Double getAmount() { return amount; }
-    public void setAmount(Double amount) { this.amount = amount; }
+    public Long getAmount() { return amount; }
+    public void setAmount(Long amount) { this.amount = amount; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    public String getVnpTxnRef() { return vnpTxnRef; }
+    public void setVnpTxnRef(String vnpTxnRef) { this.vnpTxnRef = vnpTxnRef; }
+
+    public String getVnpTransactionNo() { return vnpTransactionNo; }
+    public void setVnpTransactionNo(String vnpTransactionNo) { this.vnpTransactionNo = vnpTransactionNo; }
+
+    public String getVnpBankCode() { return vnpBankCode; }
+    public void setVnpBankCode(String vnpBankCode) { this.vnpBankCode = vnpBankCode; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

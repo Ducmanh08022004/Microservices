@@ -32,7 +32,7 @@ const formatMoney = (amount) => (typeof amount === 'number' ? amount.toLocaleStr
 
 const getStatusTone = (status) => {
     if (status === 'PROCESSING') {
-        return 'Đơn đang chờ xác nhận thanh toán. Bạn có thể demo xác nhận hoặc hủy thanh toán ngay bên phải.';
+        return 'Đơn đang chờ thanh toán. Nhấn nút "Thanh toán qua VNPay" để chuyển sang cổng thanh toán.';
     }
     if (status === 'PAID') {
         return 'Thanh toán đã được ghi nhận. Hệ thống sẽ tiếp tục xử lý tồn kho và đồng bộ trạng thái đơn hàng.';
@@ -117,19 +117,23 @@ function PaymentPage() {
         return () => clearTimeout(timer);
     }, [payment, pollingCount, fetchPayment]);
 
-    const handleConfirm = async () => {
+    const handleVnPay = async () => {
         setActionLoading(true);
         try {
-            await axios.post(
-                `${API_GATEWAY}/api/payments/${orderId}/confirm`,
+            const res = await axios.post(
+                `${API_GATEWAY}/api/payments/${orderId}/vnpay-create`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            await fetchPayment();
+            const paymentUrl = res.data?.paymentUrl;
+            if (paymentUrl) {
+                window.location.href = paymentUrl;
+            } else {
+                setError('Không nhận được URL thanh toán VNPay.');
+            }
         } catch (err) {
-            const msg = err?.response?.data?.error || 'Lỗi xác nhận thanh toán.';
+            const msg = err?.response?.data?.error || 'Lỗi tạo thanh toán VNPay.';
             setError(msg);
-        } finally {
             setActionLoading(false);
         }
     };
@@ -275,8 +279,8 @@ function PaymentPage() {
                                 />
                                 <Step
                                     number={2}
-                                    title="Thanh toán"
-                                    description="Xác nhận thanh toán hoặc demo thanh toán thành công để chuyển đơn sang PAID."
+                                    title="Thanh toán qua VNPay"
+                                    description="Nhấn nút thanh toán để chuyển sang cổng VNPay. Sau khi hoàn tất, hệ thống sẽ tự động cập nhật trạng thái."
                                     active={isProcessing}
                                     done={isPaid || isFailed}
                                 />
@@ -312,9 +316,9 @@ function PaymentPage() {
                         </div>
 
                         <div className="card detail-side" style={{ background: 'var(--surface-soft)' }}>
-                            <h3 style={{ marginTop: 0, marginBottom: 14, fontSize: 18 }}>Hành động</h3>
+                            <h3 style={{ marginTop: 0, marginBottom: 14, fontSize: 18 }}>Thanh toán</h3>
                             <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.6, marginTop: 0 }}>
-                                Giao diện demo này bám theo hệ thống hiện tại: xác nhận để chuyển sang <b>PAID</b>, hủy để chuyển sang <b>PAYMENT_FAILED</b>.
+                                Thanh toán qua cổng <b>VNPay</b> (Sandbox). Bạn sẽ được chuyển tới trang VNPay để hoàn tất giao dịch.
                             </p>
 
                             <div style={{
@@ -337,13 +341,16 @@ function PaymentPage() {
                             {statusConfig.showActions ? (
                                 <>
                                     <button
-                                        id="btn-confirm-payment"
+                                        id="btn-vnpay-payment"
                                         className="btn btn-primary"
-                                        style={{ marginBottom: 10, width: '100%' }}
-                                        onClick={handleConfirm}
+                                        style={{
+                                            marginBottom: 10, width: '100%',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                        }}
+                                        onClick={handleVnPay}
                                         disabled={actionLoading}
                                     >
-                                        {actionLoading ? 'Đang xử lý...' : 'Xác nhận đã thanh toán'}
+                                        {actionLoading ? 'Đang chuyển tới VNPay...' : (<><span style={{ fontSize: 18 }}>💳</span> Thanh toán qua VNPay</>)}
                                     </button>
 
                                     <button

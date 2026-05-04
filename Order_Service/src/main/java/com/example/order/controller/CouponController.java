@@ -62,11 +62,11 @@ public class CouponController {
                         .toUpperCase(Locale.ROOT));
         coupon.setType(CouponType.PERCENT);
         coupon.setOwnerUserId(userId);
-        coupon.setValue((double) discountPercent);
+        coupon.setValue((long) discountPercent);
         coupon.setMaxUsage(1);
         coupon.setUsedCount(0);
-        coupon.setMinOrderValue(50000.0);
-        coupon.setMaxDiscountAmount(30000.0);
+        coupon.setMinOrderValue(50000L);
+        coupon.setMaxDiscountAmount(30000L);
         coupon.setExpiresAt(endDay);
         coupon.setIsActive(true);
         coupon.setCreatedAt(LocalDateTime.now());
@@ -115,7 +115,7 @@ public class CouponController {
             return ResponseEntity.badRequest().body(Map.of("error", "Loại mã giảm giá không hợp lệ"));
         }
 
-        Double value = asDouble(request.get("value"));
+        Long value = asLong(request.get("value"));
         if (value == null || value <= 0) {
             return ResponseEntity.badRequest().body(Map.of("error", "Giá trị mã giảm giá phải lớn hơn 0"));
         }
@@ -128,12 +128,12 @@ public class CouponController {
             return ResponseEntity.badRequest().body(Map.of("error", "Số lượt dùng phải lớn hơn 0"));
         }
 
-        Double minOrderValue = asDouble(request.get("minOrderValue"));
+        Long minOrderValue = asLong(request.get("minOrderValue"));
         if (minOrderValue == null || minOrderValue < 0) {
             return ResponseEntity.badRequest().body(Map.of("error", "Đơn hàng tối thiểu không hợp lệ"));
         }
 
-        Double maxDiscountAmount = asDouble(request.get("maxDiscountAmount"));
+        Long maxDiscountAmount = asLong(request.get("maxDiscountAmount"));
         if (maxDiscountAmount == null || maxDiscountAmount <= 0) {
             return ResponseEntity.badRequest().body(Map.of("error", "Giá trị tối đa được giảm phải lớn hơn 0"));
         }
@@ -180,7 +180,7 @@ public class CouponController {
         }
 
         String code = (String) req.get("code");
-        Double orderValue = Double.valueOf(req.get("order_value").toString());
+        Long orderValue = Long.valueOf(req.get("order_value").toString());
 
         Optional<Coupon> opt = repository.findByCodeIgnoreCase(code);
         if (opt.isEmpty()) {
@@ -217,8 +217,8 @@ public class CouponController {
             return ResponseEntity.badRequest().body(Map.of("error", "Mã giảm giá không áp dụng cho danh mục này"));
         }
 
-        double discount = c.getType() == CouponType.PERCENT 
-                ? orderValue * (c.getValue() / 100.0) 
+        long discount = c.getType() == CouponType.PERCENT 
+                ? (long) (orderValue * (c.getValue() / 100.0)) 
                 : c.getValue();
         if (c.getMaxDiscountAmount() != null && c.getMaxDiscountAmount() > 0) {
             discount = Math.min(discount, c.getMaxDiscountAmount());
@@ -236,10 +236,10 @@ public class CouponController {
         return value == null ? null : String.valueOf(value).trim();
     }
 
-    private static Double asDouble(Object value) {
+    private static Long asLong(Object value) {
         if (value == null) return null;
         try {
-            return Double.valueOf(String.valueOf(value));
+            return Long.valueOf(String.valueOf(value));
         } catch (NumberFormatException ex) {
             return null;
         }

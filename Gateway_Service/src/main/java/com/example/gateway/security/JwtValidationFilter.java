@@ -27,7 +27,9 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
             "/auth/register",
             "/auth/refresh-token",
             "/auth/health",
-            "/actuator"
+            "/actuator",
+            "/api/payments/vnpay-ipn",
+            "/api/payments/vnpay-return"
     );
 
     @Value("${app.jwt-secret:project_microservices_myscret_token_token_1234567789}")

@@ -28,7 +28,7 @@ public class OrderEntity {
     private Integer quantity;
 
     @Column(name = "total_price", nullable = false)
-    private Double totalPrice;
+    private Long totalPrice;
 
     @Column(name = "status", nullable = false)
     private String status;
@@ -105,11 +105,11 @@ public class OrderEntity {
         this.quantity = quantity;
     }
 
-    public Double getTotalPrice() {
+    public Long getTotalPrice() {
         return totalPrice;
     }
 
-    public void setTotalPrice(Double totalPrice) {
+    public void setTotalPrice(Long totalPrice) {
         this.totalPrice = totalPrice;
     }
 

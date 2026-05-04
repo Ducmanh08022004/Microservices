@@ -9,7 +9,7 @@ public class OrderResponse {
     private String productId;
     private Integer quantity;
     @JsonProperty("total_price")
-    private Double totalPrice;
+    private Long totalPrice;
     private String status;
 
     @JsonProperty("product_name")
@@ -56,11 +56,11 @@ public class OrderResponse {
         this.quantity = quantity;
     }
 
-    public Double getTotalPrice() {
+    public Long getTotalPrice() {
         return totalPrice;
     }
 
-    public void setTotalPrice(Double totalPrice) {
+    public void setTotalPrice(Long totalPrice) {
         this.totalPrice = totalPrice;
     }
 

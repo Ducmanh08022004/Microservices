@@ -19,16 +19,16 @@ public class Coupon {
     private String categoryName;
 
     @Column(name = "value")
-    private Double value;
+    private Long value;
 
     @Column(name = "min_order_value")
-    private Double minOrderValue;
+    private Long minOrderValue;
 
     @Column(name = "max_usage")
     private Integer maxUsage;
 
     @Column(name = "max_discount_amount")
-    private Double maxDiscountAmount;
+    private Long maxDiscountAmount;
 
     @Column(name = "used_count")
     private Integer usedCount = 0;
@@ -77,14 +77,14 @@ public class Coupon {
     public void setType(CouponType type) { this.type = type; }
     public String getCategoryName() { return categoryName; }
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
-    public Double getValue() { return value; }
-    public void setValue(Double value) { this.value = value; }
-    public Double getMinOrderValue() { return minOrderValue; }
-    public void setMinOrderValue(Double minOrderValue) { this.minOrderValue = minOrderValue; }
+    public Long getValue() { return value; }
+    public void setValue(Long value) { this.value = value; }
+    public Long getMinOrderValue() { return minOrderValue; }
+    public void setMinOrderValue(Long minOrderValue) { this.minOrderValue = minOrderValue; }
     public Integer getMaxUsage() { return maxUsage; }
     public void setMaxUsage(Integer maxUsage) { this.maxUsage = maxUsage; }
-    public Double getMaxDiscountAmount() { return maxDiscountAmount; }
-    public void setMaxDiscountAmount(Double maxDiscountAmount) { this.maxDiscountAmount = maxDiscountAmount; }
+    public Long getMaxDiscountAmount() { return maxDiscountAmount; }
+    public void setMaxDiscountAmount(Long maxDiscountAmount) { this.maxDiscountAmount = maxDiscountAmount; }
     public Integer getUsedCount() { return usedCount; }
     public void setUsedCount(Integer usedCount) { this.usedCount = usedCount; }
     public LocalDateTime getExpiresAt() { return expiresAt; }

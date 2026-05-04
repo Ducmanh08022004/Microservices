@@ -227,6 +227,9 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      VNPAY_TMN_CODE: ${VNPAY_TMN_CODE:-C183R699}
+      VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET:-45Y0ZGYAPYLCMIQYYAQM6W103859H9KY}
+      VNPAY_RETURN_URL: http://localhost:3000/payment/vnpay-return
       JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=1 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=1
     cpus: "0.75"
 

@@ -27,7 +27,7 @@ public class Product {
     private Integer stock;
 
     @Column(name = "price")
-    private Double price;
+    private Long price;
 
     @Column(name = "createdAt")
     private LocalDateTime createdAt;
@@ -54,7 +54,7 @@ public class Product {
 
     @Column(name = "discount_price")
     @JsonProperty("discount_price")
-    private Double discountPrice;
+    private Long discountPrice;
 
     @Column(name = "status")
     private String status; // e.g., IN_STOCK, OUT_OF_STOCK, DISCONTINUED
@@ -119,11 +119,11 @@ public class Product {
         this.stock = stock;
     }
 
-    public Double getPrice() {
+    public Long getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(Long price) {
         this.price = price;
     }
 
@@ -183,11 +183,11 @@ public class Product {
         this.sku = sku;
     }
 
-    public Double getDiscountPrice() {
+    public Long getDiscountPrice() {
         return discountPrice;
     }
 
-    public void setDiscountPrice(Double discountPrice) {
+    public void setDiscountPrice(Long discountPrice) {
         this.discountPrice = discountPrice;
     }
 

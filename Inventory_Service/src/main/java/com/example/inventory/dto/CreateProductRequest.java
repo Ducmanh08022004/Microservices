@@ -11,7 +11,7 @@ public class CreateProductRequest {
     private String productId;
     private String name;
     private Integer stock;
-    private Double price;
+    private Long price;
 
     public String getProductId() {
         return productId;
@@ -37,11 +37,11 @@ public class CreateProductRequest {
         this.stock = stock;
     }
 
-    public Double getPrice() {
+    public Long getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(Long price) {
         this.price = price;
     }
 
@@ -54,7 +54,7 @@ public class CreateProductRequest {
     private String sku;
 
     @JsonProperty("discount_price")
-    private Double discountPrice;
+    private Long discountPrice;
 
     private String status;
     private Double rating;
@@ -102,11 +102,11 @@ public class CreateProductRequest {
         this.sku = sku;
     }
 
-    public Double getDiscountPrice() {
+    public Long getDiscountPrice() {
         return discountPrice;
     }
 
-    public void setDiscountPrice(Double discountPrice) {
+    public void setDiscountPrice(Long discountPrice) {
         this.discountPrice = discountPrice;
     }
 

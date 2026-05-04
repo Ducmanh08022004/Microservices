@@ -22,10 +22,10 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     Page<OrderEntity> searchOrders(@Param("orderId") String orderId, Pageable pageable);
 
     @Query(value = "SELECT SUM(total_price) FROM orders WHERE (status = 'PAID' OR status = 'DELIVERED')", nativeQuery = true)
-    Double getTotalRevenue();
+    Long getTotalRevenue();
 
     @Query(value = "SELECT SUM(total_price) FROM orders WHERE (status = 'PAID' OR status = 'DELIVERED') AND created_at >= :since", nativeQuery = true)
-    Double getRevenueSince(@Param("since") LocalDateTime since);
+    Long getRevenueSince(@Param("since") LocalDateTime since);
 
     @Query(value = """
         SELECT DATE(created_at) as date, SUM(total_price) as revenue
