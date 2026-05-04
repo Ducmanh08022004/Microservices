@@ -5,7 +5,7 @@
 .env.*
 **/.env
 **/.env.*
-
+/docs/
 # =========================
 # Java / Maven
 # =========================
@@ -55,3 +55,4 @@ data
 _tmp_inventory_app.jar
 _tmp_inventory_app.zip
 _tmp_inventory_jar/
+implementation_plan.md
