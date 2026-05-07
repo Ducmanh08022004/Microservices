@@ -17,6 +17,24 @@
   --shadow-lg: 0 20px 50px rgba(19, 49, 45, 0.15);
   --shadow-md: 0 10px 30px rgba(17, 39, 70, 0.1);
   --nav-height: 72px;
+  --status-processing: #6366f1;
+  --status-processing-bg: rgba(99, 102, 241, 0.12);
+  --status-paid: #3b82f6;
+  --status-paid-bg: rgba(59, 130, 246, 0.12);
+  --status-confirmed: #10b981;
+  --status-confirmed-bg: rgba(16, 185, 129, 0.12);
+  --status-failed: #ef4444;
+  --status-failed-bg: rgba(239, 68, 68, 0.12);
+  --status-cancelled: #64748b;
+  --status-cancelled-bg: rgba(100, 116, 139, 0.12);
+  --status-warning: #f59e0b;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --max-content-width: 1200px;
 }
 
 * {
@@ -34,7 +52,7 @@ body {
   font-family: 'Work Sans', sans-serif;
   color: var(--text-strong);
   background:
-    radial-gradient(circle at 12% 14%, rgba(57, 181, 74, 0.12), transparent 35%),
+    radial-gradient(circle at 12% 14%, rgba(15, 118, 110, 0.10), transparent 35%),
     radial-gradient(circle at 85% 8%, rgba(249, 115, 22, 0.15), transparent 40%),
     linear-gradient(160deg, var(--bg-0), var(--bg-1));
   background-attachment: fixed;
@@ -179,8 +197,8 @@ h4 {
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
 }
 
 .home-search {
@@ -349,7 +367,7 @@ h4 {
 
 .product-card__image {
   position: relative;
-  height: 160px;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(249, 115, 22, 0.1));
 }
@@ -732,6 +750,7 @@ h4 {
 .navbar-logo span {
   background: linear-gradient(135deg, var(--brand), var(--brand-strong));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -812,8 +831,106 @@ h4 {
 @media (max-width: 768px) {
   .navbar {
     padding: 0 20px;
+    height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; 
   }
-  .navbar-links {
-    display: none; /* In a real app, you'd add a mobile menu hamburger */
+  .navbar-container { flex-wrap: wrap; }
+  .navbar-links { margin-left: 0; order: 3; width: 100%; padding: 6px 0; border-top: 1px solid rgba(15,118,110,0.1); display: flex; }
+  .navbar-actions { margin-left: auto; }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
+}
+
+.coupon-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .coupon-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .coupon-banner .btn-copy {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.container {
+  max-width: var(--max-content-width);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.container-narrow {
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.nav-icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+  font-size: 1.2rem;
+}
+
+.nav-icon-btn:hover {
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--brand);
+}
+
+.nav-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
+.skeleton {
+  background: linear-gradient(90deg,
+    rgba(220, 228, 235, 0.7) 25%,
+    rgba(240, 245, 248, 0.9) 50%,
+    rgba(220, 228, 235, 0.7) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 12px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+  border-radius: var(--radius-md);
+  border: 1px solid #d9e1eb;
+  overflow: hidden;
+  background: var(--surface);
 }

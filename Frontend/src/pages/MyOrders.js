@@ -4,13 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
 
 const STATUS_CONFIG = {
-    PROCESSING:      { label: 'Đang xử lý',     color: '#6366f1', bg: 'rgba(99,102,241,0.15)',  icon: '🔄' },
-    PENDING_PAYMENT: { label: 'Đang xử lý',     color: '#6366f1', bg: 'rgba(99,102,241,0.15)',  icon: '🔄' },
-    PAID:            { label: 'Đã thanh toán',   color: '#3b82f6', bg: 'rgba(59,130,246,0.15)',  icon: '💳' },
-    CONFIRMED:       { label: 'Đã xác nhận',     color: '#10b981', bg: 'rgba(16,185,129,0.15)',  icon: '✅' },
-    PAYMENT_FAILED:  { label: 'TT thất bại',     color: '#ef4444', bg: 'rgba(239,68,68,0.15)',   icon: '❌' },
-    FAILED_UPDATE:   { label: 'Lỗi cập nhật',   color: '#ef4444', bg: 'rgba(239,68,68,0.15)',   icon: '⚠️' },
-    CANCELLED:       { label: 'Đã hủy',         color: '#64748b', bg: 'rgba(100,116,139,0.15)', icon: '🚫' },
+    PROCESSING:      { label: 'Đang xử lý',     color: 'var(--status-processing)', bg: 'var(--status-processing-bg)',  icon: '🔄' },
+    PENDING_PAYMENT: { label: 'Đang xử lý',     color: 'var(--status-processing)', bg: 'var(--status-processing-bg)',  icon: '🔄' },
+    PAID:            { label: 'Đã thanh toán',   color: 'var(--status-paid)',       bg: 'var(--status-paid-bg)',       icon: '💳' },
+    CONFIRMED:       { label: 'Đã xác nhận',     color: 'var(--status-confirmed)',  bg: 'var(--status-confirmed-bg)',  icon: '✅' },
+    PAYMENT_FAILED:  { label: 'TT thất bại',     color: 'var(--status-failed)',     bg: 'var(--status-failed-bg)',     icon: '❌' },
+    FAILED_UPDATE:   { label: 'Lỗi cập nhật',   color: 'var(--status-failed)',     bg: 'var(--status-failed-bg)',     icon: '⚠️' },
+    CANCELLED:       { label: 'Đã hủy',         color: 'var(--status-cancelled)',  bg: 'var(--status-cancelled-bg)',  icon: '🚫' },
 };
 
 const PAYMENT_ACTIONABLE_STATUSES = new Set(['PROCESSING', 'PENDING_PAYMENT']);
@@ -42,6 +42,7 @@ function MyOrders() {
     const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [cancellingId, setCancellingId] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -78,7 +79,7 @@ function MyOrders() {
 
     return (
         <div className="page-shell">
-            <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 16px' }}>
+            <div className="container-narrow" style={{ padding: '0 16px' }}>
                 <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 6 }}>📦 Đơn Hàng Của Tôi</h1>
                 <p style={{ color: 'var(--text-muted)', marginBottom: 24, fontSize: 14 }}>
                     Theo dõi trạng thái tất cả đơn hàng của bạn
@@ -108,10 +109,16 @@ function MyOrders() {
                             >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
                                     {/* Thông tin đơn hàng */}
-                                    <div style={{ flex: 1, minWidth: 200 }}>
-                                        <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 15 }}>
-                                            🛍️ {order.product_name || order.product_id}
-                                        </p>
+                                    <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', flex: 1, minWidth: 200 }}>
+                                        {order.image_url ? (
+                                            <img src={order.image_url} alt={order.product_name} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 10, flexShrink: 0 }} />
+                                        ) : (
+                                            <div style={{ width: 64, height: 64, background: 'var(--bg-1)', borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🛍️</div>
+                                        )}
+                                        <div>
+                                            <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 15 }}>
+                                                {order.product_name || order.product_id}
+                                            </p>
                                         <p style={{ margin: '0 0 4px', color: 'var(--text-muted)', fontSize: 13 }}>
                                             Mã đơn: <code style={{ background: 'rgba(255,255,255,0.08)', padding: '1px 6px', borderRadius: 4 }}>
                                                 {order.order_id}
@@ -125,11 +132,12 @@ function MyOrders() {
                                                 Ngày đặt hàng: <b>{new Date(order.created_at).toLocaleString('vi-VN')}</b>
                                             </p>
                                         )}
+                                        </div>
                                     </div>
 
                                     {/* Giá & trạng thái */}
                                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                                        <p style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: 'var(--color-primary)' }}>
+                                        <p style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: 'var(--brand)' }}>
                                             {order.total_price?.toLocaleString('vi-VN')} VNĐ
                                         </p>
                                         <StatusBadge status={order.status} />
@@ -139,32 +147,49 @@ function MyOrders() {
                                             </p>
                                         )}
                                         {order.status === 'PROCESSING' && (
-                                            <button
-                                                className="btn btn-ghost"
-                                                style={{ marginTop: 8, color: 'var(--danger)', fontSize: 12, padding: '4px 8px', width: '100%' }}
-                                                onClick={async (e) => {
-                                                    e.stopPropagation();
-                                                    if (!window.confirm('Xác nhận hủy đơn hàng này?')) return;
-                                                    const token = localStorage.getItem('accessToken');
-                                                    try {
-                                                        await axios.post(
-                                                            `${API_GATEWAY}/api/orders/${order.order_id}/cancel`,
-                                                            {},
-                                                            { headers: { Authorization: `Bearer ${token}` } }
-                                                        );
-                                                        // Reload danh sách
-                                                        setOrders(prev => prev.map(o =>
-                                                            o.order_id === order.order_id 
-                                                                ? { ...o, status: 'CANCELLED' } 
-                                                                : o
-                                                        ));
-                                                    } catch (err) {
-                                                        alert(err?.response?.data?.error || 'Lỗi hủy đơn!');
-                                                    }
-                                                }}
-                                            >
-                                                ✕ Hủy đơn
-                                            </button>
+                                            cancellingId === order.order_id ? (
+                                                <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
+                                                    <span style={{ fontSize: 12, color: 'var(--text-muted)', alignSelf: 'center' }}>Xác nhận hủy?</span>
+                                                    <button className="btn" style={{ fontSize: 11, padding: '4px 10px', background: 'var(--danger)', color: '#fff', borderRadius: 8 }}
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation();
+                                                            const token = localStorage.getItem('accessToken');
+                                                            try {
+                                                                await axios.post(
+                                                                    `${API_GATEWAY}/api/orders/${order.order_id}/cancel`,
+                                                                    {},
+                                                                    { headers: { Authorization: `Bearer ${token}` } }
+                                                                );
+                                                                setOrders(prev => prev.map(o =>
+                                                                    o.order_id === order.order_id 
+                                                                        ? { ...o, status: 'CANCELLED' } 
+                                                                        : o
+                                                                ));
+                                                                setCancellingId(null);
+                                                            } catch (err) {
+                                                                alert(err?.response?.data?.error || 'Lỗi hủy đơn!');
+                                                                setCancellingId(null);
+                                                            }
+                                                        }}>
+                                                        Có, hủy
+                                                    </button>
+                                                    <button className="btn btn-ghost" style={{ fontSize: 11, padding: '4px 10px' }}
+                                                        onClick={(e) => { e.stopPropagation(); setCancellingId(null); }}>
+                                                        Không
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    className="btn btn-ghost"
+                                                    style={{ marginTop: 8, color: 'var(--danger)', fontSize: 12, padding: '4px 8px', width: '100%' }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setCancellingId(order.order_id);
+                                                    }}
+                                                >
+                                                    ✕ Hủy đơn
+                                                </button>
+                                            )
                                         )}
                                     </div>
                                 </div>

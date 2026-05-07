@@ -3,6 +3,21 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
 import { useWishlist } from '../context/WishlistContext';
+import { useToast, ToastContainer } from '../components/Toast';
+
+function SkeletonCard() {
+  return (
+    <div className="skeleton-card">
+      <div className="skeleton" style={{ aspectRatio: '1/1' }} />
+      <div style={{ padding: '14px 14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="skeleton" style={{ height: 12, width: '60%', borderRadius: 6 }} />
+        <div className="skeleton" style={{ height: 16, width: '90%', borderRadius: 6 }} />
+        <div className="skeleton" style={{ height: 12, width: '40%', borderRadius: 6 }} />
+        <div className="skeleton" style={{ height: 20, width: '50%', borderRadius: 6, marginTop: 4 }} />
+      </div>
+    </div>
+  );
+}
 
 function Dashboard() {
     const location = useLocation();
@@ -22,7 +37,10 @@ function Dashboard() {
     const requestInFlightRef = useRef(false);
     const activeRequestIdRef = useRef(0);
     const { isWishlisted, addToWishlist, removeFromWishlist } = useWishlist();
+    const { toasts, show } = useToast();
+    const [copied, setCopied] = useState(false);
     const [dailyCoupon, setDailyCoupon] = useState(null);
+    const [showCoupon, setShowCoupon] = useState(true);
     const categoryChips = categories;
 
     useEffect(() => {
@@ -187,39 +205,73 @@ function Dashboard() {
 
     return (
         <div className="page-shell">
-            {dailyCoupon && (
-                <div className="card" style={{
+            <ToastContainer toasts={toasts} />
+            {dailyCoupon && showCoupon && (
+                <div className="card coupon-banner" style={{
+                    position: 'fixed', bottom: 24, right: 24, zIndex: 999,
                     background: 'linear-gradient(135deg, #0f766e 0%, #065f46 100%)',
-                    color: '#fff', padding: '16px 20px', marginBottom: 16,
-                    borderRadius: 12, display: 'flex', justifyContent: 'space-between',
-                    alignItems: 'center', animation: 'fadeIn 0.5s ease'
+                    color: '#fff', padding: '20px 24px',
+                    borderRadius: 16, boxShadow: '0 12px 32px rgba(6, 95, 70, 0.25)',
+                    animation: 'rise 0.4s ease', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 14,
+                    alignItems: 'stretch'
                 }}>
+                    <button 
+                        onClick={() => setShowCoupon(false)}
+                        style={{
+                            position: 'absolute', top: 12, right: 12, background: 'none', border: 'none',
+                            color: '#fff', opacity: 0.7, cursor: 'pointer', fontSize: 18, padding: 4, lineHeight: 1
+                        }}
+                        title="Đóng"
+                    >
+                        ✕
+                    </button>
                     <div>
-                        <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 4 }}>
+                        <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 6 }}>
                             🎁 Mã giảm giá hôm nay dành cho bạn
                         </div>
-                        <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 2 }}>
+                        <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: 1.5, marginBottom: 4 }}>
                             {dailyCoupon.code}
                         </div>
-                        <div style={{ fontSize: 13, marginTop: 4, opacity: 0.8 }}>
+                        <div style={{ fontSize: 13, opacity: 0.8 }}>
                             Giảm {dailyCoupon.value}% · Tối đa {dailyCoupon.maxDiscountAmount?.toLocaleString()}đ
-                            · HSD: Hôm nay
+                            <br/>HSD: Hôm nay
                         </div>
                     </div>
                     <button
+                        className="btn-copy"
                         onClick={() => {
                             navigator.clipboard.writeText(dailyCoupon.code);
-                            alert('Đã copy mã: ' + dailyCoupon.code);
+                            setCopied(true);
+                            show('✓ Đã copy mã ' + dailyCoupon.code);
+                            setTimeout(() => setCopied(false), 2000);
                         }}
                         style={{
-                            background: 'rgba(255,255,255,0.2)', border: 'none',
-                            color: '#fff', padding: '10px 20px', borderRadius: 8,
-                            cursor: 'pointer', fontWeight: 600, fontSize: 14
+                            background: copied ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.2)', border: 'none',
+                            color: '#fff', padding: '12px 20px', borderRadius: 8,
+                            cursor: 'pointer', fontWeight: 600, fontSize: 14, width: '100%',
+                            transition: 'all 0.3s ease', textAlign: 'center'
                         }}
                     >
-                        📋 Copy
+                        {copied ? '✓ Đã copy!' : '📋 Copy mã ngay'}
                     </button>
                 </div>
+            )}
+            {dailyCoupon && !showCoupon && (
+                <button
+                    onClick={() => setShowCoupon(true)}
+                    style={{
+                        position: 'fixed', bottom: 24, right: 24, zIndex: 999,
+                        background: 'linear-gradient(135deg, #0f766e 0%, #065f46 100%)',
+                        color: '#fff', width: 56, height: 56,
+                        borderRadius: '50%', boxShadow: '0 8px 24px rgba(6, 95, 70, 0.3)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 28, border: 'none', cursor: 'pointer',
+                        animation: 'rise 0.4s ease', paddingBottom: 4
+                    }}
+                    title="Xem mã giảm giá"
+                >
+                    🎁
+                </button>
             )}
             <div className="dashboard-wrap">
                 <div className="home-search card">
@@ -304,7 +356,9 @@ function Dashboard() {
                                         <span>🛍️</span>
                                     </div>
                                 )}
-                                <div className="product-card__flag">{p.discount_price ? 'Giảm giá' : 'Hot'}</div>
+                                {p.discount_price && (
+                                    <div className="product-card__flag">Giảm giá</div>
+                                )}
                             </div>
 
                             <div className="product-card__body">
@@ -365,7 +419,12 @@ function Dashboard() {
                     </div>
                 )}
 
-                {loading && <p className="status-text marketplace-loading">Đang tải thêm sản phẩm...</p>}
+                {loading && page === 0 && (
+                    <div className="product-grid marketplace-grid" style={{ marginTop: 24 }}>
+                        {Array(12).fill(0).map((_, i) => <SkeletonCard key={i} />)}
+                    </div>
+                )}
+                {loading && page > 0 && <p className="status-text marketplace-loading">Đang tải thêm sản phẩm...</p>}
                 {error && <p className="status-text status-error marketplace-loading">{error}</p>}
 
                 {!hasMore && products.length > 0 && (

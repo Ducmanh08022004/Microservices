@@ -14,7 +14,7 @@ public class EmailTemplates {
                 
                 <div style="background:#f0fdf4; border-left:4px solid #16a34a; padding:16px; margin:24px 0;">
                   <span style="display:block; color:#166534; font-size:14px; margin-bottom:4px;">Số tiền đã thanh toán:</span>
-                  <strong style="font-size:20px; color:#15803d;">%,.0f VNĐ</strong>
+                  <strong style="font-size:20px; color:#15803d;">%,d VNĐ</strong>
                 </div>
 
                 <p>Đơn hàng của bạn hiện đang được chuyển sang bộ phận chuẩn bị hàng và sẽ sớm được giao đến bạn.</p>

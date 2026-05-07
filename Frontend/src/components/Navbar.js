@@ -67,11 +67,13 @@ function Navbar() {
         )}
 
         <div className="navbar-actions">
-          <Link to="/wishlist" className="nav-link" style={{ marginRight: 16 }}>
-            ❤️ {wishlist.length > 0 && <span className="cart-badge" style={{ verticalAlign: 'top', background: 'var(--danger)', color: 'white', borderRadius: 12, padding: '2px 6px', fontSize: 11, marginLeft: 2 }}>{wishlist.length}</span>}
+          <Link to="/wishlist" className="nav-icon-btn" style={{ marginRight: 8 }}>
+            🤍
+            {wishlist.length > 0 && <span className="nav-badge">{wishlist.length}</span>}
           </Link>
-          <Link to="/cart" className="nav-link" style={{ marginRight: 16 }}>
-            🛒 Giỏ hàng {totalItems > 0 && <span className="cart-badge" style={{ verticalAlign: 'top', background: 'var(--danger)', color: 'white', borderRadius: 12, padding: '2px 6px', fontSize: 11, marginLeft: 4 }}>{totalItems}</span>}
+          <Link to="/cart" className="nav-icon-btn" style={{ marginRight: 16 }}>
+            🛒
+            {totalItems > 0 && <span className="nav-badge">{totalItems}</span>}
           </Link>
           {token ? (
             <div className="nav-user-info">
