@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import './api'; // Global interceptor
 import Login from './components/Login';
 import Register from './components/Register';
+import ForgotPassword from './components/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import AddProduct from './pages/AddProduct';
 import ProductDetail from './pages/Product_Detail';
@@ -22,7 +23,7 @@ import { WishlistProvider } from './context/WishlistContext';
 
 function AppRoutes() {
   const location = useLocation();
-  const hideNavbar = location.pathname === '/login' || location.pathname === '/' || location.pathname === '/register';
+  const hideNavbar = location.pathname === '/login' || location.pathname === '/' || location.pathname === '/register' || location.pathname === '/forgot-password';
   return (
     <>
       {!hideNavbar && <Navbar />}
@@ -31,6 +32,7 @@ function AppRoutes() {
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
 

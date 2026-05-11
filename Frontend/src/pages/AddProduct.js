@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
+import { Camera, Loader2 } from 'lucide-react';
 
 function AddProduct() {
     const { id } = useParams();
@@ -127,13 +128,13 @@ function AddProduct() {
                                 <img src={formData.image_url} alt="Preview" style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 8 }} />
                             ) : (
                                 <div style={{ width: 100, height: 100, background: 'rgba(0,0,0,0.2)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    📷
+                                    <Camera size={32} color="var(--text-muted)" />
                                 </div>
                             )}
                             <div>
                                 <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} id="img-upload" style={{ display: 'none' }} />
                                 <label htmlFor="img-upload" className="btn btn-ghost" style={{ cursor: 'pointer', display: 'inline-block' }}>
-                                    {uploadingImage ? '⏳ Đang tải lên...' : 'Chọn ảnh mới'}
+                                    {uploadingImage ? <><Loader2 size={16} className="lucide-spin" style={{ verticalAlign: 'middle', marginRight: 4 }} /> Đang tải lên...</> : 'Chọn ảnh mới'}
                                 </label>
                                 <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>Hỗ trợ JPG, PNG. Tối đa 5MB.</p>
                             </div>

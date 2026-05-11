@@ -2,15 +2,16 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
+import { RefreshCw, CreditCard, CheckCircle2, XCircle, AlertTriangle, Ban, Package, ShoppingCart, ShoppingBag, X } from 'lucide-react';
 
 const STATUS_CONFIG = {
-    PROCESSING:      { label: 'Đang xử lý',     color: 'var(--status-processing)', bg: 'var(--status-processing-bg)',  icon: '🔄' },
-    PENDING_PAYMENT: { label: 'Đang xử lý',     color: 'var(--status-processing)', bg: 'var(--status-processing-bg)',  icon: '🔄' },
-    PAID:            { label: 'Đã thanh toán',   color: 'var(--status-paid)',       bg: 'var(--status-paid-bg)',       icon: '💳' },
-    CONFIRMED:       { label: 'Đã xác nhận',     color: 'var(--status-confirmed)',  bg: 'var(--status-confirmed-bg)',  icon: '✅' },
-    PAYMENT_FAILED:  { label: 'TT thất bại',     color: 'var(--status-failed)',     bg: 'var(--status-failed-bg)',     icon: '❌' },
-    FAILED_UPDATE:   { label: 'Lỗi cập nhật',   color: 'var(--status-failed)',     bg: 'var(--status-failed-bg)',     icon: '⚠️' },
-    CANCELLED:       { label: 'Đã hủy',         color: 'var(--status-cancelled)',  bg: 'var(--status-cancelled-bg)',  icon: '🚫' },
+    PROCESSING:      { label: 'Đang xử lý',     color: 'var(--status-processing)', bg: 'var(--status-processing-bg)',  icon: <RefreshCw size={14} /> },
+    PENDING_PAYMENT: { label: 'Đang xử lý',     color: 'var(--status-processing)', bg: 'var(--status-processing-bg)',  icon: <RefreshCw size={14} /> },
+    PAID:            { label: 'Đã thanh toán',   color: 'var(--status-paid)',       bg: 'var(--status-paid-bg)',       icon: <CreditCard size={14} /> },
+    CONFIRMED:       { label: 'Đã xác nhận',     color: 'var(--status-confirmed)',  bg: 'var(--status-confirmed-bg)',  icon: <CheckCircle2 size={14} /> },
+    PAYMENT_FAILED:  { label: 'TT thất bại',     color: 'var(--status-failed)',     bg: 'var(--status-failed-bg)',     icon: <XCircle size={14} /> },
+    FAILED_UPDATE:   { label: 'Lỗi cập nhật',   color: 'var(--status-failed)',     bg: 'var(--status-failed-bg)',     icon: <AlertTriangle size={14} /> },
+    CANCELLED:       { label: 'Đã hủy',         color: 'var(--status-cancelled)',  bg: 'var(--status-cancelled-bg)',  icon: <Ban size={14} /> },
 };
 
 const PAYMENT_ACTIONABLE_STATUSES = new Set(['PROCESSING', 'PENDING_PAYMENT']);
@@ -80,14 +81,14 @@ function MyOrders() {
     return (
         <div className="page-shell">
             <div className="container-narrow" style={{ padding: '0 16px' }}>
-                <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 6 }}>📦 Đơn Hàng Của Tôi</h1>
+                <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 10 }}><Package size={28} /> Đơn Hàng Của Tôi</h1>
                 <p style={{ color: 'var(--text-muted)', marginBottom: 24, fontSize: 14 }}>
                     Theo dõi trạng thái tất cả đơn hàng của bạn
                 </p>
 
                 {orders.length === 0 ? (
                     <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
-                        <div style={{ fontSize: 48, marginBottom: 12 }}>🛒</div>
+                        <div style={{ marginBottom: 12 }}><ShoppingCart size={48} color="var(--border)" /></div>
                         <p style={{ color: 'var(--text-muted)' }}>Chưa có đơn hàng nào.</p>
                         <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => navigate('/dashboard')}>
                             Mua sắm ngay
@@ -113,7 +114,7 @@ function MyOrders() {
                                         {order.image_url ? (
                                             <img src={order.image_url} alt={order.product_name} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 10, flexShrink: 0 }} />
                                         ) : (
-                                            <div style={{ width: 64, height: 64, background: 'var(--bg-1)', borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🛍️</div>
+                                            <div style={{ width: 64, height: 64, background: 'var(--bg-1)', borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShoppingBag size={24} color="var(--border)" /></div>
                                         )}
                                         <div>
                                             <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 15 }}>
@@ -187,7 +188,7 @@ function MyOrders() {
                                                         setCancellingId(order.order_id);
                                                     }}
                                                 >
-                                                    ✕ Hủy đơn
+                                                    <X size={14} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Hủy đơn
                                                 </button>
                                             )
                                         )}

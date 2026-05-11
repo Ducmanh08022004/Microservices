@@ -15,6 +15,9 @@ public class OrderResponse {
     @JsonProperty("product_name")
     private String productName;
 
+    @JsonProperty("image_url")
+    private String imageUrl;
+
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
@@ -24,6 +27,14 @@ public class OrderResponse {
      
     public void setProductName(String productName) {
         this.productName = productName;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public LocalDateTime getCreatedAt() {

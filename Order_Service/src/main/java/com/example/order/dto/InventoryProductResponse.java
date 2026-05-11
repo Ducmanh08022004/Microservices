@@ -11,6 +11,8 @@ public class InventoryProductResponse {
     private Long price;
     @JsonProperty("discount_price")
     private Long discountPrice;
+    @JsonProperty("image_url")
+    private String imageUrl;
 
     public String getProductId() {
         return productId;
@@ -50,5 +52,13 @@ public class InventoryProductResponse {
 
     public void setDiscountPrice(Long discountPrice) {
         this.discountPrice = discountPrice;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

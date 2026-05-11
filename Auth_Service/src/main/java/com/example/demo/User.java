@@ -3,6 +3,8 @@ package com.example.demo;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "user")
@@ -38,4 +40,14 @@ public class User {
 
     @Column(name = "display_name", unique = true)
     private String displayName;
+
+    @Column(name = "reset_password_code_hash")
+    private String resetPasswordCodeHash;
+
+    @Column(name = "reset_password_code_expires_at")
+    private LocalDateTime resetPasswordCodeExpiresAt;
+
+    @Column(name = "reset_password_failed_attempts", nullable = false)
+    @Builder.Default
+    private Integer resetPasswordFailedAttempts = 0;
 }

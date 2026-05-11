@@ -3,6 +3,7 @@ import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
+import { ShoppingCart, ShoppingBag, Trash2, Minus, Plus } from 'lucide-react';
 
 function CartPage() {
     const { cart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
@@ -65,7 +66,7 @@ function CartPage() {
     if (cart.length === 0) {
         return (
             <div className="page-shell" style={{ textAlign: 'center' }}>
-                <h2>🛒 Giỏ hàng trống</h2>
+                <h2 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}><ShoppingCart size={32} /> Giỏ hàng trống</h2>
                 <p style={{ color: 'var(--text-muted)' }}>Bạn chưa có sản phẩm nào trong giỏ hàng.</p>
                 <button className="btn btn-primary" onClick={() => navigate('/dashboard')} style={{ marginTop: 20 }}>
                     Tiếp tục mua hàng
@@ -76,7 +77,7 @@ function CartPage() {
 
     return (
         <div className="page-shell">
-            <h1 style={{ marginBottom: 24 }}>🛒 Giỏ hàng của bạn</h1>
+            <h1 style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}><ShoppingCart size={32} /> Giỏ hàng của bạn</h1>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
                 <div style={{ flex: '1 1 60%', minWidth: '320px' }}>
                     {cart.map(item => (
@@ -84,7 +85,7 @@ function CartPage() {
                             {item.image_url ? (
                                 <img src={item.image_url} alt={item.name} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8 }} />
                             ) : (
-                                <div style={{ width: 80, height: 80, background: 'rgba(255,255,255,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🛍️</div>
+                                <div style={{ width: 80, height: 80, background: 'rgba(255,255,255,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShoppingBag size={32} color="var(--border)" /></div>
                             )}
                             <div style={{ flex: 1 }}>
                                 <h3 style={{ margin: '0 0 8px' }}>{item.name}</h3>
@@ -93,12 +94,12 @@ function CartPage() {
                                 </p>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <button className="btn btn-ghost" onClick={() => updateQuantity(item.product_id, Math.max(1, item.quantity - 1))}>-</button>
+                                <button className="btn btn-ghost" onClick={() => updateQuantity(item.product_id, Math.max(1, item.quantity - 1))} style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Minus size={16} /></button>
                                 <span>{item.quantity}</span>
-                                <button className="btn btn-ghost" onClick={() => updateQuantity(item.product_id, item.quantity + 1)}>+</button>
+                                <button className="btn btn-ghost" onClick={() => updateQuantity(item.product_id, item.quantity + 1)} style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={16} /></button>
                             </div>
-                            <button className="btn" style={{ color: 'var(--danger)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 12px' }} onClick={() => removeFromCart(item.product_id)}>
-                                ✕
+                            <button className="btn" style={{ color: 'var(--danger)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => removeFromCart(item.product_id)}>
+                                <Trash2 size={20} />
                             </button>
                         </div>
                     ))}

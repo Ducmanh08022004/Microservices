@@ -64,6 +64,7 @@ public class OrderApplicationService {
         order.setUserId(authUser.getId());
         order.setProductId(product.getProductId());
         order.setProductName(product.getName());
+        order.setImageUrl(product.getImageUrl());
         order.setQuantity(request.getQuantity());
         long unitPrice = resolveEffectiveUnitPrice(product);
         long grossTotal = unitPrice * request.getQuantity();
@@ -164,6 +165,7 @@ public class OrderApplicationService {
         response.setOrderId(order.getOrderId());
         response.setProductId(order.getProductId());
         response.setProductName(order.getProductName());
+        response.setImageUrl(order.getImageUrl());
         response.setQuantity(order.getQuantity());
         response.setTotalPrice(order.getTotalPrice());
         response.setStatus(order.getStatus());

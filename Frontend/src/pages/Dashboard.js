@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast, ToastContainer } from '../components/Toast';
+import { Gift, Check, Clipboard, Heart, ShoppingBag, Star, Search } from 'lucide-react';
 
 function SkeletonCard() {
   return (
@@ -226,8 +227,8 @@ function Dashboard() {
                         ✕
                     </button>
                     <div>
-                        <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 6 }}>
-                            🎁 Mã giảm giá hôm nay dành cho bạn
+                        <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Gift size={16} /> Mã giảm giá hôm nay dành cho bạn
                         </div>
                         <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: 1.5, marginBottom: 4 }}>
                             {dailyCoupon.code}
@@ -252,7 +253,7 @@ function Dashboard() {
                             transition: 'all 0.3s ease', textAlign: 'center'
                         }}
                     >
-                        {copied ? '✓ Đã copy!' : '📋 Copy mã ngay'}
+                        {copied ? <><Check size={16} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Đã copy!</> : <><Clipboard size={16} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Copy mã ngay</>}
                     </button>
                 </div>
             )}
@@ -270,7 +271,7 @@ function Dashboard() {
                     }}
                     title="Xem mã giảm giá"
                 >
-                    🎁
+                    <Gift size={28} />
                 </button>
             )}
             <div className="dashboard-wrap">
@@ -347,13 +348,13 @@ function Dashboard() {
                                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                                          display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28
                                      }}>
-                                    {isWishlisted(p.product_id) ? '❤️' : '🤍'}
+                                    <Heart size={16} fill={isWishlisted(p.product_id) ? 'var(--danger)' : 'none'} color={isWishlisted(p.product_id) ? 'var(--danger)' : 'var(--text-main)'} />
                                 </div>
                                 {p.image_url ? (
                                     <img src={p.image_url} alt={p.name} />
                                 ) : (
                                     <div className="product-card__placeholder">
-                                        <span>🛍️</span>
+                                        <ShoppingBag size={48} color="var(--border)" />
                                     </div>
                                 )}
                                 {p.discount_price && (
@@ -370,7 +371,7 @@ function Dashboard() {
                                 <h3 className="product-name product-card__title">{p.name}</h3>
 
                                 <div className="product-card__rating">
-                                    <span>★</span>
+                                    <Star size={14} fill="#f59e0b" color="#f59e0b" />
                                     <span>{p.rating || 0}</span>
                                     <span className="product-card__sold">{p.num_reviews ? `${p.num_reviews} đánh giá` : 'Mới'}</span>
                                 </div>
@@ -399,7 +400,7 @@ function Dashboard() {
 
                 {!loading && products.length === 0 && (debouncedSearch || selectedCategoryId !== 'all') && (
                     <div className="card marketplace-empty">
-                        <div style={{ fontSize: 40, marginBottom: 10 }}>🔎</div>
+                        <div style={{ marginBottom: 10 }}><Search size={48} color="var(--border)" /></div>
                         <h3>Không có sản phẩm phù hợp</h3>
                         <p>Hãy đổi danh mục hoặc xóa tìm kiếm.</p>
                         <button className="btn btn-primary" onClick={handleClear}>
@@ -410,7 +411,7 @@ function Dashboard() {
 
                 {!loading && products.length === 0 && !debouncedSearch && selectedCategoryId === 'all' && (
                     <div className="card marketplace-empty">
-                        <div style={{ fontSize: 40, marginBottom: 10 }}>🔎</div>
+                        <div style={{ marginBottom: 10 }}><Search size={48} color="var(--border)" /></div>
                         <h3>Không có sản phẩm phù hợp</h3>
                         <p>Hãy đổi từ khóa hoặc xóa tìm kiếm.</p>
                         <button className="btn btn-primary" onClick={handleClear}>

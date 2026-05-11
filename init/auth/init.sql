@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS user (
     email VARCHAR(255) NOT NULL,
     is_enabled TINYINT(1) DEFAULT 1,
     display_name VARCHAR(255) UNIQUE,
+    reset_password_code_hash VARCHAR(255),
+    reset_password_code_expires_at DATETIME,
+    reset_password_failed_attempts INT DEFAULT 0,
 
     -- INDEX
     UNIQUE KEY idx_username (username),

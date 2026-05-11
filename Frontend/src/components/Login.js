@@ -65,13 +65,18 @@ function Login() {
                             style={{ width: '100%', borderRadius: 10 }}
                         />
                     </div>
-
+                    <div style={{ textAlign: 'right', marginTop: 10 }}>
+                    <Link to="/forgot-password" style={{ color: 'var(--brand)', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
+                        Quên mật khẩu?
+                    </Link>
+                    </div>
                     <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: '100%', padding: '12px', borderRadius: 10, marginTop: 10 }}>
                         {loading ? 'Đang xác thực...' : 'Đăng nhập'}
                     </button>
                 </form>
 
                 {error && <p style={{ color: '#e74c3c', marginTop: 15, textAlign: 'center', fontSize: 14 }}>{error}</p>}
+
                 
                 <div style={{ textAlign: 'center', marginTop: 25, fontSize: 14, color: '#666' }}>
                     Bạn chưa có tài khoản? <Link to="/register" style={{ color: 'var(--brand)', textDecoration: 'none', fontWeight: 'bold' }}>Đăng ký ngay</Link>

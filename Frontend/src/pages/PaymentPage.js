@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
+import { Hourglass, CheckCircle2, XCircle, HelpCircle, RefreshCw, CreditCard, Check } from 'lucide-react';
 
 // Cấu hình trạng thái thanh toán
 const PAYMENT_STATUS_CONFIG = {
@@ -9,21 +10,21 @@ const PAYMENT_STATUS_CONFIG = {
         label: 'Đang xử lý thanh toán',
         color: 'var(--status-warning)',
         bg: 'rgba(245, 158, 11, 0.12)',
-        icon: '⏳',
+        icon: <Hourglass size={14} />,
         showActions: true,
     },
     PAID: {
         label: 'Thanh toán thành công!',
         color: 'var(--status-paid)',
         bg: 'var(--status-paid-bg)',
-        icon: '✅',
+        icon: <CheckCircle2 size={14} />,
         showActions: false,
     },
     PAYMENT_FAILED: {
         label: 'Thanh toán thất bại',
         color: 'var(--status-failed)',
         bg: 'var(--status-failed-bg)',
-        icon: '❌',
+        icon: <XCircle size={14} />,
         showActions: false,
     },
 };
@@ -59,7 +60,7 @@ function Step({ number, title, description, active, done }) {
                 fontWeight: 700,
                 fontSize: 13,
             }}>
-                {done ? '✓' : number}
+                {done ? <Check size={14} /> : number}
             </div>
             <div>
                 <div style={{ fontWeight: 700, marginBottom: 4 }}>{title}</div>
@@ -160,7 +161,7 @@ function PaymentPage() {
         label: payment.status,
         color: '#64748b',
         bg: 'rgba(100, 116, 139, 0.12)',
-        icon: '❓',
+        icon: <HelpCircle size={14} />,
         showActions: false,
     }) : null;
 
@@ -174,25 +175,6 @@ function PaymentPage() {
                 <div className="dashboard-head" style={{ alignItems: 'flex-start', marginBottom: 18 }}>
                     <div>
                         <h1 className="dashboard-title">Thanh toán đơn hàng</h1>
-                        <p className="dashboard-subtitle">Xác nhận, hủy hoặc hoàn tất thanh toán theo luồng xử lý chung của hệ thống.</p>
-                    </div>
-
-                    <div style={{ textAlign: 'right' }}>
-                        <div style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            padding: '8px 14px',
-                            borderRadius: 999,
-                            background: 'rgba(15, 118, 110, 0.08)',
-                            color: 'var(--brand)',
-                            fontWeight: 700,
-                        }}>
-                            <span>#{orderId}</span>
-                        </div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 8 }}>
-                            Mã đơn hàng
-                        </div>
                     </div>
                 </div>
 
@@ -218,14 +200,14 @@ function PaymentPage() {
 
                 {loading && (
                     <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
-                        <div style={{ fontSize: 42, marginBottom: 10 }}>⏳</div>
+                        <div style={{ marginBottom: 10 }}><Hourglass size={42} color="var(--border)" /></div>
                         <p style={{ color: 'var(--text-muted)', margin: 0 }}>Đang tải thông tin thanh toán...</p>
                     </div>
                 )}
 
                 {!loading && error && !payment && (
                     <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
-                        <div style={{ fontSize: 42, marginBottom: 10 }}>🔄</div>
+                        <div style={{ marginBottom: 10 }}><RefreshCw size={42} color="var(--border)" /></div>
                         <p style={{ color: 'var(--text-muted)', margin: 0 }}>{error}</p>
                         <button className="btn btn-ghost" style={{ marginTop: 18 }} onClick={fetchPayment}>
                             Thử lại
@@ -269,29 +251,6 @@ function PaymentPage() {
                             </div>
 
                             <hr className="detail-divider" />
-
-                            <div style={{ display: 'grid', gap: 16 }}>
-                                <Step
-                                    number={1}
-                                    title="Tạo đơn"
-                                    description="Người dùng nhấn mua hàng, hệ thống tạo đơn ở trạng thái PROCESSING sau khi kiểm tra còn hàng."
-                                    done={isPaid || isFailed}
-                                />
-                                <Step
-                                    number={2}
-                                    title="Thanh toán qua VNPay"
-                                    description="Nhấn nút thanh toán để chuyển sang cổng VNPay. Sau khi hoàn tất, hệ thống sẽ tự động cập nhật trạng thái."
-                                    active={isProcessing}
-                                    done={isPaid || isFailed}
-                                />
-                                <Step
-                                    number={3}
-                                    title="Trừ kho"
-                                    description="Khi đơn đã PAID, kho sẽ được trừ và trạng thái đồng bộ tiếp theo sẽ cập nhật tự động."
-                                    active={isPaid}
-                                    done={isPaid}
-                                />
-                            </div>
 
                             {(isPaid || isFailed) && (
                                 <div style={{
@@ -350,7 +309,7 @@ function PaymentPage() {
                                         onClick={handleVnPay}
                                         disabled={actionLoading}
                                     >
-                                        {actionLoading ? 'Đang chuyển tới VNPay...' : (<><span style={{ fontSize: 18 }}>💳</span> Thanh toán qua VNPay</>)}
+                                        {actionLoading ? 'Đang chuyển tới VNPay...' : (<><span style={{ display: 'flex', alignItems: 'center' }}><CreditCard size={18} /></span> Thanh toán qua VNPay</>)}
                                     </button>
 
                                     <button

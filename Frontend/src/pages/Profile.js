@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
 import { dispatchAuthChanged } from '../utils/authStorage';
+import { User } from 'lucide-react';
 
 const Profile = () => {
     const [form, setForm] = useState({ displayName: '', email: '', password: '', confirmPassword: '' });
@@ -79,7 +80,7 @@ const Profile = () => {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: 'white', fontSize: 32, fontWeight: 'bold'
                         }}>
-                            👤
+                            <User size={40} />
                         </div>
                         <h2 style={{ fontSize: 24, color: 'var(--brand)' }}>Thông tin cá nhân</h2>
                         <p style={{ color: '#666' }}>Cập nhật thông tin tài khoản của bạn</p>
@@ -87,8 +88,8 @@ const Profile = () => {
                     {currentUser && (
                         <div style={{ marginBottom: 20, padding: '12px 16px', 
                                     background: 'rgba(15,118,110,0.06)', borderRadius: 12 }}>
-                            <div style={{ fontWeight: 700, fontSize: 16 }}>
-                                👤 {currentUser.username}
+                            <div style={{ fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <User size={18} /> {currentUser.username}
                             </div>
                             <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
                                 Role: <span style={{ 

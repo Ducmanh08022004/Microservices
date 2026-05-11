@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { dispatchAuthChanged } from '../utils/authStorage';
+import { ShoppingBag, Heart, ShoppingCart, User } from 'lucide-react';
 
 function getRole() {
   try {
@@ -52,7 +53,7 @@ function Navbar() {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/dashboard" className="navbar-logo">
-          🛍️ <span>MiniStore</span>
+          <ShoppingBag size={24} style={{ color: 'var(--brand)', strokeWidth: 2.5 }} /> <span>MiniStore</span>
         </Link>
 
         {token && (
@@ -68,17 +69,17 @@ function Navbar() {
 
         <div className="navbar-actions">
           <Link to="/wishlist" className="nav-icon-btn" style={{ marginRight: 8 }}>
-            🤍
+            <Heart size={20} />
             {wishlist.length > 0 && <span className="nav-badge">{wishlist.length}</span>}
           </Link>
           <Link to="/cart" className="nav-icon-btn" style={{ marginRight: 16 }}>
-            🛒
+            <ShoppingCart size={20} />
             {totalItems > 0 && <span className="nav-badge">{totalItems}</span>}
           </Link>
           {token ? (
             <div className="nav-user-info">
-              <Link to="/profile" className="nav-username" style={{ textDecoration: 'none' }}>
-                👤 {username}
+              <Link to="/profile" className="nav-username" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <User size={18} /> {username}
               </Link>
               <button onClick={handleLogout} className="btn btn-logout">
                 Đăng xuất

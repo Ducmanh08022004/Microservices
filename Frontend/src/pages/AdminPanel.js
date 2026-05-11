@@ -3,6 +3,7 @@ import axios from 'axios';
 import { API_GATEWAY } from '../config';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Search, Info, Plus } from 'lucide-react';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ff6b6b'];
 
@@ -328,10 +329,10 @@ const AdminPanel = () => {
                 <div className="dashboard-head" style={{ marginBottom: 12 }}>
                     <h1 className="dashboard-title" style={{ fontSize: '1.5rem' }}>Hệ thống Quản trị</h1>
                     {activeTab === 'products' && (
-                        <button className="btn btn-primary" onClick={() => navigate('/admin/products/new')}>+ Thêm sản phẩm</button>
+                        <button className="btn btn-primary" onClick={() => navigate('/admin/products/new')} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Plus size={18} /> Thêm sản phẩm</button>
                     )}
                     {activeTab === 'coupons' && (
-                        <button className="btn btn-primary" onClick={() => setShowCouponModal(true)}>+ Thêm Mã Giảm Giá</button>
+                        <button className="btn btn-primary" onClick={() => setShowCouponModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Plus size={18} /> Thêm Mã Giảm Giá</button>
                     )}
                 </div>
 
@@ -354,7 +355,7 @@ const AdminPanel = () => {
                 {activeTab !== 'reports' && (
                     <div className="card" style={{ padding: '10px 16px', marginBottom: 12, display: 'flex', gap: 15, alignItems: 'center', flexWrap: 'wrap' }}>
                         <div style={{ flex: 1, minWidth: 250, position: 'relative' }}>
-                            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
+                            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.5, display: 'flex' }}><Search size={18} /></span>
                             <input 
                                 className="input" 
                                 style={{ paddingLeft: 40 }} 
@@ -594,8 +595,8 @@ const AdminPanel = () => {
                                 </div>
                                 )}
                                 {newCoupon.type === 'FIXED' && (
-                                <div style={{ padding: '6px 10px', background: 'rgba(15, 118, 110, 0.06)', borderRadius: 8, fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>
-                                    ℹ️ Mã giảm cố định sẽ tự động giới hạn <strong>1 lượt sử dụng</strong> và giá trị giảm tối đa bằng giá trị mã.
+                                <div style={{ padding: '6px 10px', background: 'rgba(15, 118, 110, 0.06)', borderRadius: 8, fontSize: 13, color: 'var(--text-muted)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <Info size={16} /> <span>Mã giảm cố định sẽ tự động giới hạn <strong>1 lượt sử dụng</strong> và giá trị giảm tối đa bằng giá trị mã.</span>
                                 </div>
                                 )}
                                 <div className="form-field">

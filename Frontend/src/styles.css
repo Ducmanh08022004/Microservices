@@ -167,6 +167,14 @@ h4 {
   box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.16);
 }
 
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
 .error-text {
   color: var(--danger);
   font-weight: 600;
@@ -933,4 +941,13 @@ h4 {
   border: 1px solid #d9e1eb;
   overflow: hidden;
   background: var(--surface);
+}
+
+@keyframes lucide-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.lucide-spin {
+  animation: lucide-spin 1s linear infinite;
 }

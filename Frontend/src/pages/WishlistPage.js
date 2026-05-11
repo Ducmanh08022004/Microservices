@@ -1,6 +1,7 @@
 import React from 'react';
 import { useWishlist } from '../context/WishlistContext';
 import { useNavigate } from 'react-router-dom';
+import { Heart, ShoppingBag } from 'lucide-react';
 
 function WishlistPage() {
     const { wishlist, removeFromWishlist } = useWishlist();
@@ -9,11 +10,11 @@ function WishlistPage() {
     return (
         <div className="page-shell">
             <div className="dashboard-wrap">
-                <h1 style={{ marginBottom: 24 }}>❤️ Sản phẩm Yêu thích</h1>
+                <h1 style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}><Heart size={32} fill="var(--danger)" color="var(--danger)" /> Sản phẩm Yêu thích</h1>
                 
                 {wishlist.length === 0 ? (
                     <div className="card marketplace-empty">
-                        <div style={{ fontSize: 40, marginBottom: 10 }}>🤍</div>
+                        <div style={{ marginBottom: 10 }}><Heart size={48} color="var(--border)" /></div>
                         <h3>Chưa có sản phẩm yêu thích</h3>
                         <p>Hãy dạo quanh cửa hàng và lưu lại những món bạn thích nhé.</p>
                         <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
@@ -37,13 +38,13 @@ function WishlistPage() {
                                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                                              display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28
                                          }}>
-                                        ❤️
+                                        <Heart size={16} fill="var(--danger)" color="var(--danger)" />
                                     </div>
                                     {p.image_url ? (
                                         <img src={p.image_url} alt={p.name} />
                                     ) : (
                                         <div className="product-card__placeholder">
-                                            <span>🛍️</span>
+                                            <ShoppingBag size={48} color="var(--border)" />
                                         </div>
                                     )}
                                 </div>

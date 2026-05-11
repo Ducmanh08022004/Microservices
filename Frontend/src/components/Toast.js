@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 
 export function useToast() {
   const [toasts, setToasts] = useState([]);
@@ -25,7 +26,11 @@ export function ToastContainer({ toasts }) {
           color: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
           animation: 'rise 0.3s ease',
           maxWidth: 320, fontSize: '0.9rem',
+          display: 'flex', alignItems: 'center', gap: 8
         }}>
+          {t.type === 'success' && <CheckCircle2 size={18} />}
+          {t.type === 'error' && <XCircle size={18} />}
+          {t.type === 'warning' && <AlertCircle size={18} />}
           {t.message}
         </div>
       ))}

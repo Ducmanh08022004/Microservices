@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
 import { useCart } from '../context/CartContext';
+import { Star, ShoppingBag, Gift, ShoppingCart } from 'lucide-react';
 
 function getUserId() {
     try {
@@ -23,9 +24,10 @@ function StarRating({ value, onChange }) {
                     style={{ 
                         fontSize: 24, cursor: onChange ? 'pointer' : 'default',
                         color: star <= value ? '#f59e0b' : '#d1d5db',
-                        userSelect: 'none'
+                        userSelect: 'none',
+                        display: 'flex', alignItems: 'center'
                     }}
-                >★</span>
+                ><Star size={24} fill={star <= value ? '#f59e0b' : 'none'} color={star <= value ? '#f59e0b' : '#d1d5db'} /></span>
             ))}
         </div>
     );
@@ -167,7 +169,7 @@ function Product_Detail() {
                     </div>
                 ) : (
                     <div style={{ width: '100%', height: '30vh', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01))', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, marginBottom: 16 }}>
-                        <span style={{ fontSize: 40, opacity: 0.5 }}>🛍️</span>
+                        <ShoppingBag size={40} color="var(--border)" opacity={0.5} />
                     </div>
                 )}
                 
@@ -178,8 +180,8 @@ function Product_Detail() {
                 
                 <h2>{product.name}</h2>
                 
-                <div className="product-rating">
-                    <span>★</span> {product.rating || 0}
+                <div className="product-rating" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Star size={16} fill="#f59e0b" color="#f59e0b" /> {product.rating || 0}
                     <span className="review-count">({product.num_reviews || 0} đánh giá)</span>
                 </div>
 
@@ -302,7 +304,7 @@ function Product_Detail() {
                         borderRadius: 8, marginBottom: 10, fontSize: 13,
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                     }}>
-                        <span>🎁 Bạn có mã hôm nay: <b>{dailyCoupon.code}</b> (-{dailyCoupon.value}%)</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Gift size={16} /> Bạn có mã hôm nay: <b>{dailyCoupon.code}</b> (-{dailyCoupon.value}%)</span>
                         <button
                             className="btn btn-ghost"
                             style={{ padding: '4px 10px', fontSize: 12 }}
@@ -355,9 +357,9 @@ function Product_Detail() {
                     borderRadius: 8, 
                     fontWeight: 600, 
                     cursor: 'pointer',
-                    transition: 'opacity 0.2s'}}
+                    transition: 'opacity 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8}}
                 >
-                    🛒 Thêm vào giỏ hàng
+                    <ShoppingCart size={18} /> Thêm vào giỏ hàng
                 </button>
 
                 <button 

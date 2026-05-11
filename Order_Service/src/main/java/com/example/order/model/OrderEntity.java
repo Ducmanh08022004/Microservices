@@ -24,6 +24,9 @@ public class OrderEntity {
     @Column(name = "product_name", nullable = false)
     private String productName;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
@@ -95,6 +98,14 @@ public class OrderEntity {
 
     public void setProductName(String productName) {
         this.productName = productName;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public Integer getQuantity() {
