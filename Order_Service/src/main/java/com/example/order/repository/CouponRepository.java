@@ -16,4 +16,6 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
     Optional<Coupon> findByOwnerUserIdAndCreatedAtBetween(Long ownerUserId, LocalDateTime start, LocalDateTime end);
     Page<Coupon> findByOwnerUserIdIsNull(Pageable pageable);
     List<Coupon> findByOwnerUserId(Long ownerUserId);
+
+    long deleteByExpiresAtBefore(LocalDateTime expiresAt);
 }
