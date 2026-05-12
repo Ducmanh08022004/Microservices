@@ -16,6 +16,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     List<OrderEntity> findAllByUserIdOrderByCreatedAtDesc(Long userId);
     Page<OrderEntity> findAllByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
     Optional<OrderEntity> findByOrderId(String orderId);
+  boolean existsByOrderId(String orderId);
     Page<OrderEntity> findAll(Pageable pageable);
 
     @Query("SELECT o FROM OrderEntity o WHERE :orderId IS NULL OR o.orderId LIKE %:orderId%")

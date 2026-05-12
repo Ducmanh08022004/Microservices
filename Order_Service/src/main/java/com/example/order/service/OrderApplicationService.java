@@ -16,15 +16,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.Locale;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class OrderApplicationService {
 
     private static final String ORDER_STATUS_PROCESSING = "PROCESSING";
+    private static final String ORDER_ID_PREFIX = "OD";
+    private static final int ORDER_ID_TIME_PART_LENGTH = 6;
+    private static final int ORDER_ID_RANDOM_PART_LENGTH = 4;
+    private static final int ORDER_ID_MAX_GENERATION_ATTEMPTS = 20;
 
     private final OrderRepository orderRepository;
     private final CouponRepository couponRepository;
@@ -60,7 +67,7 @@ public class OrderApplicationService {
         }
 
         OrderEntity order = new OrderEntity();
-        order.setOrderId(UUID.randomUUID().toString());
+        order.setOrderId(generateOrderId());
         order.setUserId(authUser.getId());
         order.setProductId(product.getProductId());
         order.setProductName(product.getName());
@@ -146,6 +153,31 @@ public class OrderApplicationService {
 
     private Long coalesce(Long val) {
         return val != null ? val : 0L;
+    }
+
+    private String generateOrderId() {
+        for (int attempt = 0; attempt < ORDER_ID_MAX_GENERATION_ATTEMPTS; attempt++) {
+            String orderId = buildOrderIdCandidate();
+            if (!orderRepository.existsByOrderId(orderId)) {
+                return orderId;
+            }
+        }
+
+        throw new IllegalStateException("Không thể sinh mã đơn hàng duy nhất");
+    }
+
+    private String buildOrderIdCandidate() {
+        String timePart = toFixedBase36(Instant.now().getEpochSecond(), ORDER_ID_TIME_PART_LENGTH);
+        String randomPart = toFixedBase36(ThreadLocalRandom.current().nextLong((long) Math.pow(36, ORDER_ID_RANDOM_PART_LENGTH)), ORDER_ID_RANDOM_PART_LENGTH);
+        return ORDER_ID_PREFIX + timePart + randomPart;
+    }
+
+    private String toFixedBase36(long value, int length) {
+        String encoded = Long.toString(value, 36).toUpperCase(Locale.ROOT);
+        if (encoded.length() > length) {
+            return encoded.substring(encoded.length() - length);
+        }
+        return "0".repeat(length - encoded.length()) + encoded;
     }
 
     private void validateRequest(CreateOrderRequest request) {

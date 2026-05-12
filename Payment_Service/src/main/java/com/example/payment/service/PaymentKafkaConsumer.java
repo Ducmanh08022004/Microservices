@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+import java.time.Instant;
+import java.util.Locale;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 /**
@@ -24,6 +26,10 @@ public class PaymentKafkaConsumer {
     private static final String ORDER_CREATED_TOPIC = "order-created";
     private static final String PAYMENT_GROUP = "payment-processor";
     private static final String STATUS_PROCESSING = "PROCESSING";
+    private static final String PAYMENT_ID_PREFIX = "PM";
+    private static final int PAYMENT_ID_TIME_PART_LENGTH = 6;
+    private static final int PAYMENT_ID_RANDOM_PART_LENGTH = 4;
+    private static final int PAYMENT_ID_MAX_GENERATION_ATTEMPTS = 20;
 
     private final PaymentRepository paymentRepository;
     private final ObjectMapper objectMapper;
@@ -63,7 +69,7 @@ public class PaymentKafkaConsumer {
 
             // Tạo bản ghi payment với status=PROCESSING
             PaymentEntity payment = new PaymentEntity();
-            payment.setPaymentId(UUID.randomUUID().toString());
+            payment.setPaymentId(generatePaymentId());
             payment.setOrderId(event.getOrderId());
             payment.setUserId(event.getUserId());
             payment.setAmount(event.getTotalPrice());
@@ -76,5 +82,30 @@ public class PaymentKafkaConsumer {
         } catch (Exception ex) {
             log.error("Lỗi khi xử lý order-created event: {}", ex.getMessage(), ex);
         }
+    }
+
+    private String generatePaymentId() {
+        for (int attempt = 0; attempt < PAYMENT_ID_MAX_GENERATION_ATTEMPTS; attempt++) {
+            String paymentId = buildPaymentIdCandidate();
+            if (!paymentRepository.existsByPaymentId(paymentId)) {
+                return paymentId;
+            }
+        }
+
+        throw new IllegalStateException("Không thể sinh mã thanh toán duy nhất");
+    }
+
+    private String buildPaymentIdCandidate() {
+        String timePart = toFixedBase36(Instant.now().getEpochSecond(), PAYMENT_ID_TIME_PART_LENGTH);
+        String randomPart = toFixedBase36(ThreadLocalRandom.current().nextLong((long) Math.pow(36, PAYMENT_ID_RANDOM_PART_LENGTH)), PAYMENT_ID_RANDOM_PART_LENGTH);
+        return PAYMENT_ID_PREFIX + timePart + randomPart;
+    }
+
+    private String toFixedBase36(long value, int length) {
+        String encoded = Long.toString(value, 36).toUpperCase(Locale.ROOT);
+        if (encoded.length() > length) {
+            return encoded.substring(encoded.length() - length);
+        }
+        return "0".repeat(length - encoded.length()) + encoded;
     }
 }

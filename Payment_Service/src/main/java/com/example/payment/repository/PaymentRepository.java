@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface PaymentRepository extends JpaRepository<PaymentEntity, Long> {
     Optional<PaymentEntity> findByOrderId(String orderId);
     boolean existsByOrderId(String orderId);
+    boolean existsByPaymentId(String paymentId);
     Optional<PaymentEntity> findByVnpTxnRef(String vnpTxnRef);
 
     @Query("SELECT p FROM PaymentEntity p WHERE p.status = :status AND p.createdAt < :cutoff")
