@@ -2,7 +2,7 @@ server:
   port: 8085
 
 app:
-  jwt-secret: ${JWT_SECRET:project_microservices_myscret_token_token_1234567789}
+  jwt-secret: ${JWT_SECRET}
 
 spring:
   application:

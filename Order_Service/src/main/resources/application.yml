@@ -28,10 +28,13 @@ server:
   port: 8081
 
 app:
-  jwt-secret: ${JWT_SECRET:project_microservices_myscret_token_token_1234567789}
+  jwt-secret: ${JWT_SECRET}
 
 inventory:
   base-url: ${INVENTORY_BASE_URL:http://localhost:3002}
+  client:
+    connect-timeout: ${INVENTORY_CLIENT_CONNECT_TIMEOUT:2s}
+    read-timeout: ${INVENTORY_CLIENT_READ_TIMEOUT:3s}
 
 logging:
   level:

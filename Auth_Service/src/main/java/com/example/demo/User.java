@@ -7,7 +7,9 @@ import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "user")
+@Table(name = "user", indexes = {
+    @Index(name = "idx_user_role_enabled", columnList = "role, is_enabled")
+})
 @Getter
 @Setter
 @AllArgsConstructor

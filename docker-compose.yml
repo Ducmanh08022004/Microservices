@@ -8,8 +8,8 @@ services:
       - ./data/mysql_auth:/var/lib/mysql  # Mount dữ liệu DB Auth ra ngoài
       - ./init/auth:/docker-entrypoint-initdb.d
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: auth_db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_AUTH_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_AUTH_DATABASE}
     ports: ["3307:3306"]
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -26,8 +26,8 @@ services:
       - ./data/mysql_kho:/var/lib/mysql # Mount dữ liệu DB Kho ra ngoài
       - ./init/inventory:/docker-entrypoint-initdb.d
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: kho_db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_KHO_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_KHO_DATABASE}
     ports: ["3308:3306"]
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -44,8 +44,8 @@ services:
       - ./data/mysql_order:/var/lib/mysql # Mount dữ liệu DB Order ra ngoài
       - ./init/order:/docker-entrypoint-initdb.d
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: order_db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ORDER_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_ORDER_DATABASE}
     ports: ["3309:3306"]
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -62,8 +62,8 @@ services:
       - ./data/mysql_payment:/var/lib/mysql
       - ./init/payment:/docker-entrypoint-initdb.d
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: payment_db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PAYMENT_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_PAYMENT_DATABASE}
     ports: ["3310:3306"]
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -93,7 +93,7 @@ services:
       - ./data/zookeeper_data:/var/lib/zookeeper/data # Lưu trạng thái Zookeeper
       - ./data/zookeeper_log:/var/lib/zookeeper/log # Lưu log Zookeeper
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -105,13 +105,13 @@ services:
     volumes:
       - ./data/kafka_data:/var/lib/kafka/data # Lưu trữ các Topic và Message Kafka
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_NUM_PARTITIONS: 3
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
+      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_INTER_BROKER_LISTENER_NAME}
+      KAFKA_NUM_PARTITIONS: ${KAFKA_NUM_PARTITIONS}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
     healthcheck:
       test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
       interval: 15s
@@ -133,14 +133,15 @@ services:
       kafka:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_auth:3306/auth_db?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: org.apache.kafka.common.serialization.StringSerializer
-      SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: org.springframework.kafka.support.serializer.JsonSerializer
-      APP_ADMIN_SUPPORT_EMAIL: truongducmanh08022004@gmail.com
-      JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2
+      SPRING_DATASOURCE_URL: ${AUTH_SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${AUTH_SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${AUTH_SPRING_DATASOURCE_PASSWORD}
+      INVENTORY_BASE_URL: ${INVENTORY_BASE_URL}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+      SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: ${SPRING_KAFKA_PRODUCER_KEY_SERIALIZER}
+      SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: ${SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER}
+      APP_ADMIN_SUPPORT_EMAIL: ${APP_ADMIN_SUPPORT_EMAIL}
+      JAVA_TOOL_OPTIONS: ${AUTH_JAVA_TOOL_OPTIONS}
     cpus: "1.0"
 
   notification-service:
@@ -153,14 +154,16 @@ services:
       kafka:
         condition: service_healthy
     environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_MAIL_HOST: smtp.gmail.com
-      SPRING_MAIL_PORT: 587
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+      SPRING_KAFKA_CONSUMER_GROUP_ID: ${NOTIFICATION_KAFKA_CONSUMER_GROUP_ID}
+      SPRING_KAFKA_LISTENER_CONCURRENCY: ${NOTIFICATION_KAFKA_LISTENER_CONCURRENCY}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT}
       SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
       SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
-      JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=1 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=1
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE}
+      JAVA_TOOL_OPTIONS: ${NOTIFICATION_JAVA_TOOL_OPTIONS}
     cpus: "0.5"
 
   inventory-service:
@@ -179,13 +182,13 @@ services:
       kafka:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_kho:3306/kho_db?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      REDIS_HOST: redis_kho
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      CLOUDINARY_URL: cloudinary://732429112868935:wpFskhgTDxq7XgLMr2gdk5MOitk@dlw2pfjvt
-      JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2
+      SPRING_DATASOURCE_URL: ${INVENTORY_SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${INVENTORY_SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${INVENTORY_SPRING_DATASOURCE_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+      CLOUDINARY_URL: ${CLOUDINARY_URL}
+      JAVA_TOOL_OPTIONS: ${INVENTORY_JAVA_TOOL_OPTIONS}
     cpus: "1.0"
 
   order-service:
@@ -204,12 +207,12 @@ services:
       kafka:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_order:3306/order_db?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      INVENTORY_BASE_URL: http://inventory-service:8080
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2
+      SPRING_DATASOURCE_URL: ${ORDER_SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${ORDER_SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${ORDER_SPRING_DATASOURCE_PASSWORD}
+      INVENTORY_BASE_URL: ${INVENTORY_BASE_URL}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+      JAVA_TOOL_OPTIONS: ${ORDER_JAVA_TOOL_OPTIONS}
     cpus: "1.0"
 
   payment-service:
@@ -226,14 +229,14 @@ services:
       kafka:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_payment:3306/payment_db?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      VNPAY_TMN_CODE: ${VNPAY_TMN_CODE:-C183R699}
-      VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET:-45Y0ZGYAPYLCMIQYYAQM6W103859H9KY}
-      VNPAY_RETURN_URL: http://localhost:3000/payment/vnpay-return
-      JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=1 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=1
+      SPRING_DATASOURCE_URL: ${PAYMENT_SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${PAYMENT_SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${PAYMENT_SPRING_DATASOURCE_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+      VNPAY_TMN_CODE: ${VNPAY_TMN_CODE}
+      VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET}
+      VNPAY_RETURN_URL: ${VNPAY_RETURN_URL}
+      JAVA_TOOL_OPTIONS: ${PAYMENT_JAVA_TOOL_OPTIONS}
     cpus: "0.75"
 
   api-gateway:
@@ -254,8 +257,8 @@ services:
       payment-service:
         condition: service_started
     environment:
-      JWT_SECRET: project_microservices_myscret_token_token_1234567789
-      JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=1 -XX:MaxRAMPercentage=75 -Djava.util.concurrent.ForkJoinPool.common.parallelism=1
+      JWT_SECRET: ${JWT_SECRET}
+      JAVA_TOOL_OPTIONS: ${GATEWAY_JAVA_TOOL_OPTIONS}
     cpus: "0.5"
 
   frontend:

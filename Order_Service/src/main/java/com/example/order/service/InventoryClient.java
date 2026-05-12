@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClientException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,7 +35,7 @@ public class InventoryClient {
                     InventoryProductResponse.class
             );
             return Optional.ofNullable(response.getBody());
-        } catch (Exception ex) {
+        } catch (RestClientException ex) {
             return Optional.empty();
         }
     }
@@ -49,7 +50,7 @@ public class InventoryClient {
                     InventoryCheckStockResponse.class
             );
             return Optional.ofNullable(response.getBody());
-        } catch (Exception ex) {
+        } catch (RestClientException ex) {
             return Optional.empty();
         }
     }
@@ -79,7 +80,7 @@ public class InventoryClient {
                         .collect(Collectors.toList());
             }
             return Collections.emptyList();
-        } catch (Exception ex) {
+        } catch (RestClientException ex) {
             return Collections.emptyList();
         }
     }

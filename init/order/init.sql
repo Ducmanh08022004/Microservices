@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE INDEX idx_status ON orders(status);
 CREATE INDEX idx_user_created ON orders(user_id, created_at DESC);
 CREATE INDEX idx_user_status_created ON orders(user_id, status, created_at);
+CREATE INDEX idx_order_status_created ON orders(status, created_at);
 
 CREATE TABLE IF NOT EXISTS coupons (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

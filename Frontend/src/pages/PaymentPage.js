@@ -75,6 +75,7 @@ function PaymentPage() {
     const navigate = useNavigate();
 
     const [payment, setPayment] = useState(null);
+    const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState('');
@@ -100,10 +101,22 @@ function PaymentPage() {
         }
     }, [orderId, token]);
 
+    const fetchOrder = useCallback(async () => {
+        try {
+            const res = await axios.get(`${API_GATEWAY}/api/orders/${orderId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setOrder(res.data);
+        } catch (err) {
+            setOrder(null);
+        }
+    }, [orderId, token]);
+
     // Tải thông tin thanh toán lần đầu
     useEffect(() => {
         fetchPayment();
-    }, [fetchPayment]);
+        fetchOrder();
+    }, [fetchPayment, fetchOrder]);
 
     // Auto-refresh mỗi 3 giây nếu vẫn đang PROCESSING
     useEffect(() => {
@@ -221,7 +234,9 @@ function PaymentPage() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
                                 <div>
                                     <div style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 6 }}>Tóm tắt thanh toán</div>
-                                    <h2 style={{ fontSize: '1.45rem', marginBottom: 8 }}>Đơn hàng #{orderId}</h2>
+                                    <h2 style={{ fontSize: '1.45rem', marginBottom: 8 }}>
+                                        {order?.product_name || order?.productName || 'Đơn hàng'}
+                                    </h2>
                                     <p style={{ color: 'var(--text-muted)', margin: 0, lineHeight: 1.6 }}>
                                         {getStatusTone(payment.status)}
                                     </p>

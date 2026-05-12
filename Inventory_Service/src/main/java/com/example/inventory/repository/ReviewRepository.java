@@ -1,6 +1,7 @@
 package com.example.inventory.repository;
 
 import com.example.inventory.model.Review;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,4 +18,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     
     @Query("SELECT COUNT(r) FROM Review r WHERE r.productId = :productId")
     Long countByProductId(@Param("productId") String productId);
+
+    @Modifying
+    @Query("update Review r set r.username = :displayName where r.userId = :userId")
+    int updateUsernameByUserId(@Param("userId") Long userId, @Param("displayName") String displayName);
 }

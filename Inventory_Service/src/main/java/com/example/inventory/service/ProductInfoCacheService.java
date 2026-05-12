@@ -43,7 +43,7 @@ public class ProductInfoCacheService {
         try {
             return Optional.of(objectMapper.readValue(cachedInfo, ProductInfoCache.class));
         } catch (JsonProcessingException ex) {
-            throw new IllegalStateException("Du lieu info cache khong hop le", ex);
+            return Optional.empty();
         }
     }
 

@@ -32,8 +32,8 @@ server:
   port: 8080
 
 app:
-  jwt-secret: ${JWT_SECRET:project_microservices_myscret_token_token_1234567789}
-  cloudinary-url: ${CLOUDINARY_URL:cloudinary://732429112868935:wpFskhgTDxq7XgLMr2gdk5MOitk@dlw2pfjvt}
+  jwt-secret: ${JWT_SECRET}
+  cloudinary-url: ${CLOUDINARY_URL}
 
 logging:
   level:

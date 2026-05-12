@@ -14,5 +14,6 @@ CREATE TABLE IF NOT EXISTS payments (
     created_at  DATETIME     NOT NULL,
     updated_at  DATETIME     NOT NULL,
     INDEX idx_order_id (order_id),
-    UNIQUE INDEX idx_vnp_txn_ref (vnp_txn_ref)
+    UNIQUE INDEX idx_vnp_txn_ref (vnp_txn_ref),
+    INDEX idx_status_created_at (status, created_at)
 );

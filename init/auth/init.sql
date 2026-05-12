@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS user (
     UNIQUE KEY idx_email (email)
 );
 
+CREATE INDEX idx_user_role_enabled ON user(role, is_enabled);
+
 -- Thêm user Admin mặc định nếu chưa có (mật khẩu là 'admin' đã được mã hóa BCrypt hoặc dùng plain if not using security, but project uses BCrypt)
 -- Lưu ý: Mật khẩu '$2a$10$8.UnVuG9HHgffUDAlk8q6uy5akLPNndzqBzv6v8.6bUe6n9jW5S.' là 'admin123'
 INSERT IGNORE INTO user (username, password, role, email, is_enabled, display_name) 

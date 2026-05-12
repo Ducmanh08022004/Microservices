@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Map;
@@ -35,6 +36,10 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final NotificationEmailPublisher notificationEmailPublisher;
+    private final RestTemplate restTemplate;
+
+    @org.springframework.beans.factory.annotation.Value("${inventory.base-url:http://localhost:8080}")
+    private String inventoryBaseUrl;
 
     /**
      * Đăng nhập người dùng và trả JWT token.
@@ -334,6 +339,8 @@ public class AuthController {
                 }
                 userRepository.save(user);
 
+                syncReviewDisplayName(user.getId(), user.getDisplayName());
+
                 String newToken = jwtService.generateToken(user);
                 String newRefreshToken = jwtService.generateRefreshToken(user);
 
@@ -348,5 +355,20 @@ public class AuthController {
                 return ResponseEntity.internalServerError().body(Map.of("error", "Lỗi lưu dữ liệu: " + e.getMessage()));
             }
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    private void syncReviewDisplayName(int userId, String displayName) {
+        if (displayName == null || displayName.isBlank()) {
+            return;
+        }
+
+        try {
+            restTemplate.put(
+                    inventoryBaseUrl + "/internal/reviews/display-name",
+                    Map.of("userId", String.valueOf(userId), "displayName", displayName)
+            );
+        } catch (Exception ignored) {
+            // Profile update still succeeds even if review sync is temporarily unavailable.
+        }
     }
 }

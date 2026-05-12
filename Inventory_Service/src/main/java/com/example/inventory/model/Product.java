@@ -6,7 +6,11 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "products")
+@Table(name = "products", indexes = {
+    @Index(name = "idx_product_category", columnList = "category_id"),
+    @Index(name = "idx_product_status", columnList = "status"),
+    @Index(name = "idx_product_created_at", columnList = "createdAt")
+})
 /**
  * Entity biểu diễn sản phẩm trong kho.
  */

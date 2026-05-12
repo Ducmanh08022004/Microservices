@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 CREATE INDEX idx_product_stock ON products(product_id, stock);
+CREATE INDEX idx_product_category ON products(category_id);
+CREATE INDEX idx_product_status_created ON products(status, createdAt);
 
 -- Thêm một số danh mục mẫu
 INSERT IGNORE INTO categories (name, description) VALUES ('Điện thoại', 'Các dòng smartphone mới nhất');
