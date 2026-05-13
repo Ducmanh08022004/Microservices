@@ -201,6 +201,8 @@ public class OrderApplicationService {
         response.setTotalPrice(order.getTotalPrice());
         response.setStatus(order.getStatus());
         response.setCreatedAt(order.getCreatedAt());
+        response.setUserId(order.getUserId());
+        response.setUserEmail(order.getUserEmail());
 
         return response;
     }

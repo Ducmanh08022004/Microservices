@@ -36,10 +36,10 @@ const getStatusTone = (status) => {
         return 'Đơn đang chờ thanh toán. Nhấn nút "Thanh toán qua VNPay" để chuyển sang cổng thanh toán.';
     }
     if (status === 'PAID') {
-        return 'Thanh toán đã được ghi nhận. Hệ thống sẽ tiếp tục xử lý tồn kho và đồng bộ trạng thái đơn hàng.';
+        return 'Thanh toán đã được ghi nhận.';
     }
     if (status === 'PAYMENT_FAILED') {
-        return 'Thanh toán không thành công. Đơn hàng đã được đánh dấu thất bại và kho hàng không bị trừ.';
+        return 'Thanh toán không thành công.';
     }
     return 'Trạng thái thanh toán hiện tại của đơn hàng.';
 };

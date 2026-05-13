@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
 import { Camera, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import CustomSelect from '../components/CustomSelect';
 
 function AddProduct() {
     const { id } = useParams();
@@ -169,17 +170,17 @@ function AddProduct() {
                     </div>
                     <div className="form-field">
                         <label>Danh mục:</label>
-                        <select className="input"
+                        <CustomSelect 
+                            options={[
+                                { value: '', label: '-- Chọn danh mục --' },
+                                ...categories.map(cat => ({ value: cat.id, label: cat.name }))
+                            ]}
                             value={formData.categoryId || ''}
                             onChange={(e) => setFormData({
                                 ...formData, 
                                 categoryId: e.target.value ? Number(e.target.value) : null
-                            })}>
-                            <option value="">-- Chọn danh mục --</option>
-                            {categories.map(cat => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
-                            ))}
-                        </select>
+                            })}
+                        />
                     </div>
                     <div className="form-field" style={{ gridColumn: '1 / -1' }}>
                         <label>Mô tả sản phẩm:</label>

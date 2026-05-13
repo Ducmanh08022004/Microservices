@@ -41,7 +41,7 @@ function Dashboard() {
     const { toasts, show } = useToast();
     const [copied, setCopied] = useState(false);
     const [dailyCoupon, setDailyCoupon] = useState(null);
-    const [showCoupon, setShowCoupon] = useState(true);
+    const [showCoupon, setShowCoupon] = useState(false);
     const categoryChips = categories;
 
     useEffect(() => {
@@ -441,6 +441,6 @@ function Dashboard() {
             </div>
         </div>
     );
-}
+}   
 
 export default Dashboard;

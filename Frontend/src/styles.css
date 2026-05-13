@@ -167,6 +167,67 @@ h4 {
   box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.16);
 }
 
+/* Custom Select styling */
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.custom-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.custom-select-trigger.is-open {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.16);
+}
+
+.custom-select-icon {
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.custom-select-icon.open {
+  transform: rotate(180deg);
+}
+
+.custom-select-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid rgba(15, 118, 110, 0.15);
+  box-shadow: 0 10px 30px rgba(17, 39, 70, 0.15);
+  z-index: 100;
+  overflow: hidden;
+  animation: rise 0.2s ease;
+}
+
+.custom-select-option {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text-strong);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.custom-select-option:hover {
+  background: rgba(15, 118, 110, 0.06);
+  color: var(--brand-strong);
+}
+
+.custom-select-option.selected {
+  background: rgba(15, 118, 110, 0.1);
+  color: var(--brand-strong);
+  font-weight: 600;
+}
+
 .field-label {
   display: block;
   margin-bottom: 6px;

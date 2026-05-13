@@ -15,6 +15,7 @@ import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
 
 import AdminPanel from './pages/AdminPanel';
+import AdminOrderDetail from './pages/AdminOrderDetail';
 import Profile from './pages/Profile';
 import CategoryEdit from './pages/CategoryEdit';
 import CartPage from './pages/CartPage';
@@ -60,6 +61,7 @@ function AppRoutes() {
         <Route path="/admin/products"            element={<PrivateRoute requiredRole="ADMIN"><AdminPanel /></PrivateRoute>} />
         <Route path="/admin/categories"          element={<PrivateRoute requiredRole="ADMIN"><AdminPanel /></PrivateRoute>} />
         <Route path="/admin/orders"              element={<PrivateRoute requiredRole="ADMIN"><AdminPanel /></PrivateRoute>} />
+        <Route path="/admin/orders/:orderId"     element={<PrivateRoute requiredRole="ADMIN"><AdminOrderDetail /></PrivateRoute>} />
         <Route path="/admin/users"               element={<PrivateRoute requiredRole="ADMIN"><AdminPanel /></PrivateRoute>} />
         <Route path="/admin/coupons"             element={<PrivateRoute requiredRole="ADMIN"><AdminPanel /></PrivateRoute>} />
         <Route path="/admin/reports"             element={<PrivateRoute requiredRole="ADMIN"><AdminPanel /></PrivateRoute>} />

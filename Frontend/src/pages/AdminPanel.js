@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Search, Info, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
+import CustomSelect from '../components/CustomSelect';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ff6b6b'];
 
@@ -35,6 +36,14 @@ function normalizePaginationPayload(data) {
         totalPages: totalPagesValue
     };
 }
+
+const ORDER_STATUSES = {
+    PROCESSING: 'Đang xử lý',
+    PENDING_PAYMENT: 'Chờ thanh toán',
+    PAID: 'Đã thanh toán',
+    CONFIRMED: 'Đã xác nhận',
+    CANCELLED: 'Đã hủy'
+};
 
 const AdminPanel = () => {
     const [data, setData] = useState([]);
@@ -368,16 +377,28 @@ const AdminPanel = () => {
                         
                         {activeTab === 'users' && (
                             <>
-                                <select className="input" style={{ width: 140 }} value={userFilters.role} onChange={e => setUserFilters({...userFilters, role: e.target.value})}>
-                                    <option value="">Tất cả Role</option>
-                                    <option value="USER">USER</option>
-                                    <option value="ADMIN">ADMIN</option>
-                                </select>
-                                <select className="input" style={{ width: 140 }} value={userFilters.status} onChange={e => setUserFilters({...userFilters, status: e.target.value})}>
-                                    <option value="">Tất cả Trạng thái</option>
-                                    <option value="active">Hoạt động</option>
-                                    <option value="locked">Đã khóa</option>
-                                </select>
+                                <div style={{ width: 140 }}>
+                                    <CustomSelect 
+                                        options={[
+                                            {value: '', label: 'Tất cả Role'},
+                                            {value: 'USER', label: 'USER'},
+                                            {value: 'ADMIN', label: 'ADMIN'}
+                                        ]}
+                                        value={userFilters.role} 
+                                        onChange={e => setUserFilters({...userFilters, role: e.target.value})}
+                                    />
+                                </div>
+                                <div style={{ width: 140 }}>
+                                    <CustomSelect 
+                                        options={[
+                                            {value: '', label: 'Tất cả Trạng thái'},
+                                            {value: 'active', label: 'Hoạt động'},
+                                            {value: 'locked', label: 'Đã khóa'}
+                                        ]}
+                                        value={userFilters.status} 
+                                        onChange={e => setUserFilters({...userFilters, status: e.target.value})}
+                                    />
+                                </div>
                             </>
                         )}
                     </div>
@@ -509,8 +530,8 @@ const AdminPanel = () => {
                                                 {activeTab === 'orders' && <>
                                                     <td style={{ padding: '8px 12px' }}>{item.order_id?.substring(0,8)}...</td>
                                                     <td style={{ padding: '8px 12px' }}>{item.total_price?.toLocaleString()} đ</td>
-                                                    <td style={{ padding: '8px 12px' }}><span className="badge" style={{ padding: '3px 8px', fontSize: '0.75rem' }}>{item.status}</span></td>
-                                                    <td style={{ padding: '8px 12px' }}><button className="btn btn-ghost" style={{ padding: '6px 10px', fontSize: '0.85rem' }} onClick={() => navigate(`/payment/${item.order_id}`)}>Chi tiết</button></td>
+                                                    <td style={{ padding: '8px 12px' }}><span className="badge" style={{ padding: '3px 8px', fontSize: '0.75rem' }}>{ORDER_STATUSES[item.status] || item.status}</span></td>
+                                                    <td style={{ padding: '8px 12px' }}><button className="btn btn-ghost" style={{ padding: '6px 10px', fontSize: '0.85rem' }} onClick={() => navigate(`/admin/orders/${item.order_id}`)}>Chi tiết</button></td>
                                                 </>}
                                                 {activeTab === 'users' && <>
                                                     <td style={{ padding: '8px 12px' }}>{item.username}</td>
@@ -571,19 +592,25 @@ const AdminPanel = () => {
                                 </div>
                                 <div className="form-field">
                                     <label>Danh mục áp dụng</label>
-                                    <select className="input" value={newCoupon.categoryName} onChange={e => setNewCoupon({ ...newCoupon, categoryName: e.target.value })}>
-                                        <option value="">Tất cả danh mục</option>
-                                        {couponCategories.map(cat => (
-                                            <option key={cat.id} value={cat.name}>{cat.name}</option>
-                                        ))}
-                                    </select>
+                                    <CustomSelect 
+                                        options={[
+                                            {value: '', label: 'Tất cả danh mục'},
+                                            ...couponCategories.map(cat => ({ value: cat.name, label: cat.name }))
+                                        ]}
+                                        value={newCoupon.categoryName} 
+                                        onChange={e => setNewCoupon({ ...newCoupon, categoryName: e.target.value })}
+                                    />
                                 </div>
                                 <div className="form-field">
                                     <label>Loại Giảm Giá</label>
-                                    <select className="input" value={newCoupon.type} onChange={e => setNewCoupon({...newCoupon, type: e.target.value})}>
-                                        <option value="PERCENT">Giảm theo %</option>
-                                        <option value="FIXED">Giảm trực tiếp (đ)</option>
-                                    </select>
+                                    <CustomSelect 
+                                        options={[
+                                            {value: 'PERCENT', label: 'Giảm theo %'},
+                                            {value: 'FIXED', label: 'Giảm trực tiếp (đ)'}
+                                        ]}
+                                        value={newCoupon.type} 
+                                        onChange={e => setNewCoupon({...newCoupon, type: e.target.value})}
+                                    />
                                 </div>
                                 <div className="form-field">
                                     <label>Giá trị (số % hoặc số tiền)</label>

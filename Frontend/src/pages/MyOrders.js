@@ -103,10 +103,8 @@ function MyOrders() {
                                 className="card"
                                 style={{ padding: '18px 20px', cursor: 'pointer', transition: 'all 0.2s' }}
                                 onClick={() => {
-                                    // Nếu đang xử lý thanh toán → redirect sang PaymentPage
-                                    if (PAYMENT_ACTIONABLE_STATUSES.has(order.status)) {
-                                        navigate(`/payment/${order.order_id}`);
-                                    }
+                                    // Chuyển sang trang chi tiết đơn hàng (PaymentPage)
+                                    navigate(`/payment/${order.order_id}`);
                                 }}
                             >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
@@ -143,9 +141,13 @@ function MyOrders() {
                                             {order.total_price?.toLocaleString('vi-VN')} VNĐ
                                         </p>
                                         <StatusBadge status={order.status} />
-                                        {PAYMENT_ACTIONABLE_STATUSES.has(order.status) && (
+                                        {PAYMENT_ACTIONABLE_STATUSES.has(order.status) ? (
                                             <p style={{ margin: '6px 0 0', fontSize: 11, color: '#f59e0b' }}>
                                                 Nhấn để thanh toán →
+                                            </p>
+                                        ) : (
+                                            <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--brand)' }}>
+                                                Xem chi tiết →
                                             </p>
                                         )}
                                         {order.status === 'PROCESSING' && (
