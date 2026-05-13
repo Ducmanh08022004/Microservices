@@ -4,6 +4,7 @@ import { API_GATEWAY } from '../config';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Search, Info, Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ff6b6b'];
 
@@ -206,7 +207,7 @@ const AdminPanel = () => {
             await axios.put(`${API_GATEWAY}/auth/admin/users/${id}/toggle-status`, {}, { headers: { 'Authorization': `Bearer ${token}` } });
             fetchData(page);
         } catch (err) {
-            alert("Lỗi khi thay đổi trạng thái user.");
+            toast.error("Lỗi khi thay đổi trạng thái user.");
         }
     };
 
@@ -241,7 +242,7 @@ const AdminPanel = () => {
             });
             fetchData(page);
         } catch (err) {
-            alert("Lỗi tạo Coupon! " + (err.response?.data?.error || ''));
+            toast.error("Lỗi tạo Coupon! " + (err.response?.data?.error || ''));
         }
     };
 

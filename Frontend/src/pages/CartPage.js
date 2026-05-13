@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
 import { ShoppingCart, ShoppingBag, Trash2, Minus, Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 function CartPage() {
     const { cart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
@@ -14,9 +15,9 @@ function CartPage() {
 
     const applyCoupon = async () => {
         const token = localStorage.getItem('accessToken');
-        if (!token) return alert('Vui lòng đăng nhập!');
+        if (!token) return toast.error('Vui lòng đăng nhập!');
         if (cart.length !== 1) {
-            return alert('Hiện tại mã giảm giá chỉ áp dụng cho giỏ có 1 sản phẩm khi thanh toán.');
+            return toast.error('Hiện tại mã giảm giá chỉ áp dụng cho giỏ có 1 sản phẩm khi thanh toán.');
         }
         try {
             const res = await axios.post(`${API_GATEWAY}/api/coupons/validate`, {
@@ -24,9 +25,9 @@ function CartPage() {
                 order_value: totalPrice
             }, { headers: { 'Authorization': `Bearer ${token}` }});
             setCouponDiscount(res.data.discount_amount);
-            alert('Áp dụng mã giảm giá thành công!');
+            toast.success('Áp dụng mã giảm giá thành công!');
         } catch (err) {
-            alert(err.response?.data?.error || 'Mã không hợp lệ');
+            toast.error(err.response?.data?.error || 'Mã không hợp lệ');
             setCouponDiscount(0);
         }
     };
@@ -34,7 +35,7 @@ function CartPage() {
     const handleCheckout = async () => {
         const token = localStorage.getItem('accessToken');
         if (!token) {
-            alert('Vui lòng đăng nhập để thanh toán!');
+            toast.error('Vui lòng đăng nhập để thanh toán!');
             navigate('/login');
             return;
         }
@@ -53,11 +54,11 @@ function CartPage() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
-            alert('Đã tạo đơn hàng thành công!');
+            toast.success('Đã tạo đơn hàng thành công!');
             clearCart();
             navigate('/my-orders');
         } catch (error) {
-            alert(error?.response?.data?.error || 'Có lỗi xảy ra khi tạo đơn hàng');
+            toast.error(error?.response?.data?.error || 'Có lỗi xảy ra khi tạo đơn hàng');
         } finally {
             setCheckingOut(false);
         }

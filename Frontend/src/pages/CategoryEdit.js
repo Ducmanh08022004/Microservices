@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
+import toast from 'react-hot-toast';
 
 function CategoryEdit() {
     const { id } = useParams();
@@ -25,7 +26,7 @@ function CategoryEdit() {
             setLoading(false);
         })
         .catch(err => {
-            alert("Không thể tải danh mục: " + err.message);
+            toast.error("Không thể tải danh mục: " + err.message);
             navigate('/admin');
         });
     }, [id, token, navigate]);
@@ -36,10 +37,10 @@ function CategoryEdit() {
             await axios.put(`${API_GATEWAY}/api/categories/${id}`, formData, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            alert("Cập nhật danh mục thành công!");
+            toast.success("Cập nhật danh mục thành công!");
             navigate('/admin');
         } catch (error) {
-            alert("Lỗi: " + (error.response?.data?.error || error.message));
+            toast.error("Lỗi: " + (error.response?.data?.error || error.message));
         }
     };
 

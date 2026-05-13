@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import './api'; // Global interceptor
+import { Toaster } from 'react-hot-toast';
 import Login from './components/Login';
 import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
@@ -20,6 +21,16 @@ import CartPage from './pages/CartPage';
 import WishlistPage from './pages/WishlistPage';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
+
+function ScrollToTop() {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname, location.search, location.hash]);
+
+  return null;
+}
 
 function AppRoutes() {
   const location = useLocation();
@@ -65,6 +76,8 @@ function AppRoutes() {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
+      <Toaster position="top-right" toastOptions={{ duration: 2500 }} />
       <CartProvider>
         <WishlistProvider>
           <AppRoutes />

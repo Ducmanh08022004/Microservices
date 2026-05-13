@@ -4,6 +4,7 @@ import axios from 'axios';
 import { API_GATEWAY } from '../config';
 import { useCart } from '../context/CartContext';
 import { Star, ShoppingBag, Gift, ShoppingCart } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 function getUserId() {
     try {
@@ -80,7 +81,7 @@ function Product_Detail() {
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('accessToken');
-        if (!token) return alert('Vui lòng đăng nhập để đánh giá!');
+        if (!token) return toast.error('Vui lòng đăng nhập để đánh giá!');
         
         setReviewSubmitting(true);
         try {
@@ -88,13 +89,13 @@ function Product_Detail() {
                 await axios.put(`${API_GATEWAY}/api/products/${id}/reviews`, reviewForm, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                alert('Cập nhật đánh giá thành công!');
+                toast.success('Cập nhật đánh giá thành công!');
                 setIsEditingReview(false);
             } else {
                 await axios.post(`${API_GATEWAY}/api/products/${id}/reviews`, reviewForm, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                alert('Đánh giá thành công!');
+                toast.success('Đánh giá thành công!');
             }
             setReviewForm({ rating: 5, comment: '' });
             
@@ -103,7 +104,7 @@ function Product_Detail() {
             const prodRes = await axios.get(`${API_GATEWAY}/api/products/${id}`, { headers: { 'Authorization': `Bearer ${token}` }});
             setProduct(prodRes.data);
         } catch (error) {
-            alert(error?.response?.data?.error || 'Lỗi gửi đánh giá');
+            toast.error(error?.response?.data?.error || 'Lỗi gửi đánh giá');
         } finally {
             setReviewSubmitting(false);
         }
@@ -111,7 +112,7 @@ function Product_Detail() {
 
     const validateCoupon = async () => {
         const token = localStorage.getItem('accessToken');
-        if (!token) return alert('Vui lòng đăng nhập!');
+        if (!token) return toast.error('Vui lòng đăng nhập!');
         const orderValue = (product.discount_price || product.price) * quantity;
         
         try {
@@ -121,9 +122,9 @@ function Product_Detail() {
                 user_id: getUserId()
             }, { headers: { 'Authorization': `Bearer ${token}` } });
             setCouponDiscount(res.data.discount_amount);
-            alert('Áp dụng mã thành công!');
+            toast.success('Áp dụng mã thành công!');
         } catch (error) {
-            alert(error?.response?.data?.error || 'Mã không hợp lệ');
+            toast.error(error?.response?.data?.error || 'Mã không hợp lệ');
             setCouponDiscount(0);
         }
     };
@@ -145,11 +146,11 @@ function Product_Detail() {
                 // Redirect sang trang thanh toán
                 navigate(`/payment/${orderId}`);
             } else {
-                alert("Tạo đơn thành công nhưng không nhận được mã đơn.");
+                toast.error("Tạo đơn thành công nhưng không nhận được mã đơn.");
             }
         } catch (error) {
             const backendError = error?.response?.data?.error;
-            alert(backendError || "Lỗi tạo đơn. Hãy kiểm tra Order_Service.");
+            toast.error(backendError || "Lỗi tạo đơn. Hãy kiểm tra Order_Service.");
         }
     };
 
@@ -346,7 +347,7 @@ function Product_Detail() {
                     className="btn btn-block"
                     onClick={() => {
                         addToCart(product, Number(quantity));
-                        alert(`Đã thêm ${quantity} x ${product.name} vào giỏ!`);
+                        toast.success(`Đã thêm ${quantity} x ${product.name} vào giỏ!`);
                     }}
                     style={{ 
                     background: '#1d1d1f', // Đen xám sâu

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { login } from './api';
+import toast from 'react-hot-toast';
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -14,7 +15,7 @@ function Login() {
             // LƯU TOKEN VÀO LOCALSTORAGE
             localStorage.setItem('accessToken', token);
             
-            alert("Đăng nhập thành công!");
+            toast.success("Đăng nhập thành công!");
             window.location.href = "/dashboard"; // Chuyển sang trang quản lý kho
         } catch (err) {
             setError("Sai tài khoản hoặc mật khẩu!");

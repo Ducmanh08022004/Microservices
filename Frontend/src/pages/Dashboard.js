@@ -334,8 +334,13 @@ function Dashboard() {
                             onClick={() => navigate(`/product/${p.product_id}`)}
                         >
                             <div className="product-card__image">
-                                <div className="product-card__wishlist" 
+                                <button
+                                     type="button"
+                                     className="product-card__wishlist"
+                                     onPointerDown={(e) => e.stopPropagation()}
+                                     onMouseDown={(e) => e.stopPropagation()}
                                      onClick={(e) => {
+                                         e.preventDefault();
                                          e.stopPropagation();
                                          isWishlisted(p.product_id)
                                              ? removeFromWishlist(p.product_id)
@@ -346,10 +351,11 @@ function Dashboard() {
                                          background: 'rgba(255,255,255,0.85)', padding: '5px', 
                                          borderRadius: '50%', cursor: 'pointer', zIndex: 10,
                                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                         display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28
+                                         display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28,
+                                         border: 'none'
                                      }}>
-                                    <Heart size={16} fill={isWishlisted(p.product_id) ? 'var(--danger)' : 'none'} color={isWishlisted(p.product_id) ? 'var(--danger)' : 'var(--text-main)'} />
-                                </div>
+                                    <Heart size={16} fill={isWishlisted(p.product_id) ? 'var(--danger)' : 'none'} color={'var(--danger)'} />
+                                </button>
                                 {p.image_url ? (
                                     <img src={p.image_url} alt={p.name} />
                                 ) : (

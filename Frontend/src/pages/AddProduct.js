@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
 import { Camera, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 function AddProduct() {
     const { id } = useParams();
@@ -48,7 +49,7 @@ function AddProduct() {
                 setLoadingData(false);
             })
             .catch(err => {
-                alert("Không thể tải sản phẩm: " + err.message);
+                toast.error("Không thể tải sản phẩm: " + err.message);
                 navigate('/admin');
             });
         }
@@ -82,7 +83,7 @@ function AddProduct() {
             });
             setFormData({ ...formData, image_url: res.data.url });
         } catch (error) {
-            alert("Lỗi upload ảnh: " + (error.response?.data?.error || error.message));
+            toast.error("Lỗi upload ảnh: " + (error.response?.data?.error || error.message));
         } finally {
             setUploadingImage(false);
         }
@@ -96,16 +97,16 @@ function AddProduct() {
                 await axios.put(`${API_GATEWAY}/admin/products/full/${id}`, formData, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                alert("Cập nhật sản phẩm thành công!");
+                toast.success("Cập nhật sản phẩm thành công!");
             } else {
                 await axios.post(`${API_GATEWAY}/admin/products`, formData, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                alert("Thêm sản phẩm thành công!");
+                toast.success("Thêm sản phẩm thành công!");
             }
             navigate('/admin'); 
         } catch (error) {
-            alert("Lỗi: " + (error.response?.data?.error || error.message));
+            toast.error("Lỗi: " + (error.response?.data?.error || error.message));
         }
     };
 

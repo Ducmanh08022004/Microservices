@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 function Register() {
   const [form, setForm] = useState({ username: '', password: '', email: '' });
@@ -19,7 +20,7 @@ function Register() {
     setError('');
     try {
       await axios.post(`${API_GATEWAY}/auth/register`, form);
-      alert('Tạo tài khoản thành công!Chào mừng bạn gia nhập hệ thống.');
+      toast.success('Tạo tài khoản thành công! Chào mừng bạn gia nhập hệ thống.');
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.message || 'Đăng ký thất bại. Tên đăng nhập hoặc email có thể đã tồn tại.');

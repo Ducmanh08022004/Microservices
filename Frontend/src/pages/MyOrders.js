@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
 import { RefreshCw, CreditCard, CheckCircle2, XCircle, AlertTriangle, Ban, Package, ShoppingCart, ShoppingBag, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const STATUS_CONFIG = {
     PROCESSING:      { label: 'Đang xử lý',     color: 'var(--status-processing)', bg: 'var(--status-processing-bg)',  icon: <RefreshCw size={14} /> },
@@ -168,7 +169,7 @@ function MyOrders() {
                                                                 ));
                                                                 setCancellingId(null);
                                                             } catch (err) {
-                                                                alert(err?.response?.data?.error || 'Lỗi hủy đơn!');
+                                                                toast.error(err?.response?.data?.error || 'Lỗi hủy đơn!');
                                                                 setCancellingId(null);
                                                             }
                                                         }}>
