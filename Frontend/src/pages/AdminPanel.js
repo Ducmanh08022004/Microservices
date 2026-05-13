@@ -409,19 +409,19 @@ const AdminPanel = () => {
                     {!loading && activeTab === 'reports' ? (
                         <div className="reports-area">
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 16 }}>
-                                <div className="card" style={{ padding: '12px 16px', background: '#f0f9ff', borderLeft: '4px solid #0ea5e9' }}>
+                                <div className="card" style={{ padding: '12px 16px', background: 'var(--status-paid-bg)', borderLeft: '4px solid #0ea5e9' }}>
                                     <small>Doanh thu Ngày</small>
                                     <h3 style={{ margin: '5px 0' }}>{stats.daily?.toLocaleString()} đ</h3>
                                 </div>
-                                <div className="card" style={{ padding: 20, background: '#f0fdf4', borderLeft: '4px solid #22c55e' }}>
+                                <div className="card" style={{ padding: 20, background: 'var(--status-confirmed-bg)', borderLeft: '4px solid #22c55e' }}>
                                     <small>Doanh thu Tuần</small>
                                     <h3 style={{ margin: '5px 0' }}>{stats.weekly?.toLocaleString()} đ</h3>
                                 </div>
-                                <div className="card" style={{ padding: 20, background: '#fef2f2', borderLeft: '4px solid #ef4444' }}>
+                                <div className="card" style={{ padding: 20, background: 'var(--status-failed-bg)', borderLeft: '4px solid #ef4444' }}>
                                     <small>Doanh thu Tháng</small>
                                     <h3 style={{ margin: '5px 0' }}>{stats.monthly?.toLocaleString()} đ</h3>
                                 </div>
-                                <div className="card" style={{ padding: 20, background: '#faf5ff', borderLeft: '4px solid #a855f7' }}>
+                                <div className="card" style={{ padding: 20, background: 'var(--status-processing-bg)', borderLeft: '4px solid #a855f7' }}>
                                     <small>Tổng Doanh thu</small>
                                     <h3 style={{ margin: '5px 0' }}>{stats.revenue?.toLocaleString()} đ</h3>
                                 </div>
@@ -495,7 +495,7 @@ const AdminPanel = () => {
                             
                             {data.length > 0 && (
                                 <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                                    <thead style={{ background: '#f8f9fa' }}>
+                                    <thead style={{ background: 'var(--surface-soft)' }}>
                                         <tr style={{ textAlign: 'left' }}>
                                             {activeTab === 'products' && <><th style={{padding: '8px 12px'}}>ID</th><th style={{padding: '8px 12px'}}>Tên</th><th style={{padding: '8px 12px'}}>Giá</th><th style={{padding: '8px 12px'}}>Kho</th><th style={{padding: '8px 12px'}}>Hành động</th></>}
                                             {activeTab === 'categories' && <><th style={{padding: '8px 12px'}}>ID</th><th style={{padding: '8px 12px'}}>Tên danh mục</th><th style={{padding: '8px 12px'}}>Mô tả</th><th style={{padding: '8px 12px'}}>Hành động</th></>}

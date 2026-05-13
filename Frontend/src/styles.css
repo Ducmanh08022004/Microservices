@@ -1,5 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap');
 
+@property --bg-0 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f4f7f3;
+}
+@property --bg-1 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #dde8d8;
+}
+
 :root {
   --bg-0: #f4f7f3;
   --bg-1: #dde8d8;
@@ -14,6 +25,7 @@
   --ok: #166534;
   --radius-lg: 22px;
   --radius-md: 14px;
+  --nav-bg: rgba(255, 255, 255, 0.72);
   --shadow-lg: 0 20px 50px rgba(19, 49, 45, 0.15);
   --shadow-md: 0 10px 30px rgba(17, 39, 70, 0.1);
   --nav-height: 72px;
@@ -37,8 +49,39 @@
   --max-content-width: 1200px;
 }
 
+[data-theme='dark'] {
+  --bg-0: #0d1117;
+  --bg-1: #161b22;
+  --surface: #1e242d;
+  --surface-soft: #232b35;
+  --text-strong: #e6edf3;
+  --text-muted: #8b949e;
+  --brand: #2dd4bf;
+  --brand-strong: #14b8a6;
+  --nav-bg: rgba(30, 36, 45, 0.72);
+  --accent: #fb923c;
+  --danger: #f85149;
+  --ok: #2ea043;
+  
+  --status-processing: #818cf8;
+  --status-processing-bg: rgba(129, 140, 248, 0.15);
+  --status-paid: #60a5fa;
+  --status-paid-bg: rgba(96, 165, 250, 0.15);
+  --status-confirmed: #34d399;
+  --status-confirmed-bg: rgba(52, 211, 153, 0.15);
+  --status-failed: #f87171;
+  --status-failed-bg: rgba(248, 113, 113, 0.15);
+  --status-cancelled: #94a3b8;
+  --status-cancelled-bg: rgba(148, 163, 184, 0.15);
+  --status-warning: #fbbf24;
+}
+
 * {
   box-sizing: border-box;
+}
+
+body, .card, .input, .btn, .navbar, .custom-select-dropdown, .custom-select-option, .marketplace-stat, .marketplace-toolbar, .page-shell, .detail-main, .detail-side, .form-wrap, .home-search, .product-card {
+  transition: --bg-0 0.4s ease, --bg-1 0.4s ease, background-color 0.4s ease, background 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
 }
 
 html,
@@ -108,8 +151,8 @@ h4 {
 }
 
 .btn-ghost {
-  background: #e7eef7;
-  color: #22344a;
+  background: var(--surface-soft);
+  color: var(--text-strong);
 }
 
 .login-wrap {
@@ -154,12 +197,13 @@ h4 {
 .input {
   width: 100%;
   border: 1px solid #cdd8e4;
-  background: #fff;
+  background: var(--surface);
+  color: var(--text-strong);
   border-radius: 12px;
   padding: 12px 14px;
   outline: none;
   font-size: 0.98rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .input:focus {
@@ -274,7 +318,7 @@ h4 {
   padding: 18px 20px;
   margin-bottom: 20px;
   border: 1px solid rgba(15, 118, 110, 0.12);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 249, 255, 0.95));
+  background: var(--surface);
 }
 
 .home-search__copy {
@@ -313,9 +357,9 @@ h4 {
   padding: 0;
   border-radius: var(--radius-md);
   border: 1px solid #d9e1eb;
-  background: linear-gradient(160deg, #ffffff, #f8fbff);
+  background: var(--surface);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.4s ease;
   animation: rise 0.45s ease;
   overflow: hidden;
 }
@@ -344,7 +388,7 @@ h4 {
   align-items: center;
   border-radius: 999px;
   padding: 8px 12px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(15, 118, 110, 0.12);
   color: var(--text-strong);
   font-size: 0.9rem;
@@ -420,7 +464,7 @@ h4 {
 
 .marketplace-toolbar__select {
   min-width: 170px;
-  background: #fff;
+  background: var(--surface);
 }
 
 .marketplace-toolbar__title {
@@ -786,7 +830,7 @@ h4 {
   right: 0;
   height: var(--nav-height);
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--nav-bg);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border-bottom: 1px solid rgba(15, 118, 110, 0.1);
@@ -884,7 +928,7 @@ h4 {
 }
 
 .btn-logout {
-  background: #fff;
+  background: var(--surface);
   color: var(--danger);
   border: 1px solid rgba(185, 28, 28, 0.2);
   padding: 6px 14px;

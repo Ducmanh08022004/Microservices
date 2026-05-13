@@ -22,6 +22,7 @@ import CartPage from './pages/CartPage';
 import WishlistPage from './pages/WishlistPage';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 function ScrollToTop() {
   const location = useLocation();
@@ -77,15 +78,17 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <Toaster position="top-right" toastOptions={{ duration: 2500 }} />
-      <CartProvider>
-        <WishlistProvider>
-          <AppRoutes />
-        </WishlistProvider>
-      </CartProvider>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <ScrollToTop />
+        <Toaster position="top-right" toastOptions={{ duration: 2500 }} />
+        <CartProvider>
+          <WishlistProvider>
+            <AppRoutes />
+          </WishlistProvider>
+        </CartProvider>
+      </Router>
+    </ThemeProvider>
   );
 }
 

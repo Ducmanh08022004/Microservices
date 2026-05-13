@@ -30,8 +30,8 @@ function Register() {
   };
 
   return (
-    <div className="login-wrap" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
-      <div className="card login-panel" style={{ width: 400, padding: 40, borderRadius: 20, boxShadow: '0 15px 35px rgba(0,0,0,0.1)', background: '#fff' }}>
+    <div className="login-wrap" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="card login-panel" style={{ width: 400, padding: 40, borderRadius: 20, boxShadow: '0 15px 35px rgba(0,0,0,0.1)', background: 'var(--surface)' }}>
         <div style={{ textAlign: 'center', marginBottom: 30 }}>
           <h2 style={{ fontSize: 28, color: 'var(--brand)', marginBottom: 10 }}>Tham gia ngay</h2>
         </div>

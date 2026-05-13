@@ -3,7 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { dispatchAuthChanged } from '../utils/authStorage';
-import { ShoppingBag, Heart, ShoppingCart, User } from 'lucide-react';
+import { ShoppingBag, Heart, ShoppingCart, User, Moon, Sun } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 function getRole() {
   try {
@@ -35,6 +36,7 @@ function Navbar() {
   const username = getUsername();
   const { totalItems } = useCart();
   const { wishlist } = useWishlist();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -68,6 +70,14 @@ function Navbar() {
         )}
 
         <div className="navbar-actions">
+          <button 
+            className="nav-icon-btn" 
+            onClick={toggleTheme} 
+            style={{ marginRight: 8, cursor: 'pointer', border: 'none' }}
+            aria-label="Toggle Theme"
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
           <Link to="/wishlist" className="nav-icon-btn" style={{ marginRight: 8 }}>
             <Heart size={20} />
             {wishlist.length > 0 && <span className="nav-badge">{wishlist.length}</span>}
