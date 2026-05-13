@@ -623,7 +623,7 @@ const AdminPanel = () => {
                                 </div>
                                 )}
                                 {newCoupon.type === 'FIXED' && (
-                                <div style={{ padding: '6px 10px', background: 'rgba(15, 118, 110, 0.06)', borderRadius: 8, fontSize: 13, color: 'var(--text-muted)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <div style={{ padding: '6px 10px', background: 'var(--status-confirmed-bg)', borderRadius: 8, fontSize: 13, color: 'var(--text-muted)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <Info size={16} /> <span>Mã giảm cố định sẽ tự động giới hạn <strong>1 lượt sử dụng</strong> và giá trị giảm tối đa bằng giá trị mã.</span>
                                 </div>
                                 )}

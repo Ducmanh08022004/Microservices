@@ -97,6 +97,28 @@ public class PaymentApplicationService {
         return toResponse(payment);
     }
 
+    /**
+     * Admin force-update payment status (bỏ qua guard PROCESSING).
+     * Được gọi nội bộ từ Order_Service khi admin sửa trạng thái đơn hàng.
+     * Cho phép: PAID, PAYMENT_FAILED
+     */
+    @Transactional
+    public Optional<PaymentResponse> adminUpdatePaymentStatus(String orderId, String newStatus) {
+        // Chỉ cho phép các trạng thái hợp lệ
+        if (!STATUS_PAID.equals(newStatus) && !STATUS_FAILED.equals(newStatus)) {
+            log.warn("Admin update: Trạng thái không hỗ trợ cho payment: {}", newStatus);
+            return Optional.empty();
+        }
+
+        return paymentRepository.findByOrderId(orderId).map(payment -> {
+            String oldStatus = payment.getStatus();
+            payment.setStatus(newStatus);
+            paymentRepository.save(payment);
+            log.info("Admin đã cập nhật payment orderId={}: {} → {}", orderId, oldStatus, newStatus);
+            return toResponse(payment);
+        });
+    }
+
     // ==================== VNPay Integration ====================
 
     /**

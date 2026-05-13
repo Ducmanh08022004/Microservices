@@ -120,6 +120,12 @@ function ForgotPassword() {
           <p className="login-subtitle">Nhập tên đăng nhập để nhận mã xác nhận qua email và đặt lại mật khẩu.</p>
         </div>
 
+        <div style={{ display: 'flex', gap: 8, marginBottom: 30, justifyContent: 'center' }}>
+          <div style={{ height: 4, width: 40, borderRadius: 2, background: stage === 'request' ? 'var(--brand)' : 'var(--brand)' }} />
+          <div style={{ height: 4, width: 40, borderRadius: 2, background: stage === 'confirm' ? 'var(--brand)' : (stage === 'request' ? 'var(--border-color)' : 'var(--brand)') }} />
+          <div style={{ height: 4, width: 40, borderRadius: 2, background: stage === 'locked' ? 'var(--danger)' : 'var(--border-color)' }} />
+        </div>
+
         {stage === 'request' && (
           <form className="form-col" onSubmit={handleRequest}>
             <div className="form-group">
@@ -173,8 +179,12 @@ function ForgotPassword() {
             </div>
 
             <div className="form-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', color: 'var(--text-muted)', fontSize: 14 }}>
-                <span>Thời gian hết hạn: {secondsLeft > 0 ? formatTime(secondsLeft) : '00:00'}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Mã xác nhận có hiệu lực trong:</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: secondsLeft > 30 ? 'var(--brand)' : 'var(--danger)' }}>{secondsLeft > 0 ? formatTime(secondsLeft) : 'Hết hạn'}</span>
+              </div>
+              <div style={{ height: 6, width: '100%', background: 'var(--border-color)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${(secondsLeft / 180) * 100}%`, background: secondsLeft > 30 ? 'var(--brand)' : 'var(--danger)', transition: 'width 1s linear' }} />
               </div>
             </div>
 

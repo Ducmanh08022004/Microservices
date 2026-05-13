@@ -66,6 +66,31 @@ public class PaymentController {
         }
     }
 
+    // ==================== Admin Endpoints ====================
+
+    /**
+     * Admin force-update payment status (bỏ qua guard PROCESSING).
+     * PUT /api/payments/admin/{orderId}/status
+     * Body: { "status": "PAID" | "PAYMENT_FAILED" }
+     */
+    @PutMapping("/admin/{orderId}/status")
+    public ResponseEntity<?> adminUpdatePaymentStatus(
+            @PathVariable String orderId,
+            @RequestBody Map<String, String> body,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole
+    ) {
+        if (!"ADMIN".equalsIgnoreCase(xUserRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Không có quyền admin!"));
+        }
+        String newStatus = body.get("status");
+        if (newStatus == null || newStatus.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Status không hợp lệ"));
+        }
+        var result = paymentApplicationService.adminUpdatePaymentStatus(orderId, newStatus);
+        return result.<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.ok(Map.of("message", "Không có payment record để cập nhật (bỏ qua)", "orderId", orderId)));
+    }
+
     // ==================== VNPay Endpoints ====================
 
     /**

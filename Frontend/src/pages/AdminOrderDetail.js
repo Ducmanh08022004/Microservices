@@ -33,7 +33,9 @@ const ORDER_STATUSES = [
     { value: 'PROCESSING', label: 'Đang xử lý' },
     { value: 'PENDING_PAYMENT', label: 'Chờ thanh toán' },
     { value: 'PAID', label: 'Đã thanh toán' },
-    { value: 'CANCELLED', label: 'Đã hủy' }
+    { value: 'CONFIRMED', label: 'Đã xác nhận' },
+    { value: 'PAYMENT_FAILED', label: 'Thanh toán thất bại' },
+    { value: 'CANCELLED', label: 'Đã hủy' },
 ];
 
 function AdminOrderDetail() {
@@ -166,7 +168,7 @@ function AdminOrderDetail() {
                                 minWidth: 180,
                                 padding: '12px 14px',
                                 borderRadius: 16,
-                                background: 'rgba(255,255,255,0.7)',
+                                background: 'var(--surface-soft)',
                                 border: '1px solid rgba(15,118,110,0.12)',
                             }}>
                                 <div style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 4 }}>Tổng tiền ({order.quantity} x SP)</div>
@@ -220,7 +222,7 @@ function AdminOrderDetail() {
                             <div style={{
                                 padding: 16,
                                 borderRadius: 12,
-                                background: 'rgba(15, 118, 110, 0.06)',
+                                background: 'var(--status-confirmed-bg)',
                                 border: '1px solid rgba(15, 118, 110, 0.12)',
                             }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, gap: 12 }}>

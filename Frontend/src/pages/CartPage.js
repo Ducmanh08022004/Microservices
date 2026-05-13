@@ -66,12 +66,17 @@ function CartPage() {
 
     if (cart.length === 0) {
         return (
-            <div className="page-shell" style={{ textAlign: 'center' }}>
-                <h2 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}><ShoppingCart size={32} /> Giỏ hàng trống</h2>
-                <p style={{ color: 'var(--text-muted)' }}>Bạn chưa có sản phẩm nào trong giỏ hàng.</p>
-                <button className="btn btn-primary" onClick={() => navigate('/dashboard')} style={{ marginTop: 20 }}>
-                    Tiếp tục mua hàng
-                </button>
+            <div className="page-shell">
+                <div className="empty-state card">
+                    <div className="empty-state__icon">
+                        <ShoppingCart size={48} strokeWidth={1.5} />
+                    </div>
+                    <h2 className="empty-state__title">Giỏ hàng trống</h2>
+                    <p className="empty-state__desc">Bạn chưa thêm sản phẩm nào vào giỏ hàng. Hãy dạo quanh cửa hàng và chọn những món đồ bạn yêu thích nhé!</p>
+                    <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
+                        Khám phá cửa hàng
+                    </button>
+                </div>
             </div>
         );
     }
@@ -115,10 +120,14 @@ function CartPage() {
                         <input className="input" style={{ flex: 1 }} placeholder="Mã giảm giá..." value={couponCode} onChange={e => setCouponCode(e.target.value)} />
                         <button className="btn btn-ghost" onClick={applyCoupon} disabled={!couponCode}>Áp dụng</button>
                     </div>
-                    {couponDiscount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, color: 'var(--ok)' }}>
-                        <span>Giảm giá:</span>
-                        <b>- {couponDiscount.toLocaleString()} VNĐ</b>
-                    </div>}
+                    {couponDiscount > 0 && (
+                        <div className="coupon-success-banner" style={{ marginBottom: 16 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ok)' }}>
+                                <span>Giảm giá:</span>
+                                <b>- {couponDiscount.toLocaleString()} VNĐ</b>
+                            </div>
+                        </div>
+                    )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, marginBottom: 24, borderTop: '1px solid #eee', paddingTop: 12 }}>
                         <span>Thành tiền:</span>
                         <b style={{ color: 'var(--color-primary)' }}>{Math.max(0, totalPrice - couponDiscount).toLocaleString()} VNĐ</b>

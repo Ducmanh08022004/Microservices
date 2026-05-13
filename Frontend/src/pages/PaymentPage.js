@@ -4,7 +4,7 @@ import axios from 'axios';
 import { API_GATEWAY } from '../config';
 import { Hourglass, CheckCircle2, XCircle, HelpCircle, RefreshCw, CreditCard, Check } from 'lucide-react';
 
-// Cấu hình trạng thái thanh toán
+// Cấu hình trạng thái thanh toán (payment record)
 const PAYMENT_STATUS_CONFIG = {
     PROCESSING: {
         label: 'Đang xử lý thanh toán',
@@ -18,6 +18,38 @@ const PAYMENT_STATUS_CONFIG = {
         color: 'var(--status-paid)',
         bg: 'var(--status-paid-bg)',
         icon: <CheckCircle2 size={14} />,
+        showActions: false,
+    },
+    PAYMENT_FAILED: {
+        label: 'Thanh toán thất bại',
+        color: 'var(--status-failed)',
+        bg: 'var(--status-failed-bg)',
+        icon: <XCircle size={14} />,
+        showActions: false,
+    },
+};
+
+// Khi admin override order.status, map sang config tương ướng
+const ORDER_STATUS_OVERRIDE_CONFIG = {
+    PAID: {
+        label: 'Thanh toán thành công (Admin xác nhận)',
+        color: 'var(--status-paid)',
+        bg: 'var(--status-paid-bg)',
+        icon: <CheckCircle2 size={14} />,
+        showActions: false,
+    },
+    CONFIRMED: {
+        label: 'Được xác nhận',
+        color: 'var(--status-confirmed)',
+        bg: 'var(--status-confirmed-bg)',
+        icon: <CheckCircle2 size={14} />,
+        showActions: false,
+    },
+    CANCELLED: {
+        label: 'Đã hủy',
+        color: 'var(--status-cancelled)',
+        bg: 'var(--status-cancelled-bg)',
+        icon: <XCircle size={14} />,
         showActions: false,
     },
     PAYMENT_FAILED: {
@@ -55,7 +87,7 @@ function Step({ number, title, description, active, done }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: done ? 'rgba(22, 101, 52, 0.14)' : active ? 'rgba(15, 118, 110, 0.16)' : 'rgba(82, 95, 110, 0.1)',
+                background: done ? 'rgba(22, 101, 52, 0.14)' : active ? 'var(--status-confirmed-bg)' : 'rgba(82, 95, 110, 0.1)',
                 color: done ? 'var(--ok)' : active ? 'var(--brand)' : 'var(--text-muted)',
                 fontWeight: 700,
                 fontSize: 13,
@@ -170,17 +202,30 @@ function PaymentPage() {
         }
     };
 
-    const statusConfig = payment ? (PAYMENT_STATUS_CONFIG[payment.status] || {
-        label: payment.status,
-        color: '#64748b',
-        bg: 'rgba(100, 116, 139, 0.12)',
-        icon: <HelpCircle size={14} />,
-        showActions: false,
-    }) : null;
+    // Ưu tiên order.status khi admin đã override (PAID, CONFIRMED, CANCELLED)
+    // Nếu payment còn PAYMENT_FAILED nhưng order đã PAID → hiện theo order
+    const ADMIN_OVERRIDEABLE = new Set(['PAID', 'CONFIRMED', 'CANCELLED', 'PAYMENT_FAILED']);
+    const effectiveConfig = (() => {
+        if (order && ADMIN_OVERRIDEABLE.has(order.status)) {
+            // order.status đã được admin cập nhật, dùng nó làm nguồn tin cậy
+            if (ORDER_STATUS_OVERRIDE_CONFIG[order.status]) {
+                return ORDER_STATUS_OVERRIDE_CONFIG[order.status];
+            }
+        }
+        // Fallback về payment status
+        return payment ? (PAYMENT_STATUS_CONFIG[payment.status] || {
+            label: payment.status,
+            color: '#64748b',
+            bg: 'rgba(100, 116, 139, 0.12)',
+            icon: <HelpCircle size={14} />,
+            showActions: false,
+        }) : null;
+    })();
 
-    const isProcessing = payment?.status === 'PROCESSING' || payment?.status === 'PENDING_PAYMENT';
-    const isPaid = payment?.status === 'PAID';
-    const isFailed = payment?.status === 'PAYMENT_FAILED';
+    const statusConfig = effectiveConfig;
+    const isProcessing = statusConfig?.showActions === true;
+    const isPaid = order?.status === 'PAID' || payment?.status === 'PAID';
+    const isFailed = (order?.status === 'PAYMENT_FAILED' && payment?.status === 'PAYMENT_FAILED');
 
     return (
         <div className="page-shell">
@@ -246,7 +291,7 @@ function PaymentPage() {
                                     minWidth: 180,
                                     padding: '12px 14px',
                                     borderRadius: 16,
-                                    background: 'rgba(255,255,255,0.7)',
+                                    background: 'var(--surface-soft)',
                                     border: '1px solid rgba(15,118,110,0.12)',
                                 }}>
                                     <div style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 4 }}>Số tiền</div>
@@ -298,7 +343,7 @@ function PaymentPage() {
                             <div style={{
                                 padding: 16,
                                 borderRadius: 16,
-                                background: 'rgba(15, 118, 110, 0.06)',
+                                background: 'var(--status-confirmed-bg)',
                                 border: '1px solid rgba(15, 118, 110, 0.12)',
                                 marginBottom: 14,
                             }}>

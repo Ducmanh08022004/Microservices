@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { dispatchAuthChanged } from '../utils/authStorage';
-import { ShoppingBag, Heart, ShoppingCart, User, Moon, Sun } from 'lucide-react';
+import { ShoppingBag, Heart, ShoppingCart, User, Moon, Sun, Package } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 function getRole() {
@@ -78,14 +78,28 @@ function Navbar() {
           >
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-          <Link to="/wishlist" className="nav-icon-btn" style={{ marginRight: 8 }}>
-            <Heart size={20} />
-            {wishlist.length > 0 && <span className="nav-badge">{wishlist.length}</span>}
-          </Link>
-          <Link to="/cart" className="nav-icon-btn" style={{ marginRight: 16 }}>
-            <ShoppingCart size={20} />
-            {totalItems > 0 && <span className="nav-badge">{totalItems}</span>}
-          </Link>
+            <div className="tooltip-wrap">
+              <Link to="/wishlist" className="nav-icon-btn">
+                <Heart size={20} />
+                {wishlist.length > 0 && <span className="nav-badge">{wishlist.length}</span>}
+              </Link>
+              <span className="tooltip-label">Yêu thích</span>
+            </div>
+
+            <div className="tooltip-wrap">
+              <Link to="/my-orders" className="nav-icon-btn">
+                <Package size={20} />
+              </Link>
+              <span className="tooltip-label">Đơn hàng</span>
+            </div>
+
+            <div className="tooltip-wrap" style={{ marginRight: 16 }}>
+              <Link to="/cart" className="nav-icon-btn">
+                <ShoppingCart size={20} />
+                {totalItems > 0 && <span className="nav-badge">{totalItems}</span>}
+              </Link>
+              <span className="tooltip-label">Giỏ hàng</span>
+            </div>
           {token ? (
             <div className="nav-user-info">
               <Link to="/profile" className="nav-username" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>

@@ -88,10 +88,13 @@ function MyOrders() {
                 </p>
 
                 {orders.length === 0 ? (
-                    <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
-                        <div style={{ marginBottom: 12 }}><ShoppingCart size={48} color="var(--border)" /></div>
-                        <p style={{ color: 'var(--text-muted)' }}>Chưa có đơn hàng nào.</p>
-                        <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => navigate('/dashboard')}>
+                    <div className="empty-state card">
+                        <div className="empty-state__icon">
+                            <Package size={48} strokeWidth={1.5} />
+                        </div>
+                        <h2 className="empty-state__title">Chưa có đơn hàng nào</h2>
+                        <p className="empty-state__desc">Bạn chưa thực hiện giao dịch nào. Hãy khám phá các sản phẩm tuyệt vời của chúng tôi và đặt hàng ngay nhé.</p>
+                        <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
                             Mua sắm ngay
                         </button>
                     </div>
@@ -142,7 +145,7 @@ function MyOrders() {
                                         </p>
                                         <StatusBadge status={order.status} />
                                         {PAYMENT_ACTIONABLE_STATUSES.has(order.status) ? (
-                                            <p style={{ margin: '6px 0 0', fontSize: 11, color: '#f59e0b' }}>
+                                            <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--status-warning)' }}>
                                                 Nhấn để thanh toán →
                                             </p>
                                         ) : (

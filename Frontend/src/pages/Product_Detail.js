@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_GATEWAY } from '../config';
 import { useCart } from '../context/CartContext';
-import { Star, ShoppingBag, Gift, ShoppingCart } from 'lucide-react';
+import { Star, ShoppingBag, Gift, ShoppingCart, Minus, Plus, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ImageLightbox from '../components/ImageLightbox';
 
 function getUserId() {
     try {
@@ -45,6 +46,7 @@ function Product_Detail() {
     const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
     const [reviewSubmitting, setReviewSubmitting] = useState(false);
     const [isEditingReview, setIsEditingReview] = useState(false);
+    const [showLightbox, setShowLightbox] = useState(false);
     
     // Coupon state
     const [couponCode, setCouponCode] = useState('');
@@ -165,8 +167,17 @@ function Product_Detail() {
             {/* CỘT TRÁI: Hình ảnh, Thông tin sản phẩm & Đánh giá */}
             <div className="card detail-main">
                 {product.image_url ? (
-                    <div style={{ textAlign: 'center', marginBottom: 16 }}>
-                        <img src={product.image_url} alt={product.name} style={{ maxWidth: '100%', maxHeight: '40vh', borderRadius: 8, objectFit: 'contain' }} />
+                    <div className="tooltip-wrap" style={{ textAlign: 'center', marginBottom: 16, display: 'inline-block', width: '100%' }}>
+                        <div 
+                            style={{ position: 'relative', display: 'inline-block', cursor: 'zoom-in' }}
+                            onClick={() => setShowLightbox(true)}
+                        >
+                            <img src={product.image_url} alt={product.name} style={{ maxWidth: '100%', maxHeight: '40vh', borderRadius: 8, objectFit: 'contain' }} />
+                            <div style={{ position: 'absolute', bottom: 10, right: 10, background: 'rgba(0,0,0,0.5)', color: 'white', borderRadius: '50%', padding: 6, display: 'flex' }}>
+                                <Search size={16} />
+                            </div>
+                        </div>
+                        <span className="tooltip-label">Nhấn để phóng to</span>
                     </div>
                 ) : (
                     <div style={{ width: '100%', height: '30vh', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01))', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, marginBottom: 16 }}>
@@ -204,11 +215,11 @@ function Product_Detail() {
                 </div>
 
                 <div style={{ marginTop: 20, fontSize: '0.9rem' }}>
-                    <p style={{ margin: '4px 0' }}><strong>Mã SKU:</strong> <span className="sku-text">{product.sku || 'N/A'}</span></p>
+                    <p style={{ margin: '4px 0' }}><strong>Mã SKU:</strong> <span style={{ fontFamily: 'monospace', background: 'var(--surface-soft)', color: 'var(--text-strong)', padding: '2px 8px', borderRadius: 4, fontSize: '0.9em' }}>{product.sku || 'N/A'}</span></p>
                     <p style={{ margin: '4px 0' }}><strong>Mã hệ thống:</strong> {product.product_id}</p>
                     <p style={{ margin: '4px 0' }}>
                         <strong>Trạng thái:</strong> 
-                        <span style={{ marginLeft: 6, color: product.stock > 0 ? '#166534' : '#b91c1c', fontWeight: 600 }}>
+                        <span style={{ marginLeft: 6, color: product.stock > 0 ? 'var(--ok)' : 'var(--danger)', fontWeight: 600 }}>
                             {product.stock > 0 ? "Còn hàng" : "Hết hàng"} ({product.stock})
                         </span>
                     </p>
@@ -287,21 +298,21 @@ function Product_Detail() {
             <div className="card detail-side">
                 <h3 style={{ fontSize: '1.2rem' }}>Mua hàng</h3>
                 <hr className="detail-divider" />
-                <div className="form-field">
-                    <label>
-                        Nhập số lượng:
-                    </label>
-                    <input 
-                        className="input"
-                        type="number" 
-                        value={quantity} 
-                        min="1" 
-                        onChange={(e) => setQuantity(e.target.value)}
-                    />
+                <div className="form-field" style={{ marginBottom: 16 }}>
+                    <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>Số lượng</label>
+                    <div className="qty-selector">
+                        <button className="qty-btn" onClick={() => setQuantity(Math.max(1, Number(quantity) - 1))}>
+                            <Minus size={16} />
+                        </button>
+                        <div className="qty-display">{quantity}</div>
+                        <button className="qty-btn" onClick={() => setQuantity(Number(quantity) + 1)}>
+                            <Plus size={16} />
+                        </button>
+                    </div>
                 </div>
                 {dailyCoupon && !couponCode && (
                     <div style={{
-                        background: 'rgba(15,118,110,0.08)', padding: '10px 14px',
+                        background: 'var(--status-confirmed-bg)', padding: '10px 14px',
                         borderRadius: 8, marginBottom: 10, fontSize: 13,
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                     }}>
@@ -329,9 +340,16 @@ function Product_Detail() {
                     </button>
                 </div>
                 {couponDiscount > 0 && (
-                    <div style={{ color: 'var(--ok)', marginBottom: 12, fontWeight: 600 }}>
-                        Đã giảm: - {couponDiscount.toLocaleString()} đ! 
-                        <span style={{color:'var(--text-muted)', fontWeight: 'normal', fontSize: 13, display: 'block'}}>Giá sau giảm: {((product.discount_price || product.price) * quantity - couponDiscount).toLocaleString()} đ</span>
+                    <div className="coupon-success-banner" style={{ color: 'var(--ok)', marginBottom: 12, fontWeight: 600 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><Gift size={16} /> Đã áp dụng mã giảm giá!</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-muted)', fontWeight: 'normal', fontSize: 13 }}>Được giảm:</span>
+                            <span>- {couponDiscount.toLocaleString()} đ</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(15,118,110,0.1)', marginTop: 6, paddingTop: 6 }}>
+                            <span style={{ color: 'var(--text-muted)', fontWeight: 'normal', fontSize: 13 }}>Giá sau giảm:</span>
+                            <span>{((product.discount_price || product.price) * quantity - couponDiscount).toLocaleString()} đ</span>
+                        </div>
                     </div>
                 )}
 
@@ -350,15 +368,15 @@ function Product_Detail() {
                         toast.success(`Đã thêm ${quantity} x ${product.name} vào giỏ!`);
                     }}
                     style={{ 
-                    background: '#1d1d1f', // Đen xám sâu
-                    color: '#fff', 
+                    background: 'var(--text-strong)', 
+                    color: 'var(--surface)', 
                     border: 'none', 
                     marginBottom: 12, 
                     padding: '12px 24px', 
                     borderRadius: 8, 
                     fontWeight: 600, 
                     cursor: 'pointer',
-                    transition: 'opacity 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8}}
+                    transition: 'background-color 0.4s ease, color 0.4s ease, opacity 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8}}
                 >
                     <ShoppingCart size={18} /> Thêm vào giỏ hàng
                 </button>
@@ -372,6 +390,13 @@ function Product_Detail() {
             </div>
             
             </div>
+            {showLightbox && product.image_url && (
+                <ImageLightbox 
+                    imageUrl={product.image_url} 
+                    altText={product.name} 
+                    onClose={() => setShowLightbox(false)} 
+                />
+            )}
         </div>
     );
 }

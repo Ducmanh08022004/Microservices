@@ -36,17 +36,20 @@ public class OrderApplicationService {
     private final CouponRepository couponRepository;
     private final InventoryClient inventoryClient;
     private final OrderEventPublisher orderEventPublisher;
+    private final PaymentClient paymentClient;
 
     public OrderApplicationService(
             OrderRepository orderRepository,
             CouponRepository couponRepository,
             InventoryClient inventoryClient,
-            OrderEventPublisher orderEventPublisher
+            OrderEventPublisher orderEventPublisher,
+            PaymentClient paymentClient
     ) {
         this.orderRepository = orderRepository;
         this.couponRepository = couponRepository;
         this.inventoryClient = inventoryClient;
         this.orderEventPublisher = orderEventPublisher;
+        this.paymentClient = paymentClient;
     }
 
     @Transactional
@@ -131,10 +134,18 @@ public class OrderApplicationService {
                 .map(this::toOrderResponse);
     }
 
-    public Optional<OrderResponse> updateOrderStatus(String orderId, String status) {
+    public Optional<OrderResponse> updateOrderStatus(String orderId, String status, String adminRole) {
         return orderRepository.findByOrderId(orderId).map(order -> {
             order.setStatus(status);
-            return toOrderResponse(orderRepository.save(order));
+            OrderResponse saved = toOrderResponse(orderRepository.save(order));
+
+            // Đồng bộ sang Payment_Service (best-effort, không block)
+            String paymentStatus = PaymentClient.mapOrderStatusToPaymentStatus(status);
+            if (paymentStatus != null) {
+                paymentClient.adminSyncPaymentStatus(orderId, paymentStatus, adminRole);
+            }
+
+            return saved;
         });
     }
 

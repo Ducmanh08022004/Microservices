@@ -154,7 +154,7 @@ public class OrderController {
         if (status == null || status.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Status không hợp lệ"));
         }
-        Optional<OrderResponse> updated = orderApplicationService.updateOrderStatus(orderId, status);
+        Optional<OrderResponse> updated = orderApplicationService.updateOrderStatus(orderId, status, xUserRole);
         return updated.<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Không thấy đơn hàng")));
     }

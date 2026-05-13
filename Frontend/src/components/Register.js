@@ -57,9 +57,9 @@ function Register() {
           </button>
         </form>
 
-        {error && <p style={{ color: '#e74c3c', marginTop: 15, textAlign: 'center', fontSize: 14 }}>{error}</p>}
+        {error && <p style={{ color: 'var(--danger)', marginTop: 15, textAlign: 'center', fontSize: 14 }}>{error}</p>}
         
-        <div style={{ textAlign: 'center', marginTop: 25, fontSize: 14, color: '#666' }}>
+        <div style={{ textAlign: 'center', marginTop: 25, fontSize: 14, color: 'var(--text-muted)' }}>
           Bạn đã có tài khoản? <Link to="/login" style={{ color: 'var(--brand)', textDecoration: 'none', fontWeight: 'bold' }}>Đăng nhập ngay</Link>
         </div>
       </div>

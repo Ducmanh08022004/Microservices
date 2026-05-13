@@ -13,10 +13,12 @@ function WishlistPage() {
                 <h1 style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}><Heart size={32} fill="var(--danger)" color="var(--danger)" /> Sản phẩm Yêu thích</h1>
                 
                 {wishlist.length === 0 ? (
-                    <div className="card marketplace-empty">
-                        <div style={{ marginBottom: 10 }}><Heart size={48} color="var(--border)" /></div>
-                        <h3>Chưa có sản phẩm yêu thích</h3>
-                        <p>Hãy dạo quanh cửa hàng và lưu lại những món bạn thích nhé.</p>
+                    <div className="empty-state card">
+                        <div className="empty-state__icon">
+                            <Heart size={48} strokeWidth={1.5} />
+                        </div>
+                        <h2 className="empty-state__title">Chưa có sản phẩm yêu thích</h2>
+                        <p className="empty-state__desc">Hãy dạo quanh cửa hàng và lưu lại những món bạn thích để dễ dàng mua sắm sau này nhé.</p>
                         <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
                             Khám phá ngay
                         </button>

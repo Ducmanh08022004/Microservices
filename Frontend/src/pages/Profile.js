@@ -83,11 +83,11 @@ const Profile = () => {
                             <User size={40} />
                         </div>
                         <h2 style={{ fontSize: 24, color: 'var(--brand)' }}>Thông tin cá nhân</h2>
-                        <p style={{ color: '#666' }}>Cập nhật thông tin tài khoản của bạn</p>
+                        <p style={{ color: 'var(--text-muted)' }}>Cập nhật thông tin tài khoản của bạn</p>
                     </div>
                     {currentUser && (
                         <div style={{ marginBottom: 20, padding: '12px 16px', 
-                                    background: 'rgba(15,118,110,0.06)', borderRadius: 12 }}>
+                                    background: 'var(--status-confirmed-bg)', borderRadius: 12 }}>
                             <div style={{ fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <User size={18} /> {currentUser.username}
                             </div>
@@ -125,7 +125,7 @@ const Profile = () => {
                         </div>
 
                         <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '10px 0' }} />
-                        <p style={{ fontSize: 12, color: '#999' }}>Để trống mật khẩu nếu không muốn thay đổi</p>
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Để trống mật khẩu nếu không muốn thay đổi</p>
 
                         <div className="form-group">
                             <label style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 5, display: 'block' }}>Mật khẩu mới</label>
@@ -156,8 +156,8 @@ const Profile = () => {
                         </button>
                     </form>
 
-                    {message && <p style={{ color: '#27ae60', marginTop: 15, textAlign: 'center', fontWeight: 'bold' }}>{message}</p>}
-                    {error && <p style={{ color: '#e74c3c', marginTop: 15, textAlign: 'center' }}>{error}</p>}
+                    {message && <p style={{ color: 'var(--ok)', marginTop: 15, textAlign: 'center', fontWeight: 'bold' }}>{message}</p>}
+                    {error && <p style={{ color: 'var(--danger)', marginTop: 15, textAlign: 'center' }}>{error}</p>}
                 </div>
             </div>
         </div>

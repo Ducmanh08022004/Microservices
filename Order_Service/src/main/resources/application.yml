@@ -36,6 +36,9 @@ inventory:
     connect-timeout: ${INVENTORY_CLIENT_CONNECT_TIMEOUT:2s}
     read-timeout: ${INVENTORY_CLIENT_READ_TIMEOUT:3s}
 
+payment:
+  base-url: ${PAYMENT_BASE_URL:http://payment-service:8080}
+
 logging:
   level:
     org.springframework: INFO

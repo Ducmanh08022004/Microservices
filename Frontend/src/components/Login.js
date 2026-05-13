@@ -36,7 +36,7 @@ function Login() {
             <div className="card login-panel" style={{ width: 400, padding: 40, borderRadius: 20, boxShadow: '0 15px 35px rgba(0,0,0,0.1)', background: 'var(--surface)' }}>
                 <div style={{ textAlign: 'center', marginBottom: 30 }}>
                     <h2 style={{ fontSize: 28, color: 'var(--brand)', marginBottom: 10 }}>Chào mừng trở lại</h2>
-                    <p style={{ color: '#666' }}>Đăng nhập để quản lý hệ thống của bạn</p>
+                    <p style={{ color: 'var(--text-muted)' }}>Đăng nhập để quản lý hệ thống của bạn</p>
                 </div>
 
                 <form className="form-col" onSubmit={handleLogin} style={{ gap: 20 }}>
@@ -75,10 +75,10 @@ function Login() {
                     </button>
                 </form>
 
-                {error && <p style={{ color: '#e74c3c', marginTop: 15, textAlign: 'center', fontSize: 14 }}>{error}</p>}
+                {error && <p style={{ color: 'var(--danger)', marginTop: 15, textAlign: 'center', fontSize: 14 }}>{error}</p>}
 
                 
-                <div style={{ textAlign: 'center', marginTop: 25, fontSize: 14, color: '#666' }}>
+                <div style={{ textAlign: 'center', marginTop: 25, fontSize: 14, color: 'var(--text-muted)' }}>
                     Bạn chưa có tài khoản? <Link to="/register" style={{ color: 'var(--brand)', textDecoration: 'none', fontWeight: 'bold' }}>Đăng ký ngay</Link>
                 </div>
             </div>
