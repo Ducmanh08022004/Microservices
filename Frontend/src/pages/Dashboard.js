@@ -10,12 +10,25 @@ import { Gift, Check, Clipboard, Heart, ShoppingBag, Star, Search } from 'lucide
 function SkeletonCard() {
     return (
         <div className="skeleton-card">
-            <div className="skeleton" style={{ aspectRatio: '1/1' }} />
-            <div style={{ padding: '14px 14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div className="skeleton" style={{ height: 12, width: '60%', borderRadius: 6 }} />
-                <div className="skeleton" style={{ height: 16, width: '90%', borderRadius: 6 }} />
-                <div className="skeleton" style={{ height: 12, width: '40%', borderRadius: 6 }} />
-                <div className="skeleton" style={{ height: 20, width: '50%', borderRadius: 6, marginTop: 4 }} />
+            <div className="skeleton skeleton-card__image" />
+            <div className="skeleton-card__body">
+                <div className="skeleton-card__meta-row">
+                    <div className="skeleton" style={{ height: 10, width: '38%', borderRadius: 999 }} />
+                    <div className="skeleton" style={{ height: 10, width: '28%', borderRadius: 999 }} />
+                </div>
+                <div className="skeleton" style={{ height: 36, width: '92%', borderRadius: 8 }} />
+                <div className="skeleton-card__meta-row">
+                    <div className="skeleton" style={{ height: 12, width: '30%', borderRadius: 999 }} />
+                    <div className="skeleton" style={{ height: 12, width: '24%', borderRadius: 999 }} />
+                </div>
+                <div className="skeleton-card__price-row">
+                    <div className="skeleton" style={{ height: 20, width: '42%', borderRadius: 999 }} />
+                    <div className="skeleton" style={{ height: 12, width: '26%', borderRadius: 999 }} />
+                </div>
+                <div className="skeleton-card__footer-row">
+                    <div className="skeleton" style={{ height: 10, width: '28%', borderRadius: 999 }} />
+                    <div className="skeleton" style={{ height: 10, width: '20%', borderRadius: 999 }} />
+                </div>
             </div>
         </div>
     );
@@ -45,6 +58,14 @@ function Dashboard() {
     const [dailyCouponLoading, setDailyCouponLoading] = useState(true);
     const [showCoupon, setShowCoupon] = useState(false);
     const categoryChips = categories;
+    const isFiltering = loading && page === 0 && (debouncedSearch !== '' || selectedCategoryId !== 'all');
+    const activeCategoryLabel = selectedCategoryId === 'all'
+        ? 'Tất cả danh mục'
+        : categories.find(category => String(category.id) === String(selectedCategoryId))?.name || 'Danh mục đã chọn';
+    const currentFilterSummary = [
+        debouncedSearch ? `Từ khóa: ${debouncedSearch}` : null,
+        selectedCategoryId !== 'all' ? activeCategoryLabel : null,
+    ].filter(Boolean).join(' · ') || 'Tất cả sản phẩm';
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -127,6 +148,21 @@ function Dashboard() {
             .catch(() => setDailyCoupon(null))
             .finally(() => setDailyCouponLoading(false));
     }, []);
+
+    useEffect(() => {
+        if (!showCoupon) {
+            return;
+        }
+
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setShowCoupon(false);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [showCoupon]);
 
     useEffect(() => {
         if (!hasMore && page > 0) {
@@ -215,14 +251,19 @@ function Dashboard() {
     const couponWidget = (
         <>
             {dailyCoupon && showCoupon && (
-                <div className="card coupon-banner" style={{
-                    position: 'fixed', bottom: 92, right: 24, zIndex: 10001,
-                    background: 'linear-gradient(135deg, #0f766e 0%, #065f46 100%)',
-                    color: '#fff', padding: '20px 24px',
-                    borderRadius: 16, boxShadow: '0 12px 32px rgba(6, 95, 70, 0.25)',
-                    animation: 'rise 0.4s ease', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 14,
-                    alignItems: 'stretch'
-                }}>
+                <div
+                    className="coupon-backdrop"
+                    onClick={() => setShowCoupon(false)}
+                    aria-hidden="true"
+                >
+                    <div className="card coupon-banner" onClick={(e) => e.stopPropagation()} style={{
+                        position: 'fixed', bottom: 92, right: 24, zIndex: 10001,
+                        background: 'linear-gradient(135deg, #0f766e 0%, #065f46 100%)',
+                        color: '#fff', padding: '20px 24px',
+                        borderRadius: 16, boxShadow: '0 12px 32px rgba(6, 95, 70, 0.25)',
+                        animation: 'riseUp 0.35s ease', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 14,
+                        alignItems: 'stretch'
+                    }}>
                     <button
                         onClick={() => setShowCoupon(false)}
                         style={{
@@ -262,6 +303,7 @@ function Dashboard() {
                     >
                         {copied ? <><Check size={16} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Đã copy!</> : <><Clipboard size={16} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Copy mã ngay</>}
                     </button>
+                    </div>
                 </div>
             )}
             <button
@@ -273,6 +315,7 @@ function Dashboard() {
 
                     setShowCoupon(v => !v);
                 }}
+                className="coupon-fab"
                 style={{
                     position: 'fixed', bottom: 24, right: 24, zIndex: 10000,
                     background: 'linear-gradient(135deg, #0f766e 0%, #065f46 100%)',
@@ -286,8 +329,11 @@ function Dashboard() {
                 }}
                 title={dailyCoupon ? (showCoupon ? 'Ẩn mã giảm giá' : 'Xem mã giảm giá hôm nay') : 'Đang tải mã giảm giá hôm nay'}
                 aria-label="Xem mã giảm giá hôm nay"
+                aria-busy={dailyCouponLoading}
             >
-                <Gift size={26} />
+                <Gift size={26} className={dailyCouponLoading ? 'lucide-spin' : ''} />
+                {dailyCouponLoading && <span className="coupon-fab__status">Đang tải...</span>}
+                {dailyCoupon && !dailyCouponLoading && <span className="coupon-fab__badge">Có mã hôm nay</span>}
             </button>
         </>
     );
@@ -297,15 +343,22 @@ function Dashboard() {
             <ToastContainer toasts={toasts} />
             {typeof document !== 'undefined' ? createPortal(couponWidget, document.body) : null}
             <div className="dashboard-wrap">
-                <div className="home-search card">
+                <div className="dashboard-head marketplace-head">
+                    <div>
+                        <h1 className="dashboard-title">Khám phá sản phẩm</h1>
+                    </div>
+                    <div className="dashboard-filter-pill">
+                        {isFiltering ? 'Đang lọc...' : currentFilterSummary}
+                    </div>
+                </div>
+
+                <div className="marketplace-toolbar card">
                     <div className="home-search__copy">
-                        <div className="home-search__title">Tìm sản phẩm</div>
-                        <div className="home-search__subtitle">
-                            Tìm theo tên sản phẩm, thương hiệu.
-                        </div>
+                        <div className="home-search__title">Tìm & lọc</div>
+
                     </div>
 
-                    <div className="home-search__bar">
+                    <div className="marketplace-toolbar__actions">
                         <input
                             className="input home-search__input"
                             placeholder="Nhập từ khóa tìm kiếm..."
@@ -326,25 +379,31 @@ function Dashboard() {
                             Xóa
                         </button>
                     </div>
+
+                    {categoryChips.length > 0 && (
+                        <div className="marketplace-chips marketplace-chips--compact">
+                            <button
+                                className={`marketplace-chip marketplace-chip--button ${selectedCategoryId === 'all' ? 'is-active' : ''}`}
+                                onClick={() => setSelectedCategoryId('all')}
+                            >
+                                Tất cả
+                            </button>
+                            {categoryChips.map(category => (
+                                <button
+                                    key={category.id}
+                                    className={`marketplace-chip marketplace-chip--button ${selectedCategoryId === String(category.id) ? 'is-active' : ''}`}
+                                    onClick={() => setSelectedCategoryId(String(category.id))}
+                                >
+                                    {category.name}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
-                {categoryChips.length > 0 && (
-                    <div className="marketplace-chips">
-                        <button
-                            className={`marketplace-chip marketplace-chip--button ${selectedCategoryId === 'all' ? 'is-active' : ''}`}
-                            onClick={() => setSelectedCategoryId('all')}
-                        >
-                            Tất cả
-                        </button>
-                        {categoryChips.map(category => (
-                            <button
-                                key={category.id}
-                                className={`marketplace-chip marketplace-chip--button ${selectedCategoryId === String(category.id) ? 'is-active' : ''}`}
-                                onClick={() => setSelectedCategoryId(String(category.id))}
-                            >
-                                {category.name}
-                            </button>
-                        ))}
+                {isFiltering && (
+                    <div className="marketplace-loading-state card">
+                        <Search size={16} className="lucide-spin" /> Đang lọc...
                     </div>
                 )}
 
@@ -430,7 +489,7 @@ function Dashboard() {
                     <div className="card marketplace-empty">
                         <div style={{ marginBottom: 10 }}><Search size={48} color="var(--border)" /></div>
                         <h3>Không có sản phẩm phù hợp</h3>
-                        <p>Hãy đổi danh mục hoặc xóa tìm kiếm.</p>
+                        <p>Bạn có thể thử xóa bộ lọc hoặc đổi từ khóa để mở rộng kết quả.</p>
                         <button className="btn btn-primary" onClick={handleClear}>
                             Xóa bộ lọc
                         </button>
@@ -440,8 +499,8 @@ function Dashboard() {
                 {!loading && products.length === 0 && !debouncedSearch && selectedCategoryId === 'all' && (
                     <div className="card marketplace-empty">
                         <div style={{ marginBottom: 10 }}><Search size={48} color="var(--border)" /></div>
-                        <h3>Không có sản phẩm phù hợp</h3>
-                        <p>Hãy đổi từ khóa hoặc xóa tìm kiếm.</p>
+                        <h3>Danh sách đang trống</h3>
+                        <p>Hãy thử cuộn xuống để tải thêm, hoặc dùng ô tìm kiếm để lọc đúng sản phẩm bạn cần.</p>
                         <button className="btn btn-primary" onClick={handleClear}>
                             Xóa tìm kiếm
                         </button>

@@ -60,7 +60,6 @@ function Navbar() {
 
         {token && (
           <div className="navbar-links">
-            <Link to="/my-orders" className={`nav-link ${isActive('/my-orders')}`}>Đơn hàng</Link>
             {role === 'ADMIN' && (
               <Link to="/admin" className={`nav-link ${isActive('/admin')}`}>
                 Quản trị

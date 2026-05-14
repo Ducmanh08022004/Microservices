@@ -386,9 +386,9 @@ function PaymentPage() {
                                 <button
                                     className="btn btn-primary"
                                     style={{ width: '100%' }}
-                                    onClick={() => navigate('/my-orders')}
+                                    onClick={() => navigate('/dashboard')}
                                 >
-                                    Xem đơn hàng của tôi
+                                    Tiếp tục mua sắm
                                 </button>
                             )}
 
@@ -406,12 +406,7 @@ function PaymentPage() {
                     <button className="btn btn-ghost" onClick={() => {
                         const token = localStorage.getItem('accessToken');
                         if (token) {
-                            const payload = JSON.parse(atob(token.split('.')[1]));
-                            if (payload.role === 'ADMIN') {
-                                navigate('/admin');
-                            } else {
-                                navigate('/my-orders');
-                            }
+                            navigate('/my-orders');
                         } else {
                             navigate('/dashboard');
                         }

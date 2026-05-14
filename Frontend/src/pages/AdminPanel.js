@@ -572,8 +572,8 @@ const AdminPanel = () => {
                 </div>
 
                 {showCouponModal && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
-                        <div className="card" style={{ padding: 20, width: 400, maxWidth: '90%' }}>
+                    <div className="coupon-modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 'calc(var(--nav-height) + 28px)', zIndex: 1105, overflowY: 'auto' }}>
+                        <div className="card coupon-modal-card" style={{ padding: 20, width: 400, maxWidth: '90vw', maxHeight: 'calc(100vh - var(--nav-height) - 56px)', overflowY: 'auto', margin: '0 16px 24px' }}>
                             <h3>Tạo Mã Giảm Giá</h3>
                             <form className="form-col" onSubmit={handleCreateCoupon}>
                                 <div className="form-field">

@@ -66,7 +66,7 @@ function CartPage() {
 
     if (cart.length === 0) {
         return (
-            <div className="page-shell">
+            <div className="page-shell cart-page-shell">
                 <div className="empty-state card">
                     <div className="empty-state__icon">
                         <ShoppingCart size={48} strokeWidth={1.5} />
@@ -82,60 +82,62 @@ function CartPage() {
     }
 
     return (
-        <div className="page-shell">
-            <h1 style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}><ShoppingCart size={32} /> Giỏ hàng của bạn</h1>
-            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-                <div style={{ flex: '1 1 60%', minWidth: '320px' }}>
+        <div className="page-shell cart-page-shell">
+            <div className="cart-page__header">
+                <h1 className="cart-page__title"><ShoppingCart size={32} /> Giỏ hàng của bạn</h1>
+            </div>
+            <div className="cart-layout">
+                <div className="cart-items">
                     {cart.map(item => (
-                        <div key={item.product_id} className="card" style={{ display: 'flex', gap: 16, padding: 16, marginBottom: 16, alignItems: 'center' }}>
+                        <div key={item.product_id} className="card cart-item">
                             {item.image_url ? (
-                                <img src={item.image_url} alt={item.name} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8 }} />
+                                <img src={item.image_url} alt={item.name} className="cart-item__image" />
                             ) : (
-                                <div style={{ width: 80, height: 80, background: 'rgba(255,255,255,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShoppingBag size={32} color="var(--border)" /></div>
+                                <div className="cart-item__placeholder"><ShoppingBag size={32} color="var(--border)" /></div>
                             )}
-                            <div style={{ flex: 1 }}>
-                                <h3 style={{ margin: '0 0 8px' }}>{item.name}</h3>
-                                <p style={{ margin: 0, fontWeight: 600, color: 'var(--color-primary)' }}>
+                            <div className="cart-item__body">
+                                <h3 className="cart-item__title">{item.name}</h3>
+                                <p className="cart-item__price">
                                     {(item.discount_price || item.price).toLocaleString()} VNĐ
                                 </p>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <button className="btn btn-ghost" onClick={() => updateQuantity(item.product_id, Math.max(1, item.quantity - 1))} style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Minus size={16} /></button>
+                            <div className="cart-item__quantity">
+                                <button className="btn btn-ghost" onClick={() => updateQuantity(item.product_id, Math.max(1, item.quantity - 1))}><Minus size={16} /></button>
                                 <span>{item.quantity}</span>
-                                <button className="btn btn-ghost" onClick={() => updateQuantity(item.product_id, item.quantity + 1)} style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={16} /></button>
+                                <button className="btn btn-ghost" onClick={() => updateQuantity(item.product_id, item.quantity + 1)}><Plus size={16} /></button>
                             </div>
-                            <button className="btn" style={{ color: 'var(--danger)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => removeFromCart(item.product_id)}>
+                            <button className="btn cart-item__remove" onClick={() => removeFromCart(item.product_id)}>
                                 <Trash2 size={20} />
                             </button>
                         </div>
                     ))}
                 </div>
-                <div className="card" style={{ flex: '1 1 30%', minWidth: '320px', height: 'fit-content', padding: 24 }}>
-                    <h3 style={{ margin: '0 0 16px' }}>Tóm tắt đơn hàng</h3>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                        <span>Tổng số lượng:</span>
+                <div className="card cart-summary">
+                    <h3 className="cart-summary__title">Tóm tắt đơn hàng</h3>
+                    <div className="cart-summary__row">
+                        <span>Tổng số lượng</span>
                         <b>{totalItems}</b>
                     </div>
-                    <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                        <input className="input" style={{ flex: 1 }} placeholder="Mã giảm giá..." value={couponCode} onChange={e => setCouponCode(e.target.value)} />
+                    <div className="cart-summary__coupon">
+                        <input className="input" placeholder="Mã giảm giá..." value={couponCode} onChange={e => setCouponCode(e.target.value)} />
                         <button className="btn btn-ghost" onClick={applyCoupon} disabled={!couponCode}>Áp dụng</button>
                     </div>
                     {couponDiscount > 0 && (
-                        <div className="coupon-success-banner" style={{ marginBottom: 16 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ok)' }}>
+                        <div className="coupon-success-banner cart-summary__coupon-success">
+                            <div className="cart-summary__row cart-summary__row--success">
                                 <span>Giảm giá:</span>
                                 <b>- {couponDiscount.toLocaleString()} VNĐ</b>
                             </div>
                         </div>
                     )}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, marginBottom: 24, borderTop: '1px solid #eee', paddingTop: 12 }}>
+                    <div className="cart-summary__total">
                         <span>Thành tiền:</span>
-                        <b style={{ color: 'var(--color-primary)' }}>{Math.max(0, totalPrice - couponDiscount).toLocaleString()} VNĐ</b>
+                        <b>{Math.max(0, totalPrice - couponDiscount).toLocaleString()} VNĐ</b>
                     </div>
-                    <button className="btn btn-primary" style={{ width: '100%', marginBottom: 12 }} onClick={handleCheckout} disabled={checkingOut}>
+                    <button className="btn btn-primary cart-summary__checkout" onClick={handleCheckout} disabled={checkingOut}>
                         {checkingOut ? 'Đang xử lý...' : 'Thanh toán'}
                     </button>
-                    <button className="btn btn-ghost" style={{ width: '100%' }} onClick={clearCart}>
+                    <button className="btn btn-ghost cart-summary__clear" onClick={clearCart}>
                         Xóa giỏ hàng
                     </button>
                 </div>

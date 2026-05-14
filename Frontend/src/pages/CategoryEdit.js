@@ -38,7 +38,7 @@ function CategoryEdit() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             toast.success("Cập nhật danh mục thành công!");
-            navigate('/admin');
+            navigate('/admin/categories');
         } catch (error) {
             toast.error("Lỗi: " + (error.response?.data?.error || error.message));
         }
@@ -67,7 +67,7 @@ function CategoryEdit() {
                         <button className="btn btn-primary" type="submit">
                             Lưu Thay Đổi
                         </button>
-                        <button className="btn btn-ghost" type="button" onClick={() => navigate('/admin')}>
+                        <button className="btn btn-ghost" type="button" onClick={() => navigate('/admin/categories')}>
                             Hủy
                         </button>
                     </div>

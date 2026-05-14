@@ -51,7 +51,7 @@ function AddProduct() {
             })
             .catch(err => {
                 toast.error("Không thể tải sản phẩm: " + err.message);
-                navigate('/admin');
+                navigate('/admin/products');
             });
         }
     }, [id, isEdit, navigate]);
@@ -212,7 +212,7 @@ function AddProduct() {
                         <button className="btn btn-primary" type="submit" disabled={uploadingImage}>
                             {isEdit ? 'Lưu Thay Đổi' : 'Tạo Sản Phẩm'}
                         </button>
-                        <button className="btn btn-ghost" type="button" onClick={() => navigate('/admin')}>
+                        <button className="btn btn-ghost" type="button" onClick={() => navigate('/admin/products')}>
                             Hủy
                         </button>
                     </div>
