@@ -54,8 +54,6 @@ public class PaymentClient {
         if (paymentStatus == null) return;
         try {
             String url = paymentBaseUrl + "/api/payments/admin/" + orderId + "/status";
-            var body = new HttpEntity<>(Map.of("status", paymentStatus),
-                    org.springframework.http.HttpHeaders.EMPTY);
 
             // Tạo header với X-User-Role để pass guard
             var headers = new org.springframework.http.HttpHeaders();
