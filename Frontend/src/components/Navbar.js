@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -37,6 +37,8 @@ function Navbar() {
   const { totalItems } = useCart();
   const { wishlist } = useWishlist();
   const { theme, toggleTheme } = useTheme();
+  const themeButtonRef = useRef(null);
+  const [themeRipple, setThemeRipple] = useState(null);
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -51,8 +53,37 @@ function Navbar() {
     return '';
   };
 
+  const handleThemeToggle = () => {
+    const buttonRect = themeButtonRef.current?.getBoundingClientRect();
+
+    if (buttonRect) {
+      setThemeRipple({
+        key: Date.now(),
+        left: buttonRect.left + buttonRect.width / 2,
+        top: buttonRect.top + buttonRect.height / 2,
+        size: Math.max(window.innerWidth, window.innerHeight) * 1.8,
+      });
+
+      window.setTimeout(() => setThemeRipple(null), 1100);
+    }
+
+    toggleTheme();
+  };
+
   return (
     <nav className="navbar">
+      {themeRipple && (
+        <span
+          key={themeRipple.key}
+          className={`theme-ripple theme-ripple--${theme}`}
+          style={{
+            left: themeRipple.left,
+            top: themeRipple.top,
+            width: themeRipple.size,
+            height: themeRipple.size,
+          }}
+        />
+      )}
       <div className="navbar-container">
         <Link to="/dashboard" className="navbar-logo">
           <ShoppingBag size={24} style={{ color: 'var(--brand)', strokeWidth: 2.5 }} /> <span>MiniStore</span>
@@ -71,9 +102,10 @@ function Navbar() {
         <div className="navbar-actions">
           <button 
             className="nav-icon-btn" 
-            onClick={toggleTheme} 
+            onClick={handleThemeToggle} 
             style={{ marginRight: 8, cursor: 'pointer', border: 'none' }}
             aria-label="Toggle Theme"
+            ref={themeButtonRef}
           >
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
