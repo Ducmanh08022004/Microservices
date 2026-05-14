@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { API_GATEWAY } from '../config';
@@ -7,17 +8,17 @@ import { useToast, ToastContainer } from '../components/Toast';
 import { Gift, Check, Clipboard, Heart, ShoppingBag, Star, Search } from 'lucide-react';
 
 function SkeletonCard() {
-  return (
-    <div className="skeleton-card">
-      <div className="skeleton" style={{ aspectRatio: '1/1' }} />
-      <div style={{ padding: '14px 14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div className="skeleton" style={{ height: 12, width: '60%', borderRadius: 6 }} />
-        <div className="skeleton" style={{ height: 16, width: '90%', borderRadius: 6 }} />
-        <div className="skeleton" style={{ height: 12, width: '40%', borderRadius: 6 }} />
-        <div className="skeleton" style={{ height: 20, width: '50%', borderRadius: 6, marginTop: 4 }} />
-      </div>
-    </div>
-  );
+    return (
+        <div className="skeleton-card">
+            <div className="skeleton" style={{ aspectRatio: '1/1' }} />
+            <div style={{ padding: '14px 14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="skeleton" style={{ height: 12, width: '60%', borderRadius: 6 }} />
+                <div className="skeleton" style={{ height: 16, width: '90%', borderRadius: 6 }} />
+                <div className="skeleton" style={{ height: 12, width: '40%', borderRadius: 6 }} />
+                <div className="skeleton" style={{ height: 20, width: '50%', borderRadius: 6, marginTop: 4 }} />
+            </div>
+        </div>
+    );
 }
 
 function Dashboard() {
@@ -41,6 +42,7 @@ function Dashboard() {
     const { toasts, show } = useToast();
     const [copied, setCopied] = useState(false);
     const [dailyCoupon, setDailyCoupon] = useState(null);
+    const [dailyCouponLoading, setDailyCouponLoading] = useState(true);
     const [showCoupon, setShowCoupon] = useState(false);
     const categoryChips = categories;
 
@@ -111,13 +113,19 @@ function Dashboard() {
     }, []);
 
     useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return;
-    axios.get(`${API_GATEWAY}/api/coupons/my-daily`, {
-        headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => setDailyCoupon(res.data))
-    .catch(() => {});
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            setDailyCouponLoading(false);
+            return;
+        }
+
+        setDailyCouponLoading(true);
+        axios.get(`${API_GATEWAY}/api/coupons/my-daily`, {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+            .then(res => setDailyCoupon(res.data))
+            .catch(() => setDailyCoupon(null))
+            .finally(() => setDailyCouponLoading(false));
     }, []);
 
     useEffect(() => {
@@ -204,19 +212,18 @@ function Dashboard() {
         setSelectedCategoryId('all');
     };
 
-    return (
-        <div className="page-shell">
-            <ToastContainer toasts={toasts} />
+    const couponWidget = (
+        <>
             {dailyCoupon && showCoupon && (
                 <div className="card coupon-banner" style={{
-                    position: 'fixed', bottom: 24, right: 24, zIndex: 999,
+                    position: 'fixed', bottom: 92, right: 24, zIndex: 10001,
                     background: 'linear-gradient(135deg, #0f766e 0%, #065f46 100%)',
                     color: '#fff', padding: '20px 24px',
                     borderRadius: 16, boxShadow: '0 12px 32px rgba(6, 95, 70, 0.25)',
                     animation: 'rise 0.4s ease', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 14,
                     alignItems: 'stretch'
                 }}>
-                    <button 
+                    <button
                         onClick={() => setShowCoupon(false)}
                         style={{
                             position: 'absolute', top: 12, right: 12, background: 'none', border: 'none',
@@ -235,7 +242,7 @@ function Dashboard() {
                         </div>
                         <div style={{ fontSize: 13, opacity: 0.8 }}>
                             Giảm {dailyCoupon.value}% · Tối đa {dailyCoupon.maxDiscountAmount?.toLocaleString()}đ
-                            <br/>HSD: Hôm nay
+                            <br />HSD: Hôm nay
                         </div>
                     </div>
                     <button
@@ -257,23 +264,38 @@ function Dashboard() {
                     </button>
                 </div>
             )}
-            {dailyCoupon && !showCoupon && (
-                <button
-                    onClick={() => setShowCoupon(true)}
-                    style={{
-                        position: 'fixed', bottom: 24, right: 24, zIndex: 999,
-                        background: 'linear-gradient(135deg, #0f766e 0%, #065f46 100%)',
-                        color: '#fff', width: 56, height: 56,
-                        borderRadius: '50%', boxShadow: '0 8px 24px rgba(6, 95, 70, 0.3)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 28, border: 'none', cursor: 'pointer',
-                        animation: 'rise 0.4s ease', paddingBottom: 4
-                    }}
-                    title="Xem mã giảm giá"
-                >
-                    <Gift size={28} />
-                </button>
-            )}
+            <button
+                onClick={() => {
+                    if (!dailyCoupon) {
+                        show(dailyCouponLoading ? 'Đang tải mã giảm giá hôm nay...' : 'Chưa có mã giảm giá hôm nay.');
+                        return;
+                    }
+
+                    setShowCoupon(v => !v);
+                }}
+                style={{
+                    position: 'fixed', bottom: 24, right: 24, zIndex: 10000,
+                    background: 'linear-gradient(135deg, #0f766e 0%, #065f46 100%)',
+                    color: '#fff', width: 56, height: 56,
+                    borderRadius: '50%', boxShadow: '0 8px 24px rgba(6, 95, 70, 0.3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: 'none', cursor: 'pointer',
+                    transition: 'all 0.25s ease',
+                    transform: showCoupon ? 'scale(0.92)' : 'scale(1)',
+                    opacity: dailyCouponLoading ? 0.92 : 1,
+                }}
+                title={dailyCoupon ? (showCoupon ? 'Ẩn mã giảm giá' : 'Xem mã giảm giá hôm nay') : 'Đang tải mã giảm giá hôm nay'}
+                aria-label="Xem mã giảm giá hôm nay"
+            >
+                <Gift size={26} />
+            </button>
+        </>
+    );
+
+    return (
+        <div className="page-shell">
+            <ToastContainer toasts={toasts} />
+            {typeof document !== 'undefined' ? createPortal(couponWidget, document.body) : null}
             <div className="dashboard-wrap">
                 <div className="home-search card">
                     <div className="home-search__copy">
@@ -335,25 +357,25 @@ function Dashboard() {
                         >
                             <div className="product-card__image">
                                 <button
-                                     type="button"
-                                     className="product-card__wishlist"
-                                     onPointerDown={(e) => e.stopPropagation()}
-                                     onMouseDown={(e) => e.stopPropagation()}
-                                     onClick={(e) => {
-                                         e.preventDefault();
-                                         e.stopPropagation();
-                                         isWishlisted(p.product_id)
-                                             ? removeFromWishlist(p.product_id)
-                                             : addToWishlist(p);
-                                     }}
-                                     style={{ 
-                                         position: 'absolute', top: 8, right: 8, 
-                                         background: 'rgba(255,255,255,0.85)', padding: '5px', 
-                                         borderRadius: '50%', cursor: 'pointer', zIndex: 10,
-                                         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                         display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28,
-                                         border: 'none'
-                                     }}>
+                                    type="button"
+                                    className="product-card__wishlist"
+                                    onPointerDown={(e) => e.stopPropagation()}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        isWishlisted(p.product_id)
+                                            ? removeFromWishlist(p.product_id)
+                                            : addToWishlist(p);
+                                    }}
+                                    style={{
+                                        position: 'absolute', top: 8, right: 8,
+                                        background: 'rgba(255,255,255,0.85)', padding: '5px',
+                                        borderRadius: '50%', cursor: 'pointer', zIndex: 10,
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28,
+                                        border: 'none'
+                                    }}>
                                     <Heart size={16} fill={isWishlisted(p.product_id) ? 'var(--danger)' : 'none'} color={'var(--danger)'} />
                                 </button>
                                 {p.image_url ? (
@@ -437,10 +459,9 @@ function Dashboard() {
                 {!hasMore && products.length > 0 && (
                     <p className="status-text status-muted">Đã tải hết sản phẩm.</p>
                 )}
-
             </div>
         </div>
     );
-}   
+}
 
 export default Dashboard;

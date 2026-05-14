@@ -14,7 +14,6 @@ import VnPayReturnPage from './pages/VnPayReturnPage';
 import NotFound from './pages/NotFound';
 import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
-import ScrollToTopBtn from './components/ScrollToTopBtn';
 
 import AdminPanel from './pages/AdminPanel';
 import AdminOrderDetail from './pages/AdminOrderDetail';
@@ -77,7 +76,6 @@ function AppRoutes() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
-      <ScrollToTopBtn />
     </>
   );
 }
